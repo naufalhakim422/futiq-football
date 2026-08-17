@@ -1,0 +1,16 @@
+.git
+.github
+.next
+node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+tests
+docs
+.env*
+!.env.example
+README.md
+*.md
+.eslintrc.json
+tsconfig.tsbuildinfo
