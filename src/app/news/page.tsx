@@ -3,8 +3,12 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { ArticleSummary } from "@/types/article";
+import { prisma } from "@/lib/db";
+import { ArticleStatus } from "@prisma/client";
 
-const NEWS_ARTICLES: ArticleSummary[] = [
+export const dynamic = "force-dynamic";
+
+const DEFAULT_NEWS_ARTICLES: ArticleSummary[] = [
   {
     id: "news-1",
     title: "UEFA Expands Financial Fair Play Thresholds: What the New Squad Cost Rules Mean for Top 5 Leagues",
@@ -40,7 +44,50 @@ const NEWS_ARTICLES: ArticleSummary[] = [
   },
 ];
 
-export default function NewsPage() {
+export default async function NewsPage() {
+  // Query published articles from database
+  let publishedDbArticles: any[] = [];
+  try {
+    publishedDbArticles = await prisma.article.findMany({
+      where: { status: ArticleStatus.PUBLISHED },
+      orderBy: { publishedAt: "desc" },
+      take: 12,
+      include: {
+        author: true,
+        contributorProfile: true,
+      },
+    });
+  } catch (error) {
+    // Graceful fallback to default editorial feed if DB not seeded
+  }
+
+  const mappedDbArticles: ArticleSummary[] = publishedDbArticles.map((art) => ({
+    id: art.id,
+    title: art.title,
+    slug: art.slug,
+    excerpt: art.excerpt,
+    coverImageUrl:
+      art.featuredImageUrl ||
+      "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?q=80&w=800&auto=format&fit=crop",
+    category: {
+      id: `cat-${art.category.toLowerCase().replace(/\s+/g, "-")}`,
+      name: art.category,
+      slug: art.category.toLowerCase().replace(/\s+/g, "-"),
+    },
+    author: {
+      id: art.authorId,
+      fullName: art.contributorProfile?.displayName || art.author.fullName,
+      tier: "SENIOR",
+      avatarUrl: art.author.avatarUrl,
+    },
+    readTimeMinutes: art.readTimeMinutes || 5,
+    publishedAt: art.publishedAt
+      ? new Date(art.publishedAt).toLocaleDateString()
+      : "Recently",
+  }));
+
+  const allArticles = [...mappedDbArticles, ...DEFAULT_NEWS_ARTICLES];
+
   return (
     <div className="py-8 space-y-8">
       <PageContainer>
@@ -51,7 +98,7 @@ export default function NewsPage() {
         />
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {NEWS_ARTICLES.map((article) => (
+          {allArticles.map((article) => (
             <ArticleCard key={article.id} article={article} variant="standard" />
           ))}
         </div>

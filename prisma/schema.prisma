@@ -1,6 +1,7 @@
 // Prisma Schema for Football Media Platform
 // Sprint 1: User Identity & RBAC
 // Sprint 2: Football Data Engine (Competitions, Seasons, Teams, Stadiums, Managers, Players, Matches, Events, Lineups, Standings, Stats, Transfers)
+// Sprint 3: Contributor Platform (Profiles, Applications, Agreements, Articles, Sources, Revisions, Submissions, Reviews, Notifications, Analytics)
 
 generator client {
   provider = "prisma-client-js"
@@ -24,16 +25,22 @@ enum RoleType {
 }
 
 model User {
-  id           String     @id @default(cuid())
-  email        String     @unique
-  passwordHash String?
-  fullName     String
-  avatarUrl    String?
-  isActive     Boolean    @default(true)
-  isVerified   Boolean    @default(false)
-  roles        UserRole[]
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  id                 String                    @id @default(cuid())
+  email              String                    @unique
+  passwordHash       String?
+  fullName           String
+  avatarUrl          String?
+  isActive           Boolean                   @default(true)
+  isVerified         Boolean                   @default(false)
+  roles              UserRole[]
+  contributorProfile ContributorProfile?
+  applications       ContributorApplication[]
+  agreements         ContributorAgreement[]
+  articles           Article[]
+  editorialReviews   EditorialReview[]
+  notifications      ContributorNotification[]
+  createdAt          DateTime                  @default(now())
+  updatedAt          DateTime                  @updatedAt
 
   @@index([email])
   @@index([isActive])
@@ -156,6 +163,7 @@ model Competition {
   orderIndex  Int                 @default(0)
   seasons     CompetitionSeason[]
   matches     Match[]
+  articles    Article[]
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
 
@@ -221,6 +229,7 @@ model Team {
   toTransfers   Transfer[]     @relation("ToTeamTransfers")
   lineups       MatchLineup[]
   events        MatchEvent[]
+  articles      Article[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -231,41 +240,42 @@ model Team {
 }
 
 model Manager {
-  id         String   @id @default(cuid())
-  externalId String?  @unique
-  name       String
-  slug       String   @unique
+  id          String   @id @default(cuid())
+  externalId  String?  @unique
+  name        String
+  slug        String   @unique
   nationality String
-  photoUrl   String?
-  teamId     String?  @unique
-  team       Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  photoUrl    String?
+  teamId      String?  @unique
+  team        Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([slug])
   @@map("managers")
 }
 
 model Player {
-  id            String            @id @default(cuid())
-  externalId    String?           @unique
-  slug          String            @unique
-  name          String
-  firstName     String?
-  lastName      String?
-  position      PlayerPosition
-  shirtNumber   Int?
-  nationality   String
-  dateOfBirth   DateTime?
-  photoUrl      String?
-  teamId        String?
-  team          Team?             @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  statistics    PlayerStatistic[]
-  transfers     Transfer[]
-  events        MatchEvent[]      @relation("PlayerEvents")
-  assistEvents  MatchEvent[]      @relation("AssistPlayerEvents")
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
+  id           String            @id @default(cuid())
+  externalId   String?           @unique
+  slug         String            @unique
+  name         String
+  firstName    String?
+  lastName     String?
+  position     PlayerPosition
+  shirtNumber  Int?
+  nationality  String
+  dateOfBirth  DateTime?
+  photoUrl     String?
+  teamId       String?
+  team         Team?             @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  statistics   PlayerStatistic[]
+  transfers    Transfer[]
+  events       MatchEvent[]      @relation("PlayerEvents")
+  assistEvents MatchEvent[]      @relation("AssistPlayerEvents")
+  articles     Article[]
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   @@index([slug])
   @@index([teamId])
@@ -332,15 +342,15 @@ model MatchEvent {
 }
 
 model MatchLineup {
-  id          String   @id @default(cuid())
-  matchId     String
-  teamId      String
-  formation   String // e.g. "4-3-3", "3-4-2-1"
-  startersJson Json    // Array of { playerId, name, number, position, gridPosition }
-  benchJson   Json     // Array of { playerId, name, number, position }
-  match       Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  createdAt   DateTime @default(now())
+  id           String   @id @default(cuid())
+  matchId      String
+  teamId       String
+  formation    String // e.g. "4-3-3", "3-4-2-1"
+  startersJson Json // Array of { playerId, name, number, position, gridPosition }
+  benchJson    Json // Array of { playerId, name, number, position }
+  match        Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  team         Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt    DateTime @default(now())
 
   @@unique([matchId, teamId])
   @@index([matchId])
@@ -418,4 +428,297 @@ model Transfer {
   @@index([status])
   @@index([announcementDate])
   @@map("transfers")
+}
+
+// ==========================================
+// 3. CONTRIBUTOR & EDITORIAL ENUMS & MODELS (SPRINT 3)
+// ==========================================
+
+enum ContributorStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  REJECTED
+  BANNED
+}
+
+enum ApplicationStatus {
+  PENDING
+  UNDER_REVIEW
+  APPROVED
+  REJECTED
+}
+
+enum ArticleStatus {
+  DRAFT
+  SUBMITTED
+  IN_REVIEW
+  REVISION_REQUIRED
+  REJECTED
+  APPROVED
+  SCHEDULED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum SubmissionStatus {
+  PENDING
+  IN_REVIEW
+  REVISION_REQUIRED
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+enum ReviewDecision {
+  APPROVE
+  REQUEST_REVISION
+  REJECT
+}
+
+enum SourceType {
+  OFFICIAL
+  INTERVIEW
+  PRESS_RELEASE
+  FOOTBALL_DATA
+  NEWS_REPORT
+  SOCIAL
+  OTHER
+}
+
+enum ImageRightsStatus {
+  OWNED
+  LICENSED
+  OFFICIAL_PRESS
+  PUBLIC_DOMAIN
+  PERMISSION_GRANTED
+  UNKNOWN
+}
+
+enum NotificationType {
+  APPLICATION_APPROVED
+  APPLICATION_REJECTED
+  ARTICLE_SUBMITTED
+  REVISION_REQUESTED
+  ARTICLE_APPROVED
+  ARTICLE_REJECTED
+  ARTICLE_PUBLISHED
+}
+
+model ContributorProfile {
+  id                 String               @id @default(cuid())
+  userId             String               @unique
+  slug               String               @unique
+  displayName        String
+  avatarUrl          String?
+  bio                String?
+  country            String
+  preferredLanguage  String               @default("en")
+  footballInterests  Json                 @default("[]") // Array of league codes/team slugs
+  socialLinks        Json                 @default("{}") // Twitter, LinkedIn, etc.
+  portfolioUrl       String?
+  status             ContributorStatus    @default(ACTIVE)
+  // Trust score foundations (Initialized safely for future Sprint 4/5 scoring algorithms)
+  overallTrustScore  Decimal              @default(100.0) @db.Decimal(5, 2)
+  accuracyScore      Decimal              @default(100.0) @db.Decimal(5, 2)
+  originalityScore   Decimal              @default(100.0) @db.Decimal(5, 2)
+  reliabilityScore   Decimal              @default(100.0) @db.Decimal(5, 2)
+  copyrightScore     Decimal              @default(100.0) @db.Decimal(5, 2)
+  qualityScore       Decimal              @default(100.0) @db.Decimal(5, 2)
+  user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articles           Article[]
+  analytics          ContributorAnalytics[]
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  @@index([slug])
+  @@index([status])
+  @@map("contributor_profiles")
+}
+
+model ContributorApplication {
+  id                  String            @id @default(cuid())
+  userId              String?
+  fullName            String
+  displayName         String
+  email               String
+  country             String
+  preferredLanguage   String            @default("en")
+  footballInterests   String // Leagues/clubs of expertise
+  preferredCategories String // e.g. "Tactical Analysis, Transfer Rumors"
+  shortBio            String
+  writingExperience   String
+  portfolioUrl        String?
+  socialUrl           String?
+  agreementAccepted   Boolean           @default(true)
+  originalityDeclared Boolean           @default(true)
+  copyrightDeclared   Boolean           @default(true)
+  status              ApplicationStatus @default(PENDING)
+  reviewerNotes       String?
+  reviewedByUserId    String?
+  user                User?             @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  @@index([email])
+  @@index([status])
+  @@map("contributor_applications")
+}
+
+model ContributorAgreement {
+  id         String   @id @default(cuid())
+  userId     String
+  version    String   @default("1.0")
+  ipAddress  String?
+  acceptedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("contributor_agreements")
+}
+
+model Article {
+  id                   String                 @id @default(cuid())
+  slug                 String                 @unique
+  title                String
+  subtitle             String?
+  excerpt              String
+  body                 String // Sanitized structured text/HTML
+  featuredImageUrl     String?
+  featuredImageCaption String?
+  imageRightsStatus    ImageRightsStatus      @default(UNKNOWN)
+  imageAttribution     String?
+  imageSource          String?
+  status               ArticleStatus          @default(DRAFT)
+  category             String // e.g. "Tactical Analysis", "Match Report", "Transfers"
+  tags                 Json                   @default("[]") // Array of string tags
+  seoTitle             String?
+  seoDescription       String?
+  wordCount            Int                    @default(0)
+  readTimeMinutes      Int                    @default(1)
+  isBreaking           Boolean                @default(false)
+  isFeatured           Boolean                @default(false)
+  authorId             String
+  contributorProfileId String?
+  competitionId        String?
+  teamId               String?
+  playerId             String?
+  publishedAt          DateTime?
+  author               User                   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  contributorProfile   ContributorProfile?    @relation(fields: [contributorProfileId], references: [id], onDelete: SetNull)
+  competition          Competition?           @relation(fields: [competitionId], references: [id], onDelete: SetNull)
+  team                 Team?                  @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  player               Player?                @relation(fields: [playerId], references: [id], onDelete: SetNull)
+  sources              ArticleSource[]
+  revisions            ArticleRevision[]
+  submissions          ArticleSubmission[]
+  reviews              EditorialReview[]
+  analytics            ContributorAnalytics[]
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  @@index([slug])
+  @@index([authorId])
+  @@index([status])
+  @@index([category])
+  @@index([publishedAt])
+  @@map("articles")
+}
+
+model ArticleSource {
+  id         String     @id @default(cuid())
+  articleId  String
+  sourceName String
+  sourceUrl  String
+  sourceType SourceType @default(NEWS_REPORT)
+  notes      String?
+  article    Article    @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt  DateTime   @default(now())
+
+  @@index([articleId])
+  @@map("article_sources")
+}
+
+model ArticleRevision {
+  id               String   @id @default(cuid())
+  articleId        String
+  revisionNumber   Int
+  title            String
+  body             String
+  metadataSnapshot Json // Snapshot of subtitle, category, tags, sources, image rights
+  changeSummary    String?
+  createdByUserId  String
+  article          Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt        DateTime @default(now())
+
+  @@unique([articleId, revisionNumber])
+  @@index([articleId])
+  @@map("article_revisions")
+}
+
+model ArticleSubmission {
+  id             String            @id @default(cuid())
+  articleId      String
+  contributorId  String
+  status         SubmissionStatus  @default(PENDING)
+  notes          String?
+  submittedAt    DateTime          @default(now())
+  reviewedAt     DateTime?
+  article        Article           @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  reviews        EditorialReview[]
+
+  @@index([articleId])
+  @@index([contributorId])
+  @@index([status])
+  @@map("article_submissions")
+}
+
+model EditorialReview {
+  id                  String             @id @default(cuid())
+  articleId           String
+  submissionId        String?
+  reviewerId          String
+  decision            ReviewDecision
+  internalNotes       String? // Private to Editorial staff & Admins
+  contributorFeedback String? // Visible to the contributor
+  article             Article            @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  submission          ArticleSubmission? @relation(fields: [submissionId], references: [id], onDelete: SetNull)
+  reviewer            User               @relation(fields: [reviewerId], references: [id], onDelete: Cascade)
+  createdAt           DateTime           @default(now())
+
+  @@index([articleId])
+  @@index([reviewerId])
+  @@map("editorial_reviews")
+}
+
+model ContributorNotification {
+  id        String           @id @default(cuid())
+  userId    String
+  type      NotificationType
+  title     String
+  message   String
+  linkUrl   String?
+  isRead    Boolean          @default(false)
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime         @default(now())
+
+  @@index([userId])
+  @@index([isRead])
+  @@map("contributor_notifications")
+}
+
+model ContributorAnalytics {
+  id                   String              @id @default(cuid())
+  contributorProfileId String
+  articleId            String?
+  viewsCount           Int                 @default(0)
+  readTimeMinutesTotal Int                 @default(0)
+  date                 DateTime            @default(now())
+  contributorProfile   ContributorProfile  @relation(fields: [contributorProfileId], references: [id], onDelete: Cascade)
+  article              Article?            @relation(fields: [articleId], references: [id], onDelete: SetNull)
+  createdAt            DateTime            @default(now())
+
+  @@index([contributorProfileId])
+  @@index([articleId])
+  @@map("contributor_analytics")
 }
