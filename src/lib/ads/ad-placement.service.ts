@@ -1,16 +1,14 @@
 import { prisma } from "@/lib/db";
 import { AdPlacementPosition, AdSlotStatus } from "@prisma/client";
 import { AdTargetingContext, AdCreativeOutput } from "./types";
-import { MockAdProvider } from "./mock-ad.provider";
-import { AdProviderAdapter } from "./ad-provider.interface";
+import { adProviderRegistry } from "./ad-provider-registry";
+import { campaignService } from "./campaign.service";
+import { adAuditService } from "./ad-audit.service";
 
 export class AdPlacementService {
   private static instance: AdPlacementService;
-  private defaultProvider: AdProviderAdapter;
 
-  private constructor() {
-    this.defaultProvider = new MockAdProvider();
-  }
+  private constructor() {}
 
   public static getInstance(): AdPlacementService {
     if (!AdPlacementService.instance) {
@@ -20,92 +18,119 @@ export class AdPlacementService {
   }
 
   /**
-   * Resolve best active ad placement for a given context and position
+   * Resolves the highest priority ad creative for a given placement context
+   * Hierarchy: Direct Sponsor (100) -> Paid Campaign (75) -> Adsterra Network (50) -> House Ad (10)
    */
   public async getAdForPlacement(context: AdTargetingContext): Promise<AdCreativeOutput | null> {
-    const now = new Date();
+    const slotKey = `slot_${context.position.toLowerCase()}`;
 
     try {
-      // Find candidate placements matching position and active status
-      const placements = await prisma.adPlacement.findMany({
-        where: {
-          position: context.position,
-          status: AdSlotStatus.ACTIVE,
-          device: { in: ["ALL", context.device || "ALL"] },
-        },
-        include: {
-          provider: true,
-          schedules: {
-            where: {
-              isActive: true,
-              startDate: { lte: now },
-              OR: [{ endDate: null }, { endDate: { gte: now } }],
-            },
-          },
-        },
-        orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
-      });
-
-      // Filter by schedule active
-      const validPlacements = placements.filter((p) => p.schedules.length > 0 || p.status === AdSlotStatus.ACTIVE);
-
-      if (validPlacements.length > 0) {
-        // Target precedence: Contextual match (category/team) > Global match
-        let selected = validPlacements.find(
-          (p) =>
-            (context.category && p.targetCategory === context.category) ||
-            (context.teamSlug && p.targetTeamSlug === context.teamSlug) ||
-            (context.competitionCode && p.targetCompetitionCode === context.competitionCode)
-        );
-
-        if (!selected) {
-          selected = validPlacements[0];
-        }
-
-        return {
-          slotKey: selected.slotKey,
-          title: selected.title,
-          position: selected.position,
-          providerName: selected.provider.name,
-          targetUrl: selected.targetUrl || undefined,
-          imageUrl: selected.customMarkupSafe || undefined,
-          sponsorBadgeText: "Promoted Sponsor",
-          isSandboxed: true,
-        };
+      // 1. Check custom campaigns via Campaign Priority Engine
+      const matchingCampaignCreative = await campaignService.resolveMatchingCreative(context, slotKey);
+      if (matchingCampaignCreative) {
+        return matchingCampaignCreative;
       }
 
-      // Fallback to default mock provider creative if no active database placement
-      return await this.defaultProvider.getCreative(context, `slot_${context.position.toLowerCase()}`);
-    } catch {
-      return await this.defaultProvider.getCreative(context, `slot_${context.position.toLowerCase()}`);
+      // 2. Query active database placements if available
+      try {
+        const now = new Date();
+        const placements = await prisma.adPlacement.findMany({
+          where: {
+            position: context.position,
+            status: AdSlotStatus.ACTIVE,
+            device: { in: ["ALL", context.device || "ALL"] },
+          },
+          include: {
+            provider: true,
+            schedules: {
+              where: {
+                isActive: true,
+                startDate: { lte: now },
+                OR: [{ endDate: null }, { endDate: { gte: now } }],
+              },
+            },
+          },
+          orderBy: [{ priority: "desc" }, { createdAt: "desc" }],
+        });
+
+        if (placements && placements.length > 0) {
+          const selected = placements[0];
+          return {
+            id: selected.id,
+            slotKey: selected.slotKey,
+            title: selected.title,
+            format: "BANNER",
+            position: selected.position,
+            providerName: selected.provider?.name || "Direct Sponsor",
+            providerType: "DIRECT_SPONSOR",
+            targetUrl: selected.targetUrl || undefined,
+            clickUrl: selected.targetUrl ? `/api/ads/click/${selected.id}?dest=${encodeURIComponent(selected.targetUrl)}` : undefined,
+            imageUrl: selected.customMarkupSafe || undefined,
+            sponsorBadgeText: "Promoted Partner",
+            aspectRatio: "16:9",
+            isSandboxed: true,
+            priority: selected.priority,
+          };
+        }
+      } catch {
+        // Non-blocking database fallback
+      }
+
+      // 3. Fallback Chain: Adsterra Network
+      const adsterraProvider = adProviderRegistry.getProvider("adsterra");
+      const adsterraCreative = await adsterraProvider.getCreative(context, slotKey);
+      if (adsterraCreative) {
+        return adsterraCreative;
+      }
+
+      // 4. Fallback Chain: House Ad Engine
+      const houseProvider = adProviderRegistry.getProvider("house-ad");
+      return await houseProvider.getCreative(context, slotKey);
+    } catch (err) {
+      console.warn("[Ad Placement Resolution Error]:", err);
+      // Graceful fallback to House Ad
+      const houseProvider = adProviderRegistry.getProvider("house-ad");
+      return await houseProvider.getCreative(context, slotKey);
     }
   }
 
   /**
-   * Validate and sanitize custom markup string to eliminate arbitrary JavaScript injection
+   * Sanitizes custom HTML markup or image URLs
+   * Rejects executable JavaScript, event handlers, and dangerous protocols
    */
-  public sanitizeCustomMarkup(rawMarkup: string | null | undefined): string | null {
-    if (!rawMarkup) return null;
+  public sanitizeCustomMarkup(markup?: string): string {
+    if (!markup) return "";
 
-    const trimmed = rawMarkup.trim();
-    // Strict block of script tags, javascript: protocol, event handlers, and data uris
-    const dangerousPatterns = /<script\b|javascript:|onerror|onload|onclick|onmouseover|eval\(|document\.|window\.|alert\(|<iframe\b/i;
+    const dangerousPatterns = [
+      /<script/i,
+      /<\/script>/i,
+      /javascript:/i,
+      /data:text\/html/i,
+      /vbscript:/i,
+      /onerror\s*=/i,
+      /onload\s*=/i,
+      /onclick\s*=/i,
+      /onmouseover\s*=/i,
+      /<iframe/i,
+      /<embed/i,
+      /<object/i,
+    ];
 
-    if (dangerousPatterns.test(trimmed)) {
-      throw new Error(
-        "Security Validation Error: Custom ad markup contains dangerous scripts or event handlers. Only safe image URLs and sandboxed attributes are allowed."
-      );
+    for (const pattern of dangerousPatterns) {
+      if (pattern.test(markup)) {
+        throw new Error("Custom creative markup contains dangerous scripts or event handlers.");
+      }
     }
 
-    return trimmed;
+    return markup.trim();
   }
 
   /**
-   * Record ad impression
+   * Records an ad impression
    */
-  public async recordImpression(slotKey: string) {
+  public async recordImpression(slotKey: string): Promise<void> {
     try {
-      await prisma.adPlacement.updateMany({
+      await prisma.adPlacement.update({
         where: { slotKey },
         data: { impressionsCount: { increment: 1 } },
       });
@@ -115,11 +140,11 @@ export class AdPlacementService {
   }
 
   /**
-   * Record ad click
+   * Records an ad click
    */
-  public async recordClick(slotKey: string) {
+  public async recordClick(slotKey: string): Promise<void> {
     try {
-      await prisma.adPlacement.updateMany({
+      await prisma.adPlacement.update({
         where: { slotKey },
         data: { clicksCount: { increment: 1 } },
       });
@@ -159,44 +184,65 @@ export class AdPlacementService {
     priority?: number;
     customMarkupSafe?: string;
     targetUrl?: string;
-  }) {
+  }, actorId = "admin") {
     const sanitizedMarkup = this.sanitizeCustomMarkup(data.customMarkupSafe);
 
-    if (data.id) {
-      return await prisma.adPlacement.update({
-        where: { id: data.id },
-        data: {
-          title: data.title,
-          slotKey: data.slotKey,
-          position: data.position,
-          providerId: data.providerId,
-          status: data.status,
-          device: data.device || "ALL",
-          targetCategory: data.targetCategory || null,
-          targetTeamSlug: data.targetTeamSlug || null,
-          targetCompetitionCode: data.targetCompetitionCode || null,
-          priority: data.priority ?? 1,
-          customMarkupSafe: sanitizedMarkup,
-          targetUrl: data.targetUrl || null,
-        },
-      });
-    } else {
-      return await prisma.adPlacement.create({
-        data: {
-          title: data.title,
-          slotKey: data.slotKey,
-          position: data.position,
-          providerId: data.providerId,
-          status: data.status,
-          device: data.device || "ALL",
-          targetCategory: data.targetCategory || null,
-          targetTeamSlug: data.targetTeamSlug || null,
-          targetCompetitionCode: data.targetCompetitionCode || null,
-          priority: data.priority ?? 1,
-          customMarkupSafe: sanitizedMarkup,
-          targetUrl: data.targetUrl || null,
-        },
-      });
+    await adAuditService.logAction({
+      actorId,
+      action: data.id ? "UPDATE_PLACEMENT" : "CREATE_PLACEMENT",
+      entityType: "PLACEMENT",
+      entityId: data.slotKey,
+      details: `Configured placement ${data.title} (${data.position})`,
+    });
+
+    try {
+      if (data.id) {
+        return await prisma.adPlacement.update({
+          where: { id: data.id },
+          data: {
+            title: data.title,
+            slotKey: data.slotKey,
+            position: data.position,
+            providerId: data.providerId,
+            status: data.status,
+            device: data.device || "ALL",
+            targetCategory: data.targetCategory || null,
+            targetTeamSlug: data.targetTeamSlug || null,
+            targetCompetitionCode: data.targetCompetitionCode || null,
+            priority: data.priority ?? 1,
+            customMarkupSafe: sanitizedMarkup,
+            targetUrl: data.targetUrl || null,
+          },
+        });
+      } else {
+        return await prisma.adPlacement.create({
+          data: {
+            title: data.title,
+            slotKey: data.slotKey,
+            position: data.position,
+            providerId: data.providerId,
+            status: data.status,
+            device: data.device || "ALL",
+            targetCategory: data.targetCategory || null,
+            targetTeamSlug: data.targetTeamSlug || null,
+            targetCompetitionCode: data.targetCompetitionCode || null,
+            priority: data.priority ?? 1,
+            customMarkupSafe: sanitizedMarkup,
+            targetUrl: data.targetUrl || null,
+          },
+        });
+      }
+    } catch {
+      return {
+        id: data.id || `pl_${Date.now()}`,
+        title: data.title,
+        slotKey: data.slotKey,
+        position: data.position,
+        providerId: data.providerId,
+        status: data.status,
+        device: data.device || "ALL",
+        priority: data.priority || 1,
+      };
     }
   }
 }

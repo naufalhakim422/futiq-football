@@ -4,7 +4,11 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { redirect } from "next/navigation";
 import { adPlacementService } from "@/lib/ads/ad-placement.service";
-import { prisma } from "@/lib/db";
+import { adProviderRegistry } from "@/lib/ads/ad-provider-registry";
+import { sponsorService } from "@/lib/ads/sponsor.service";
+import { campaignService } from "@/lib/ads/campaign.service";
+import { popunderPolicyService } from "@/lib/ads/popunder-policy.service";
+import { adAuditService } from "@/lib/ads/ad-audit.service";
 import { AdConsole } from "./AdConsole";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
@@ -17,23 +21,41 @@ export default async function AdminAdvertisingPage() {
     redirect("/admin");
   }
 
-  const isAuthorized = user.roles.some((r) => ["SUPER_ADMIN", "SENIOR_EDITOR", "FINANCE"].includes(r));
+  const isAuthorized = user.roles.some((r) =>
+    ["SUPER_ADMIN", "SENIOR_EDITOR", "FINANCE"].includes(r)
+  );
   if (!isAuthorized) {
     redirect("/admin");
   }
 
   let placements: any[] = [];
   let providers: any[] = [];
+  let sponsors: any[] = [];
+  let campaigns: any[] = [];
+  let popunderPolicy: any = null;
+  let auditLogs: any[] = [];
 
   try {
     const results = await Promise.all([
       adPlacementService.listPlacements(),
-      prisma.adProvider.findMany({ orderBy: { name: "asc" } }),
+      sponsorService.listSponsors(),
+      campaignService.listCampaigns(),
+      adAuditService.listLogs(50),
     ]);
+
     placements = results[0];
-    providers = results[1];
+    sponsors = results[1];
+    campaigns = results[2];
+    auditLogs = results[3];
+    providers = adProviderRegistry.listProviders().map((p) => p.getProviderConfig());
+    popunderPolicy = popunderPolicyService.getPolicy();
   } catch (err) {
     console.warn("[Admin Advertising DB offline fallback]:", err);
+    providers = adProviderRegistry.listProviders().map((p) => p.getProviderConfig());
+    popunderPolicy = popunderPolicyService.getPolicy();
+    sponsors = await sponsorService.listSponsors();
+    campaigns = await campaignService.listCampaigns();
+    auditLogs = await adAuditService.listLogs(50);
   }
 
   return (
@@ -41,18 +63,25 @@ export default async function AdminAdvertisingPage() {
       <div>
         <Link
           href="/admin"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2 transition-colors font-mono"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
           Back to Admin Central
         </Link>
         <SectionHeader
-          title="Commercial Advertising & Ad Placement Engine"
-          subtitle="Sandboxed slot placements, device/category targeting, priority routing, and sponsor performance"
+          title="FUTIQ Advertising & Sponsorship Center"
+          subtitle="Provider-agnostic ad network integration, direct sponsor campaigns, placement routing, and revenue telemetry"
         />
       </div>
 
-      <AdConsole initialPlacements={placements} initialProviders={providers} />
+      <AdConsole
+        initialPlacements={placements}
+        initialProviders={providers}
+        initialSponsors={sponsors}
+        initialCampaigns={campaigns}
+        initialPopunderPolicy={popunderPolicy}
+        initialAuditLogs={auditLogs}
+      />
     </PageContainer>
   );
 }

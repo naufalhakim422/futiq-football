@@ -1,17 +1,16 @@
 import { AdProviderAdapter, AdProviderConfig } from "./ad-provider.interface";
 import { AdCreativeOutput, AdTargetingContext, AdFormat, ProviderStatus, CampaignType } from "./types";
 
-export class MockAdProvider implements AdProviderAdapter {
-  public readonly providerName = "mock-ad-provider";
-  public readonly providerType: CampaignType = "NETWORK";
-  public readonly status: ProviderStatus = "MOCK";
+export class HouseAdProvider implements AdProviderAdapter {
+  public readonly providerName = "FUTIQ House Engine";
+  public readonly providerType: CampaignType = "HOUSE_AD";
+  public readonly status: ProviderStatus = "ACTIVE";
   public readonly supportedFormats: AdFormat[] = [
     "BANNER",
     "NATIVE",
-    "SOCIAL_BAR",
-    "POPUNDER",
-    "SMARTLINK",
     "SPONSORED_CARD",
+    "TEXT_LINK",
+    "SMARTLINK",
     "IMAGE_LINK",
   ];
 
@@ -19,12 +18,14 @@ export class MockAdProvider implements AdProviderAdapter {
     return {
       providerName: this.providerName,
       providerType: this.providerType,
-      adapterKey: "mock-ad-provider",
+      adapterKey: "house-ad",
       status: this.status,
       supportedFormats: this.supportedFormats,
-      isTestMode: true,
+      isTestMode: false,
       credentialsConfigured: true,
-      metadata: { description: "Isolated mock advertising adapter for tests and local preview" },
+      metadata: {
+        description: "Internal promotion engine for contributor acquisition, app downloads, and newsletter signups",
+      },
     };
   }
 
@@ -35,11 +36,7 @@ export class MockAdProvider implements AdProviderAdapter {
   public validateCreative(data: {
     format: AdFormat;
     targetUrl?: string;
-    imageUrl?: string;
   }): { valid: boolean; error?: string } {
-    if (data.targetUrl && !/^https?:\/\//i.test(data.targetUrl)) {
-      return { valid: false, error: "Target URL must begin with http:// or https://" };
-    }
     return { valid: true };
   }
 
@@ -48,20 +45,20 @@ export class MockAdProvider implements AdProviderAdapter {
     slotKey: string
   ): Promise<AdCreativeOutput | null> {
     return {
-      id: `mock_creative_${slotKey}`,
+      id: `house_ad_${slotKey}`,
       slotKey,
-      title: "Official Matchday Experience 2026",
-      description: "Get real-time tactical breakdowns, advanced expected goals data, and live match momentum telemetry.",
+      title: "Write for FUTIQ FOOTBALL — Earn Transparent Revenue Rewards",
+      description: "Join our accredited newsroom. Publish deep tactical breakdowns, match analysis, and exclusive transfer journalism.",
       format: "BANNER",
       position: context.position,
       providerName: this.providerName,
       providerType: this.providerType,
-      sponsorName: "Matchday Partner",
-      targetUrl: "https://example.com/matchday-sponsor",
-      clickUrl: `/api/ads/click/mock_creative_${slotKey}?dest=${encodeURIComponent("https://example.com/matchday-sponsor")}`,
+      sponsorName: "FUTIQ Editorial Platform",
+      targetUrl: "/contributor/apply",
+      clickUrl: "/contributor/apply",
       imageUrl: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80",
-      ctaText: "Explore Now",
-      sponsorBadgeText: "Promoted Partner",
+      ctaText: "Apply as Writer",
+      sponsorBadgeText: "FUTIQ Spotlight",
       aspectRatio: "16:9",
       isSandboxed: true,
       priority: 10,
