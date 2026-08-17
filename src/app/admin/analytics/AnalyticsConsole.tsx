@@ -23,22 +23,23 @@ export function AnalyticsConsole({ initialPerformance }: AnalyticsConsoleProps) 
   const [days, setDays] = useState(14);
   const [isLoading, setIsLoading] = useState(false);
 
-  const formatMYR = (minor: number) => {
-    return `RM ${(minor / 100).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  const formatMYR = (minor: number = 0) => {
+    const val = typeof minor === "number" && !isNaN(minor) ? minor : 0;
+    return `RM ${(val / 100).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
   };
 
-  const totals = performance?.totals || {
-    totalPageViews: 0,
-    totalReads: 0,
-    totalAdImpressions: 0,
-    totalAdClicks: 0,
-    totalEstimatedRevenueMinor: 0,
-    overallCtrPercent: 0,
-    overallRpmMinor: 0,
-    revenueStatus: "ESTIMATED",
+  const totals = {
+    totalPageViews: Number(performance?.totals?.totalPageViews || 0),
+    totalReads: Number(performance?.totals?.totalReads || 0),
+    totalAdImpressions: Number(performance?.totals?.totalAdImpressions || 0),
+    totalAdClicks: Number(performance?.totals?.totalAdClicks || 0),
+    totalEstimatedRevenueMinor: Number(performance?.totals?.totalEstimatedRevenueMinor || 0),
+    overallCtrPercent: Number(performance?.totals?.overallCtrPercent || 0),
+    overallRpmMinor: Number(performance?.totals?.overallRpmMinor || 0),
+    revenueStatus: performance?.totals?.revenueStatus || "ESTIMATED",
   };
 
-  const daily = performance?.daily || [];
+  const daily = Array.isArray(performance?.daily) ? performance.daily : [];
 
   const handleRangeChange = async (newDays: number) => {
     setDays(newDays);

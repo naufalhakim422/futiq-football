@@ -145,10 +145,10 @@ export function AdConsole({ initialPlacements, initialProviders }: AdConsoleProp
                   <td className="p-3.5 text-slate-300">{p.provider?.name || "Direct"}</td>
                   <td className="p-3.5 text-slate-400">{p.device}</td>
                   <td className="p-3.5 text-right font-mono font-bold text-slate-200">
-                    {p.impressionsCount.toLocaleString()}
+                    {Number(p.impressionsCount || 0).toLocaleString()}
                   </td>
                   <td className="p-3.5 text-right font-mono font-bold text-brand-green">
-                    {p.clicksCount.toLocaleString()}
+                    {Number(p.clicksCount || 0).toLocaleString()}
                   </td>
                   <td className="p-3.5 text-right">
                     <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">

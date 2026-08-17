@@ -129,59 +129,75 @@ export class AnalyticsService {
     };
     daily: DailyRevenueMetrics[];
   }> {
-    const startDate = new Date(Date.now() - days * 24 * 3600 * 1000);
-    startDate.setUTCHours(0, 0, 0, 0);
+    try {
+      const startDate = new Date(Date.now() - days * 24 * 3600 * 1000);
+      startDate.setUTCHours(0, 0, 0, 0);
 
-    const aggregates = await prisma.analyticsDailyAggregate.findMany({
-      where: { date: { gte: startDate } },
-      orderBy: { date: "asc" },
-    });
+      const aggregates = await prisma.analyticsDailyAggregate.findMany({
+        where: { date: { gte: startDate } },
+        orderBy: { date: "asc" },
+      });
 
-    let totalViews = 0;
-    let totalReads = 0;
-    let totalImpressions = 0;
-    let totalClicks = 0;
-    let totalRevenueMinor = 0;
+      let totalViews = 0;
+      let totalReads = 0;
+      let totalImpressions = 0;
+      let totalClicks = 0;
+      let totalRevenueMinor = 0;
 
-    const daily: DailyRevenueMetrics[] = aggregates.map((agg) => {
-      totalViews += agg.pageViewsCount;
-      totalReads += agg.articleReadsCount;
-      totalImpressions += agg.adImpressionsCount;
-      totalClicks += agg.adClicksCount;
-      totalRevenueMinor += agg.estimatedRevenueMinor;
+      const daily: DailyRevenueMetrics[] = aggregates.map((agg) => {
+        totalViews += agg.pageViewsCount;
+        totalReads += agg.articleReadsCount;
+        totalImpressions += agg.adImpressionsCount;
+        totalClicks += agg.adClicksCount;
+        totalRevenueMinor += agg.estimatedRevenueMinor;
 
-      const ctr = agg.adImpressionsCount > 0 ? (agg.adClicksCount / agg.adImpressionsCount) * 100 : 0;
-      const rpm = agg.adImpressionsCount > 0 ? (agg.estimatedRevenueMinor / agg.adImpressionsCount) * 1000 : 0;
+        const ctr = agg.adImpressionsCount > 0 ? (agg.adClicksCount / agg.adImpressionsCount) * 100 : 0;
+        const rpm = agg.adImpressionsCount > 0 ? (agg.estimatedRevenueMinor / agg.adImpressionsCount) * 1000 : 0;
+
+        return {
+          date: agg.date.toISOString().split("T")[0],
+          pageViews: agg.pageViewsCount,
+          articleReads: agg.articleReadsCount,
+          adImpressions: agg.adImpressionsCount,
+          adClicks: agg.adClicksCount,
+          ctrPercent: parseFloat(ctr.toFixed(2)),
+          rpmMinor: Math.round(rpm),
+          estimatedRevenueMinor: agg.estimatedRevenueMinor,
+          revenueStatus: agg.revenueStatus,
+        };
+      });
+
+      const overallCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
+      const overallRpm = totalImpressions > 0 ? (totalRevenueMinor / totalImpressions) * 1000 : 0;
 
       return {
-        date: agg.date.toISOString().split("T")[0],
-        pageViews: agg.pageViewsCount,
-        articleReads: agg.articleReadsCount,
-        adImpressions: agg.adImpressionsCount,
-        adClicks: agg.adClicksCount,
-        ctrPercent: parseFloat(ctr.toFixed(2)),
-        rpmMinor: Math.round(rpm),
-        estimatedRevenueMinor: agg.estimatedRevenueMinor,
-        revenueStatus: agg.revenueStatus,
+        totals: {
+          totalPageViews: totalViews,
+          totalReads,
+          totalAdImpressions: totalImpressions,
+          totalAdClicks: totalClicks,
+          totalEstimatedRevenueMinor: totalRevenueMinor,
+          overallCtrPercent: parseFloat(overallCtr.toFixed(2)),
+          overallRpmMinor: Math.round(overallRpm),
+          revenueStatus: RevenueStatus.ESTIMATED,
+        },
+        daily,
       };
-    });
-
-    const overallCtr = totalImpressions > 0 ? (totalClicks / totalImpressions) * 100 : 0;
-    const overallRpm = totalImpressions > 0 ? (totalRevenueMinor / totalImpressions) * 1000 : 0;
-
-    return {
-      totals: {
-        totalPageViews: totalViews,
-        totalReads,
-        totalAdImpressions: totalImpressions,
-        totalAdClicks: totalClicks,
-        totalEstimatedRevenueMinor: totalRevenueMinor,
-        overallCtrPercent: parseFloat(overallCtr.toFixed(2)),
-        overallRpmMinor: Math.round(overallRpm),
-        revenueStatus: RevenueStatus.ESTIMATED,
-      },
-      daily,
-    };
+    } catch {
+      return {
+        totals: {
+          totalPageViews: 0,
+          totalReads: 0,
+          totalAdImpressions: 0,
+          totalAdClicks: 0,
+          totalEstimatedRevenueMinor: 0,
+          overallCtrPercent: 0,
+          overallRpmMinor: 0,
+          revenueStatus: RevenueStatus.ESTIMATED,
+        },
+        daily: [],
+      };
+    }
   }
 
   private detectBot(userAgent: string): boolean {

@@ -22,19 +22,17 @@ export default async function AdminAnalyticsPage() {
   }
 
   let performance: any = {
-    dailyStats: [],
     totals: {
-      pageViews: 0,
-      qualifiedViews: 0,
-      totalReadTimeMinutes: 0,
-      avgScrollDepthPct: 0,
-      uniqueSessions: 0,
-      adImpressions: 0,
-      adClicks: 0,
-      estimatedAdRevenueMinor: 0,
+      totalPageViews: 0,
+      totalReads: 0,
+      totalAdImpressions: 0,
+      totalAdClicks: 0,
+      totalEstimatedRevenueMinor: 0,
+      overallCtrPercent: 0,
+      overallRpmMinor: 0,
+      revenueStatus: "ESTIMATED",
     },
-    topArticles: [],
-    adPlacements: [],
+    daily: [],
   };
 
   try {
