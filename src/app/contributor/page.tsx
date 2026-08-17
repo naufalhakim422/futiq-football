@@ -6,13 +6,7 @@ import { SectionHeader } from "@/components/layout/SectionHeader";
 import Link from "next/link";
 import {
   PenTool,
-  FileText,
-  Clock,
-  CheckCircle2,
-  AlertCircle,
-  XCircle,
   Plus,
-  ArrowRight,
   User,
   Bell,
   Sparkles,
@@ -20,6 +14,11 @@ import {
   ChevronRight,
   Layers,
   DollarSign,
+  Lock,
+  ArrowRight,
+  CheckCircle2,
+  Cpu,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -33,6 +32,134 @@ export default async function ContributorDashboardPage() {
     user?.roles.includes("SENIOR_EDITOR") ||
     user?.roles.includes("SUPER_ADMIN");
 
+  // ============================================================================
+  // 1. UNAUTHENTICATED / PRIVATE PORTAL GATEWAY VIEW
+  // ============================================================================
+  if (!user || !isContributor) {
+    return (
+      <div className="py-12 md:py-16">
+        <PageContainer>
+          <div className="max-w-4xl mx-auto space-y-8">
+            {/* Header Masthead */}
+            <div className="text-center space-y-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-pitch-900 border border-pitch-800 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-green">
+                <Lock className="w-3.5 h-3.5 text-brand-green" />
+                <span>Restricted Newsroom Portal • Accredited Access Only</span>
+              </div>
+              <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-100 font-sans tracking-tight">
+                Contributor & Tactical Journalism Desk
+              </h1>
+              <p className="text-sm text-slate-400 max-w-2xl mx-auto leading-relaxed">
+                This private workspace is reserved for accredited football analysts, tactical columnists, and verified sports contributors to draft manuscripts, submit reports to the AI Editorial Gate, and manage reader rewards.
+              </p>
+            </div>
+
+            {/* Portal Gateways Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Card 1: Apply to Become a Contributor */}
+              <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-green/5 blur-3xl rounded-full" />
+                
+                <div className="space-y-4">
+                  <div className="w-12 h-12 bg-brand-green/10 border border-brand-green/30 text-brand-green flex items-center justify-center">
+                    <PenTool className="w-6 h-6" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-brand-green font-bold block">
+                      New Writers & Beat Analysts
+                    </span>
+                    <h3 className="text-lg font-bold text-slate-100 font-sans">
+                      Apply for Writer Accreditation
+                    </h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Publish match breakdowns, player scouting reports, and club analysis to a global football audience with revenue share on qualified reads.
+                    </p>
+                  </div>
+
+                  <ul className="space-y-2 pt-2 text-xs text-slate-300 font-sans">
+                    <li className="flex items-center gap-2">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-brand-green shrink-0" />
+                      <span>Transparent earnings per qualified reader view</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <Cpu className="w-3.5 h-3.5 text-brand-green shrink-0" />
+                      <span>Instant AI Editorial Gate & citation verification</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <TrendingUp className="w-3.5 h-3.5 text-brand-green shrink-0" />
+                      <span>Direct syndication to Google Discover & news feeds</span>
+                    </li>
+                  </ul>
+                </div>
+
+                <div className="pt-4 border-t border-pitch-800">
+                  <Link
+                    href="/contributor/apply"
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover transition-colors shadow-lg active:scale-[0.99]"
+                  >
+                    <span>Submit Accreditation Application</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </Link>
+                </div>
+              </div>
+
+              {/* Card 2: Existing Contributor Terminal */}
+              <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xl">
+                <div className="space-y-4">
+                  <div className="w-12 h-12 bg-pitch-850 border border-pitch-750 text-slate-300 flex items-center justify-center">
+                    <ShieldCheck className="w-6 h-6 text-brand-green" />
+                  </div>
+                  <div className="space-y-1.5">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400 font-bold block">
+                      Accredited Contributor Terminal
+                    </span>
+                    <h3 className="text-lg font-bold text-slate-100 font-sans">
+                      Accredited Contributor Portal
+                    </h3>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      Access your manuscript queue, editorial revision requests, live publication telemetry, and withdrawal wallet.
+                    </p>
+                  </div>
+
+                  <div className="p-4 bg-pitch-950 border border-pitch-800 space-y-2 text-xs font-mono text-slate-400">
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span>Authentication:</span>
+                      <span className="text-brand-green">Server JWT Session</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span>Role Verification:</span>
+                      <span className="text-slate-300">CONTRIBUTOR / EDITOR</span>
+                    </div>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span>Ledger Invariant:</span>
+                      <span className="text-emerald-400">Locked / Server-Auth</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 border-t border-pitch-800 space-y-2">
+                  <Link
+                    href="/contributor/apply"
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-200 bg-pitch-800 hover:bg-pitch-750 border border-pitch-700 transition-colors active:scale-[0.99]"
+                  >
+                    <span>Register New Writer Account</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
+                  <p className="text-[10px] text-center text-slate-500 font-mono">
+                    Session authentication is validated server-side on every request.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </PageContainer>
+      </div>
+    );
+  }
+
+  // ============================================================================
+  // 2. AUTHENTICATED CONTRIBUTOR WORKSPACE DESK
+  // ============================================================================
   let metrics = {
     total: 0,
     drafts: 0,
@@ -51,14 +178,12 @@ export default async function ContributorDashboardPage() {
 
   let articles: any[] = [];
 
-  if (user) {
-    try {
-      metrics = await contributorService.getDashboardMetrics(user.id);
-      const articlesRes = await contributorService.getContributorArticles(user.id, { limit: 10 });
-      articles = articlesRes.articles;
-    } catch (error) {
-      // Database fallback
-    }
+  try {
+    metrics = await contributorService.getDashboardMetrics(user.id);
+    const articlesRes = await contributorService.getContributorArticles(user.id, { limit: 10 });
+    articles = articlesRes.articles;
+  } catch (error) {
+    // Database fallback
   }
 
   return (
@@ -67,7 +192,7 @@ export default async function ContributorDashboardPage() {
         <SectionHeader
           title="Contributor Newsroom Desk"
           subtitle="Author tactical analysis, track editorial review lifecycles, and publish verified football journalism"
-          badgeText={isContributor ? "Accredited Writer" : "Writer Desk"}
+          badgeText="Accredited Writer"
         />
 
         {/* Top Newsroom Control Panel */}
@@ -76,13 +201,11 @@ export default async function ContributorDashboardPage() {
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
                 <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-pitch-850 text-brand-green border border-pitch-750">
-                  {user ? "AUTHENTICATED AUTHOR" : "GUEST MODE"}
+                  AUTHENTICATED AUTHOR
                 </span>
-                {user && (
-                  <span className="text-xs font-mono text-slate-300 font-semibold">
-                    {user.fullName} <span className="text-slate-500 font-normal">({user.email})</span>
-                  </span>
-                )}
+                <span className="text-xs font-mono text-slate-300 font-semibold">
+                  {user.fullName} <span className="text-slate-500 font-normal">({user.email})</span>
+                </span>
               </div>
               <p className="text-xs text-slate-400 font-sans max-w-xl">
                 Server-side verified authorship. Articles are tracked with immutable revision snapshots, citation audits, and rights tracking.
@@ -228,18 +351,6 @@ export default async function ContributorDashboardPage() {
                     <h4 className="text-base font-bold text-slate-100 font-sans tracking-tight">
                       {art.title}
                     </h4>
-
-                    {art.status === "REVISION_REQUIRED" && art.reviews?.[0]?.contributorFeedback && (
-                      <div className="p-3 bg-brand-red/10 border border-brand-red/25 space-y-1">
-                        <span className="text-[10px] font-mono font-bold uppercase text-brand-red flex items-center gap-1.5">
-                          <AlertCircle className="w-3.5 h-3.5" />
-                          <span>Editor Revision Request:</span>
-                        </span>
-                        <p className="text-xs text-slate-200 font-sans leading-relaxed">
-                          {art.reviews[0].contributorFeedback}
-                        </p>
-                      </div>
-                    )}
                   </div>
 
                   <div className="flex items-center gap-3 self-end md:self-center shrink-0">

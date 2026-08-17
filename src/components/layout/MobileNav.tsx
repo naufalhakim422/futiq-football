@@ -54,11 +54,11 @@ export function MobileNav() {
 
             <div className="pt-4 mt-2 border-t border-pitch-800 flex flex-col gap-2">
               <Link
-                href="/contributor"
+                href="/contributor/apply"
                 onClick={() => setIsOpen(false)}
-                className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-white bg-pitch-900 border border-pitch-750 flex items-center justify-between"
+                className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-brand-green hover:text-white bg-pitch-900 border border-brand-green/30 flex items-center justify-between"
               >
-                <span>Contributor Portal</span>
+                <span>Write for Us (Apply)</span>
                 <Globe className="w-3.5 h-3.5 text-brand-green" />
               </Link>
               <Link

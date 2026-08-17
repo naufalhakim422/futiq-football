@@ -30,31 +30,25 @@ export function Header() {
           </Link>
         </div>
 
-        {/* Right Action Icons & Workspace Portals */}
+        {/* Right Action Icons & Contributor Application CTA */}
         <div className="flex items-center gap-3">
-          <div className="hidden lg:flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400 border-r border-pitch-800 pr-3 mr-1">
+          <div className="hidden sm:flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
             <Link
-              href="/contributor"
-              className="hover:text-brand-green transition-colors px-2 py-1 flex items-center gap-1.5"
+              href="/contributor/apply"
+              className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-brand-green bg-pitch-850 hover:bg-pitch-800 border border-brand-green/30 hover:border-brand-green flex items-center gap-1.5 transition-colors"
             >
               <Globe className="w-3.5 h-3.5" />
-              <span>Contributor</span>
-            </Link>
-            <Link
-              href="/admin"
-              className="hover:text-slate-200 transition-colors px-2 py-1 flex items-center gap-1.5"
-            >
-              <Shield className="w-3.5 h-3.5 text-slate-400" />
-              <span>Desk</span>
+              <span>Write for Us</span>
             </Link>
           </div>
 
-          <button
+          <Link
+            href="/search"
             aria-label="Search football content"
             className="p-2 text-slate-400 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded transition-colors"
           >
             <Search className="w-4 h-4" />
-          </button>
+          </Link>
 
           <MobileNav />
         </div>

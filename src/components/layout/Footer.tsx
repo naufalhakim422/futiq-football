@@ -90,8 +90,8 @@ export function Footer() {
             </h4>
             <ul className="space-y-1.5">
               <li>
-                <Link href="/contributor" className="hover:text-brand-green transition-colors">
-                  Contributor Program
+                <Link href="/contributor/apply" className="hover:text-brand-green transition-colors">
+                  Join as Contributor
                 </Link>
               </li>
               <li>
