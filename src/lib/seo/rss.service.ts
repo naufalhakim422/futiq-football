@@ -14,7 +14,7 @@ export interface RssItem {
 
 export class RssService {
   private static readonly DOMAIN = process.env.NEXT_PUBLIC_APP_URL || "https://football.example.com";
-  private static readonly SITE_TITLE = "Football Media Platform";
+  private static readonly SITE_TITLE = "FUTIQ FOOTBALL";
   private static readonly SITE_DESC = "In-depth football journalism, real-time news, tactical analysis and transfer updates.";
 
   public static async generateRssFeed(options?: { category?: string; limit?: number }): Promise<string> {
@@ -51,7 +51,7 @@ export class RssService {
     const itemsXml = articles
       .map((a) => {
         const link = CanonicalService.getCanonicalUrl(`/news/${a.slug}`);
-        const author = a.contributorProfile?.displayName || a.author?.fullName || "Football Media Platform";
+        const author = a.contributorProfile?.displayName || a.author?.fullName || "FUTIQ FOOTBALL";
         const date = (a.publishedAt || new Date()).toUTCString();
 
         return `    <item>

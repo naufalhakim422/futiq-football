@@ -19,7 +19,7 @@ export interface NewsSitemapEntry {
 }
 
 export class SitemapService {
-  private static readonly PUBLICATION_NAME = "Football Media Platform";
+  private static readonly PUBLICATION_NAME = "FUTIQ FOOTBALL";
   private static readonly PUBLICATION_LANG = "en";
 
   /**

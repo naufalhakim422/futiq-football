@@ -24,10 +24,16 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Football Media Platform | Global Football Intelligence & Live Match Center",
+  title: "FUTIQ FOOTBALL | Global Football Intelligence & Live Match Center",
   description:
     "Comprehensive football journalism, breaking transfer news, real-time match stats, tactical analysis, and a curated contributor network.",
+  icons: {
+    icon: "/logo.png",
+    shortcut: "/logo.png",
+    apple: "/logo.png",
+  },
   keywords: [
+    "FUTIQ FOOTBALL",
     "Football",
     "Premier League",
     "Champions League",

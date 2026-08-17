@@ -59,8 +59,8 @@ export async function GET(req: NextRequest) {
         robotsUrl: "/robots.txt",
       },
       settings: settings || {
-        siteName: "Football Media Platform",
-        defaultTitle: "Football Media Platform | Live Scores, News & Tactical Analysis",
+        siteName: "FUTIQ FOOTBALL",
+        defaultTitle: "FUTIQ FOOTBALL | Live Scores, News & Tactical Analysis",
         canonicalDomain: "https://football.example.com",
         isDiscoverOptimized: true,
       },

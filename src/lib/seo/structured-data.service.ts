@@ -1,6 +1,6 @@
 export class StructuredDataService {
   private static readonly DOMAIN = process.env.NEXT_PUBLIC_APP_URL || "https://football.example.com";
-  private static readonly ORG_NAME = "Football Media Platform";
+  private static readonly ORG_NAME = "FUTIQ FOOTBALL";
   private static readonly ORG_LOGO = "https://football.example.com/logo.png";
 
   /**
@@ -14,9 +14,8 @@ export class StructuredDataService {
       url: this.DOMAIN,
       logo: this.ORG_LOGO,
       sameAs: [
-        "https://twitter.com/footballmedia",
-        "https://facebook.com/footballmedia",
-        "https://instagram.com/footballmedia",
+        "https://twitter.com/futiqfootball",
+        "https://instagram.com/futiqfootball",
       ],
     };
   }

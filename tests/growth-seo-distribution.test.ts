@@ -94,7 +94,7 @@ describe("Sprint 7 — Growth, SEO & Content Distribution Engine Suite", () => {
       assert.equal(schema["@type"], "NewsArticle");
       assert.equal(schema.headline, "Arsenal Secure Tactical Triumph");
       assert.equal(schema.author.name, "John Analyst");
-      assert.equal(schema.publisher.name, "Football Media Platform");
+      assert.equal(schema.publisher.name, "FUTIQ FOOTBALL");
     });
 
     it("generates valid SportsTeam schema", () => {

@@ -3,7 +3,7 @@ import Link from "next/link";
 import { LiveTicker } from "@/components/football/LiveTicker";
 import { Navigation } from "./Navigation";
 import { MobileNav } from "./MobileNav";
-import { Search, Globe, Shield } from "lucide-react";
+import { Search, Globe } from "lucide-react";
 
 export function Header() {
   return (
@@ -12,18 +12,23 @@ export function Header() {
       <LiveTicker />
 
       {/* Primary Editorial Masthead */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3.5 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
         {/* Brand Masthead */}
         <div className="flex items-center gap-6">
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-8 h-8 bg-brand-green flex items-center justify-center font-mono font-black text-slate-950 text-sm tracking-tighter">
-              FP
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="relative w-10 h-10 overflow-hidden rounded-lg bg-black border border-pitch-800 flex items-center justify-center shadow-md shrink-0">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="/logo.png"
+                alt="FUTIQ FOOTBALL"
+                className="w-full h-full object-contain p-0.5 group-hover:scale-105 transition-transform duration-200"
+              />
             </div>
             <div>
-              <span className="font-extrabold tracking-tighter text-lg sm:text-xl text-slate-100 uppercase font-sans">
-                FOOTBALL<span className="text-brand-green">MEDIA</span>
+              <span className="font-black tracking-tight text-xl sm:text-2xl text-slate-100 uppercase font-sans flex items-center leading-none">
+                FUTIQ<span className="text-[#c3ff00] ml-1.5 font-extrabold">FOOTBALL</span>
               </span>
-              <span className="hidden sm:block text-[9px] uppercase tracking-widest text-slate-400 font-mono -mt-1">
+              <span className="hidden sm:block text-[9px] uppercase tracking-widest text-slate-400 font-mono mt-0.5">
                 Global Sports Intelligence
               </span>
             </div>
@@ -35,7 +40,7 @@ export function Header() {
           <div className="hidden sm:flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
             <Link
               href="/contributor/apply"
-              className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-brand-green bg-pitch-850 hover:bg-pitch-800 border border-brand-green/30 hover:border-brand-green flex items-center gap-1.5 transition-colors"
+              className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#c3ff00] bg-pitch-850 hover:bg-pitch-800 border border-[#c3ff00]/30 hover:border-[#c3ff00] flex items-center gap-1.5 transition-colors"
             >
               <Globe className="w-3.5 h-3.5" />
               <span>Write for Us</span>

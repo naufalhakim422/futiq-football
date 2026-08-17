@@ -23,8 +23,8 @@ export interface OpenGraphParams {
 
 export class OpenGraphService {
   private static readonly DEFAULT_IMAGE = "https://football.example.com/images/og-default.jpg";
-  private static readonly DEFAULT_SITE_NAME = "Football Media Platform";
-  private static readonly DEFAULT_TWITTER_HANDLE = "@footballmedia";
+  private static readonly DEFAULT_SITE_NAME = "FUTIQ FOOTBALL";
+  private static readonly DEFAULT_TWITTER_HANDLE = "@futiqfootball";
 
   public static buildMetadata(params: OpenGraphParams) {
     const imageUrl = params.image?.url || this.DEFAULT_IMAGE;

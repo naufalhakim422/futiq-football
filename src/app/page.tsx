@@ -178,7 +178,7 @@ export default async function HomePage() {
               <span>Independent Football Writers</span>
             </div>
             <h3 className="text-lg sm:text-xl font-bold text-slate-100 font-sans">
-              Write for the Global Football Media Platform
+              Write for FUTIQ FOOTBALL
             </h3>
             <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
               Publish original sports journalism, tactical analysis, and local club reports. Earn transparent revenue rewards backed by genuine readership engagement metrics.

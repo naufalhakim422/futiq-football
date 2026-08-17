@@ -4,7 +4,7 @@ import { RobotsService } from "./robots.service";
 import { OpenGraphService } from "./open-graph.service";
 
 export class MetadataService {
-  private static readonly BRAND_NAME = "Football Media Platform";
+  private static readonly BRAND_NAME = "FUTIQ FOOTBALL";
   private static readonly DEFAULT_DESC =
     "In-depth football journalism, real-time live scores, tactical breakdowns, transfer rumors, and statistics across world football.";
 
