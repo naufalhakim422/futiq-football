@@ -19,6 +19,8 @@ import {
   Globe,
   Radio,
   FileCheck,
+  Unlock,
+  LogOut,
 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -92,12 +94,24 @@ export default async function AdminPortalPage() {
                 </div>
               </div>
 
-              <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-pitch-800">
+              {/* Instant One-Click Login Action */}
+              <div className="pt-2">
+                <a
+                  href="/api/auth/dev-session?role=SUPER_ADMIN&redirect=/admin"
+                  className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover transition-all shadow-lg active:scale-[0.99]"
+                >
+                  <Unlock className="w-4 h-4 text-slate-950" />
+                  <span>Aktifkan Sesi & Buka Console Super Admin</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-pitch-800">
                 <Link
                   href="/"
-                  className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-300 bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 text-center transition-colors"
+                  className="text-xs text-slate-400 hover:text-white transition-colors"
                 >
-                  Return to Public Media Site
+                  ← Return to Public Media Site
                 </Link>
                 <span className="text-[10px] text-slate-500 font-mono">
                   Antigravity Security Engine v1.0
@@ -123,16 +137,26 @@ export default async function AdminPortalPage() {
         />
 
         <div className="bg-pitch-900 border border-pitch-800 p-6 space-y-6 shadow-xl">
-          <div className="flex items-center gap-3 p-4 bg-pitch-950 border border-pitch-800">
-            <Lock className="w-5 h-5 text-brand-green" />
-            <div>
-              <h4 className="text-sm font-bold text-slate-100 font-sans">
-                RBAC Security Zone & Server Authorization
-              </h4>
-              <p className="text-xs text-brand-green font-mono">
-                Authenticated as SUPER_ADMIN: {user.fullName} ({user.email})
-              </p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 bg-pitch-950 border border-pitch-800">
+            <div className="flex items-center gap-3">
+              <Lock className="w-5 h-5 text-brand-green shrink-0" />
+              <div>
+                <h4 className="text-sm font-bold text-slate-100 font-sans">
+                  RBAC Security Zone & Server Authorization
+                </h4>
+                <p className="text-xs text-brand-green font-mono">
+                  Authenticated as SUPER_ADMIN: {user.fullName} ({user.email})
+                </p>
+              </div>
             </div>
+
+            <a
+              href="/api/auth/dev-session?action=logout&redirect=/admin"
+              className="px-3.5 py-1.5 text-xs font-semibold text-slate-300 bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 flex items-center gap-1.5 transition-colors self-start sm:self-auto"
+            >
+              <LogOut className="w-3.5 h-3.5 text-brand-red" />
+              <span>Keluar Sesi</span>
+            </a>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

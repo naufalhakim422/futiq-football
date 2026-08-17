@@ -78,18 +78,28 @@ export default async function EditorDeskPage() {
                 </div>
               </div>
 
-              <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-pitch-800">
+              <div className="pt-2">
+                <a
+                  href="/api/auth/dev-session?role=SENIOR_EDITOR&redirect=/editor"
+                  className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-gold hover:bg-amber-400 transition-colors shadow-md active:scale-[0.99]"
+                >
+                  <span>Aktifkan Sesi Editor (Buka Meja Redaksi)</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+
+              <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-pitch-800">
                 <Link
                   href="/"
-                  className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-300 bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 text-center transition-colors"
+                  className="text-xs text-slate-400 hover:text-white transition-colors"
                 >
-                  Return to Public Site
+                  ← Return to Public Site
                 </Link>
                 <Link
                   href="/contributor/apply"
-                  className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover text-center transition-colors"
+                  className="text-xs text-brand-green hover:underline font-semibold"
                 >
-                  Apply as Contributor
+                  Apply as Contributor →
                 </Link>
               </div>
             </div>
@@ -133,13 +143,21 @@ export default async function EditorDeskPage() {
               </div>
             </div>
 
-            <Link
-              href="/editor/review"
-              className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover transition-colors shrink-0 shadow-md active:scale-[0.99]"
-            >
-              <span>Open Review Queue</span>
-              <ArrowRight className="w-4 h-4" />
-            </Link>
+            <div className="flex items-center gap-3 shrink-0">
+              <a
+                href="/api/auth/dev-session?action=logout&redirect=/editor"
+                className="px-3.5 py-2 text-xs font-semibold text-slate-300 bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 transition-colors"
+              >
+                Keluar Sesi
+              </a>
+              <Link
+                href="/editor/review"
+                className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover transition-colors shadow-md active:scale-[0.99]"
+              >
+                <span>Open Review Queue</span>
+                <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 font-mono text-xs">
