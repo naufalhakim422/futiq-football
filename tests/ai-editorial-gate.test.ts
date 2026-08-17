@@ -2,6 +2,7 @@ import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 import { EditorialGateService } from "../src/lib/editorial/ai-gate/editorial-gate.service";
 import { EditorialService } from "../src/lib/editorial/editorial.service";
+import { EditorialAIProvider } from "../src/lib/editorial/ai-gate/ai-provider.interface";
 import {
   GateStatus,
   FindingSeverity,
@@ -442,6 +443,24 @@ describe("Sprint 4 — AI Editorial Gate & Copyright Protection Suite", () => {
       );
     });
 
+    it("should prevent editor approval if AI Gate is CHECKING", async () => {
+      const checkingArticle = {
+        id: "art-checking-gate",
+        title: "In-Flight Analysis Draft",
+        status: ArticleStatus.SUBMITTED,
+        gateStatus: GateStatus.CHECKING,
+        authorId: "user-alpha",
+      };
+      inMemoryGateDb.articles.set(checkingArticle.id, checkingArticle);
+
+      await assert.rejects(
+        async () => {
+          await editorialService.approveArticle("editor-1", checkingArticle.id);
+        },
+        /Publish Gate Blocked: AI Editorial Gate has not completed analysis/
+      );
+    });
+
     it("should prevent editor approval if AI Gate is REJECTED", async () => {
       const rejectedGateArticle = {
         id: "art-gate-rejected",
@@ -457,6 +476,25 @@ describe("Sprint 4 — AI Editorial Gate & Copyright Protection Suite", () => {
           await editorialService.approveArticle("editor-1", rejectedGateArticle.id);
         },
         /Publish Gate Blocked: Article was REJECTED by the AI Editorial Gate/
+      );
+    });
+
+    it("should block direct publication if article is not APPROVED", async () => {
+      const unapprovedArticle = {
+        id: "art-unapproved-direct",
+        slug: "unapproved-draft",
+        title: "Unapproved Direct Attempt",
+        status: ArticleStatus.SUBMITTED,
+        gateStatus: GateStatus.PASSED,
+        authorId: "user-alpha",
+      };
+      inMemoryGateDb.articles.set(unapprovedArticle.id, unapprovedArticle);
+
+      await assert.rejects(
+        async () => {
+          await editorialService.publishArticle("editor-1", unapprovedArticle.id);
+        },
+        /Cannot publish article in "SUBMITTED" state. Article must be APPROVED./
       );
     });
 
@@ -581,6 +619,77 @@ describe("Sprint 4 — AI Editorial Gate & Copyright Protection Suite", () => {
 
       assert.ok(staffFindings.findings.length > 0);
       assert.ok(staffFindings.overallScore !== undefined);
+    });
+  });
+
+  describe("9. Fail-Safe AI Execution & Idempotency", () => {
+    it("should NEVER fail-open if the AI Provider throws an unhandled error (Verdict: REVIEW)", async () => {
+      const errorArticle = {
+        id: "art-ai-err-1",
+        title: "Analytical Review During Outage",
+        body: "Comprehensive analysis examining progressive passing volume, central overloads, and high block pressing across ninety minutes.",
+        category: "Tactical Analysis",
+        imageRightsStatus: ImageRightsStatus.OWNED,
+        status: ArticleStatus.SUBMITTED,
+        gateStatus: GateStatus.NOT_RUN,
+        authorId: "user-alpha",
+        sources: [{ sourceName: "Stats", sourceUrl: "https://stats.com", sourceType: SourceType.FOOTBALL_DATA }],
+      };
+      inMemoryGateDb.articles.set(errorArticle.id, errorArticle);
+
+      // Create a faulty AI provider that throws an error
+      const faultyAIProvider: EditorialAIProvider = {
+        name: "faulty-provider",
+        modelName: "faulty-v1",
+        analyzeOriginality: async () => {
+          throw new Error("External LLM Service Timeout / Outage 504");
+        },
+        analyzeFacts: async () => ({ score: 100, risk: FindingSeverity.PASS, findings: [] }),
+        analyzeClickbait: async () => ({ score: 100, risk: FindingSeverity.PASS, findings: [] }),
+        analyzeQuality: async () => ({ score: 100, risk: FindingSeverity.PASS, findings: [] }),
+        analyzeStructure: async () => ({ score: 100, risk: FindingSeverity.PASS, findings: [] }),
+        analyzeImage: async () => ({ score: 100, risk: FindingSeverity.PASS, findings: [] }),
+      };
+
+      gateService.setAIProvider(faultyAIProvider);
+
+      const result = await gateService.runGate(errorArticle.id);
+
+      // Must NOT fail open (must NOT be PASSED)
+      assert.notEqual(result.status, GateStatus.PASSED);
+      assert.equal(result.status, GateStatus.REVIEW);
+      assert.ok(result.findings.some((f) => f.finding.includes("AI Provider analysis failure or timeout")));
+
+      // Restore default mock provider
+      gateService.setAIProvider(new (require("../src/lib/editorial/ai-gate/mock-ai.provider").MockEditorialAIProvider)());
+    });
+
+    it("should be idempotent across repeated gate runs without corrupting previous run history", async () => {
+      const repeatableArticle = {
+        id: "art-repeatable-1",
+        title: "Idempotent Gate Analysis Piece",
+        body: "A comprehensive tactical breakdown analyzing transitional passing and rest defense across ninety minutes of competitive action. Overloads in central areas created clear passing options throughout both halves, neutralizing opposition counters and sustaining territorial control in the final third. Wing-backs supported the wide progression channels with disciplined recovery runs to preserve defensive compactness.",
+        category: "Tactical Analysis",
+        imageRightsStatus: ImageRightsStatus.OWNED,
+        status: ArticleStatus.SUBMITTED,
+        gateStatus: GateStatus.NOT_RUN,
+        authorId: "user-alpha",
+        sources: [{ sourceName: "Official", sourceUrl: "https://league.com", sourceType: SourceType.OFFICIAL }],
+      };
+      inMemoryGateDb.articles.set(repeatableArticle.id, repeatableArticle);
+
+      // Run 1
+      const run1 = await gateService.runGate(repeatableArticle.id);
+      assert.equal(run1.status, GateStatus.PASSED);
+
+      // Run 2
+      const run2 = await gateService.runGate(repeatableArticle.id);
+      assert.equal(run2.status, GateStatus.PASSED);
+
+      // Verify article state is consistent and latest run is preserved
+      const latest = await gateService.getLatestGateRun(repeatableArticle.id);
+      assert.ok(latest);
+      assert.equal(latest.status, GateStatus.PASSED);
     });
   });
 });

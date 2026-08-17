@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
 import { editorialService } from "@/lib/editorial/editorial.service";
+import { prisma } from "@/lib/db";
 import { ReviewDecision } from "@prisma/client";
 
 export const dynamic = "force-dynamic";
@@ -24,6 +25,20 @@ export async function POST(
     }
 
     const { articleId } = await context.params;
+
+    // Verify Article Exists
+    const article = await prisma.article.findUnique({
+      where: { id: articleId },
+      select: { id: true, title: true, gateStatus: true },
+    });
+
+    if (!article) {
+      return NextResponse.json(
+        { success: false, error: "Article not found." },
+        { status: 404 }
+      );
+    }
+
     const body = await request.json();
     const { decision, reason } = body;
 
@@ -37,12 +52,15 @@ export async function POST(
     const validDecision = decision === "REJECT" ? ReviewDecision.REJECT : ReviewDecision.APPROVE;
 
     const ipAddress = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || undefined;
+    const userAgent = request.headers.get("user-agent") || undefined;
+
+    const auditReason = userAgent ? `${reason.trim()} [UA: ${userAgent.slice(0, 80)}]` : reason.trim();
 
     const result = await editorialService.overrideGate(
       user.id,
       articleId,
       validDecision,
-      reason,
+      auditReason,
       ipAddress
     );
 

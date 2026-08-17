@@ -2,6 +2,8 @@ import { FindingCategory, FindingSeverity } from "@prisma/client";
 import { ArticleAnalysisInput, EditorialFindingDto, ExternalMatch } from "./types";
 
 export interface ExternalSimilarityProvider {
+  readonly providerName: string;
+  readonly status: "MOCK" | "NOT_CONFIGURED" | "ACTIVE";
   checkExternalSources(input: ArticleAnalysisInput): Promise<{
     score: number;
     risk: FindingSeverity;
@@ -11,6 +13,9 @@ export interface ExternalSimilarityProvider {
 }
 
 export class MockExternalSimilarityProvider implements ExternalSimilarityProvider {
+  public readonly providerName = "mock-external-similarity";
+  public readonly status = "MOCK" as const;
+
   public async checkExternalSources(input: ArticleAnalysisInput): Promise<{
     score: number;
     risk: FindingSeverity;
@@ -21,11 +26,11 @@ export class MockExternalSimilarityProvider implements ExternalSimilarityProvide
     const matches: ExternalMatch[] = [];
     const lowerBody = input.body.toLowerCase();
 
-    // Check for explicit external plagiarism trigger
+    // Check for explicit external plagiarism trigger in test scenarios
     if (lowerBody.includes("mock_external_plagiarism") || lowerBody.includes("reuters wire release")) {
       const match: ExternalMatch = {
         sourceUrl: "https://reuters.example/sports/football-review",
-        sourceTitle: "Global Football Wire Report",
+        sourceTitle: "Global Football Wire Report (Mock Scan)",
         matchedPhrase: input.body.slice(0, 120),
         matchPercentage: 92.5,
         risk: FindingSeverity.CRITICAL,

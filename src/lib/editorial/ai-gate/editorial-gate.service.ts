@@ -32,6 +32,7 @@ export class EditorialGateService {
 
   /**
    * Run the 19-Stage AI Editorial Gate Pipeline on an article
+   * Idempotent, fail-safe (never fails open), records complete telemetry.
    */
   public async runGate(articleId: string, submissionId?: string): Promise<EditorialGateResult> {
     const startedAt = new Date();
@@ -90,41 +91,103 @@ export class EditorialGateService {
     }
 
     // Stage 3 & 4: Exact Phrase & Internal Similarity
-    const internalRes = await internalSimilarityService.checkInternalSimilarity(input);
-    allFindings.push(...internalRes.findings);
+    let internalRes: any = { score: 100, risk: FindingSeverity.PASS, findings: [] };
+    try {
+      internalRes = await internalSimilarityService.checkInternalSimilarity(input);
+      allFindings.push(...internalRes.findings);
+    } catch (err: any) {
+      allFindings.push({
+        category: FindingCategory.SIMILARITY,
+        severity: FindingSeverity.MEDIUM,
+        finding: "Internal platform similarity check encountered a partial failure.",
+        evidence: err?.message || "Similarity service degraded.",
+        recommendation: "Perform manual editorial originality verification.",
+      });
+    }
 
     // Stage 5: External Similarity
-    const externalRes = await externalSimilarityProvider.checkExternalSources(input);
-    allFindings.push(...externalRes.findings);
+    let externalRes: any = { score: 100, risk: FindingSeverity.PASS, matches: [], findings: [] };
+    try {
+      externalRes = await externalSimilarityProvider.checkExternalSources(input);
+      allFindings.push(...externalRes.findings);
+    } catch (err: any) {
+      allFindings.push({
+        category: FindingCategory.SIMILARITY,
+        severity: FindingSeverity.MEDIUM,
+        finding: "External similarity provider check encountered a partial failure.",
+        evidence: err?.message || "External provider unavailable.",
+        recommendation: "Check external news wires manually before approval.",
+      });
+    }
 
-    // Stage 6, 7 & 8: Semantic, Structure & Originality Analysis
-    const originalityRes = await this.aiProvider.analyzeOriginality(input);
-    allFindings.push(...originalityRes.findings);
+    // Stage 6, 7 & 8: Semantic, Structure & Originality Analysis (AI Provider)
+    let originalityRes: any = { score: 96.5, risk: FindingSeverity.PASS, findings: [] };
+    let structureRes: any = { score: 92.0, risk: FindingSeverity.PASS, findings: [] };
+    let aiFactsRes: any = { score: 98.0, risk: FindingSeverity.PASS, findings: [] };
+    let clickbaitRes: any = { score: 95.0, risk: FindingSeverity.PASS, findings: [] };
+    let qualityRes: any = { score: 95.0, risk: FindingSeverity.PASS, findings: [] };
+    let aiImageRes: any = { score: 100.0, risk: FindingSeverity.PASS, findings: [] };
 
-    const structureRes = await this.aiProvider.analyzeStructure(input);
-    allFindings.push(...structureRes.findings);
+    try {
+      originalityRes = await this.aiProvider.analyzeOriginality(input);
+      allFindings.push(...originalityRes.findings);
 
-    // Stage 9: Football Fact Consistency Check
-    const factCheckerRes = await factCheckerService.checkFootballFacts(input);
-    allFindings.push(...factCheckerRes.findings);
+      structureRes = await this.aiProvider.analyzeStructure(input);
+      allFindings.push(...structureRes.findings);
 
-    const aiFactsRes = await this.aiProvider.analyzeFacts(input);
-    allFindings.push(...aiFactsRes.findings);
+      aiFactsRes = await this.aiProvider.analyzeFacts(input);
+      allFindings.push(...aiFactsRes.findings);
 
-    // Stage 10: Clickbait Analysis
-    const clickbaitRes = await this.aiProvider.analyzeClickbait(input);
-    allFindings.push(...clickbaitRes.findings);
+      clickbaitRes = await this.aiProvider.analyzeClickbait(input);
+      allFindings.push(...clickbaitRes.findings);
 
-    // Stage 11: Spam / Quality Analysis
-    const qualityRes = await this.aiProvider.analyzeQuality(input);
-    allFindings.push(...qualityRes.findings);
+      qualityRes = await this.aiProvider.analyzeQuality(input);
+      allFindings.push(...qualityRes.findings);
+
+      aiImageRes = await this.aiProvider.analyzeImage(input);
+      allFindings.push(...aiImageRes.findings);
+    } catch (aiErr: any) {
+      // FAIL-SAFE: If AI Provider fails, NEVER fail-open. Flag for human review!
+      allFindings.push({
+        category: FindingCategory.QUALITY,
+        severity: FindingSeverity.HIGH,
+        finding: "AI Provider analysis failure or timeout occurred during manuscript processing.",
+        evidence: aiErr?.message || "AI Analysis Provider error.",
+        recommendation: "Human Editor must manually review this manuscript before any approval.",
+      });
+      qualityRes.score = 50.0;
+    }
+
+    // Stage 9: Football Fact Consistency Check (Sprint 2 Engine)
+    let factCheckerRes: any = { score: 100, risk: FindingSeverity.PASS, findings: [] };
+    try {
+      factCheckerRes = await factCheckerService.checkFootballFacts(input);
+      allFindings.push(...factCheckerRes.findings);
+    } catch (factErr: any) {
+      // Unknown or degraded data results in review notice, not silent pass
+      allFindings.push({
+        category: FindingCategory.FACT_CHECK,
+        severity: FindingSeverity.MEDIUM,
+        finding: "Football engine facts cross-reference partially unavailable.",
+        evidence: factErr?.message || "Football data service notice.",
+        recommendation: "Manually verify match telemetry.",
+      });
+    }
 
     // Stage 12, 13, 14, 15, 16: Image Copyright & Duplicate Verification
-    const imageComplianceRes = await imageGateService.checkImageCompliance(input);
-    allFindings.push(...imageComplianceRes.findings);
-
-    const aiImageRes = await this.aiProvider.analyzeImage(input);
-    allFindings.push(...aiImageRes.findings);
+    let imageComplianceRes: any = { score: 100, risk: FindingSeverity.PASS, findings: [] };
+    try {
+      imageComplianceRes = await imageGateService.checkImageCompliance(input);
+      allFindings.push(...imageComplianceRes.findings);
+    } catch (imgErr: any) {
+      allFindings.push({
+        category: FindingCategory.IMAGE_RIGHTS,
+        severity: FindingSeverity.HIGH,
+        finding: "Image copyright compliance validation encountered an error.",
+        evidence: imgErr?.message || "Image check error.",
+        recommendation: "Verify image rights license manually.",
+      });
+    }
 
     // Stage 17, 18 & 19: Deterministic Rules Engine & Composite Scores
     const rawScores = {
@@ -139,7 +202,7 @@ export class EditorialGateService {
     const evaluation = deterministicRulesEngine.evaluate(allFindings, rawScores);
     const completedAt = new Date();
 
-    // Persist Gate Run & Findings in Database
+    // Persist Gate Run & Findings in Database (Immutable Audit Log)
     let gateRun: any = null;
     try {
       gateRun = await prisma.editorialGateRun.create({
