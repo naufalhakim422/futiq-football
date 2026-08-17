@@ -2,6 +2,7 @@ export type RoleType =
   | "SUPER_ADMIN"
   | "EDITOR_IN_CHIEF"
   | "SENIOR_EDITOR"
+  | "FINANCE"
   | "CONTRIBUTOR"
   | "READER";
 

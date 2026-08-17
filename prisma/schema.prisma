@@ -20,6 +20,7 @@ enum RoleType {
   SUPER_ADMIN
   EDITOR_IN_CHIEF
   SENIOR_EDITOR
+  FINANCE
   CONTRIBUTOR
   READER
 }
@@ -504,6 +505,13 @@ enum NotificationType {
   ARTICLE_APPROVED
   ARTICLE_REJECTED
   ARTICLE_PUBLISHED
+  REWARD_FINALIZED
+  WITHDRAWAL_REQUESTED
+  WITHDRAWAL_APPROVED
+  WITHDRAWAL_REJECTED
+  PAYOUT_SENT
+  PAYOUT_FAILED
+  FRAUD_ALERT
 }
 
 model ContributorProfile {
@@ -529,6 +537,13 @@ model ContributorProfile {
   user               User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
   articles           Article[]
   analytics          ContributorAnalytics[]
+  wallet             Wallet?
+  rewards            ContributorReward[]
+  qualifiedViews     QualifiedView[]
+  withdrawals        WithdrawalRequest[]
+  payouts            Payout[]
+  fraudSignals       FraudSignal[]
+  financialAuditLogs FinancialAuditLog[]
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -618,6 +633,9 @@ model Article {
   analytics            ContributorAnalytics[]
   gateRuns             EditorialGateRun[]
   overrideLogs         EditorialOverrideLog[]
+  rewards              ContributorReward[]
+  qualifiedViews       QualifiedView[]
+  fraudSignals         FraudSignal[]
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
 
@@ -823,4 +841,323 @@ model EditorialOverrideLog {
   @@index([userId])
   @@map("editorial_override_logs")
 }
+
+// ==========================================
+// 5. CONTRIBUTOR REWARDS, WALLET, PAYOUT & FRAUD (SPRINT 5)
+// ==========================================
+
+enum Currency {
+  MYR
+  USD
+  GBP
+  EUR
+}
+
+enum QualifiedViewStatus {
+  PENDING
+  QUALIFIED
+  REJECTED
+  SUSPICIOUS
+}
+
+enum RewardStatus {
+  PENDING
+  CALCULATED
+  FINALIZED
+  CANCELLED
+  REVERSED
+}
+
+enum LedgerEntryType {
+  CREDIT
+  DEBIT
+  REVERSAL
+  ADJUSTMENT
+  WITHDRAWAL_HOLD
+  WITHDRAWAL_RELEASE
+  PAYOUT
+}
+
+enum WithdrawalStatus {
+  PENDING_REVIEW
+  WITHDRAWAL_HOLD
+  APPROVED
+  PROCESSING
+  PAID
+  REJECTED
+  CANCELLED
+}
+
+enum PayoutStatus {
+  PENDING_REVIEW
+  APPROVED
+  PROCESSING
+  PAID
+  FAILED
+  REJECTED
+}
+
+enum PayoutAttemptStatus {
+  PENDING
+  PROCESSING
+  SUCCESS
+  FAILED
+}
+
+enum FraudSignalSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum FraudSignalType {
+  HIGH_VIEW_VELOCITY
+  REPEATED_SESSION
+  BOT_PATTERN
+  DATACENTER_PATTERN
+  SUSPICIOUS_USER_AGENT
+  MULTIPLE_ACCOUNTS_PATTERN
+  ABNORMAL_COUNTRY_PATTERN
+  REFRESH_ABUSE
+  AUTOMATED_TRAFFIC
+}
+
+enum FinancialAuditAction {
+  REWARD_CALCULATED
+  REWARD_FINALIZED
+  WALLET_CREDIT
+  WITHDRAWAL_REQUESTED
+  WITHDRAWAL_APPROVED
+  WITHDRAWAL_REJECTED
+  WITHDRAWAL_CANCELLED
+  PAYOUT_CREATED
+  PAYOUT_PROCESSING
+  PAYOUT_PAID
+  PAYOUT_FAILED
+  ADJUSTMENT_CREATED
+  FRAUD_FLAGGED
+  PAYOUT_ACCOUNT_UPDATED
+}
+
+model QualifiedView {
+  id                   String              @id @default(cuid())
+  articleId            String
+  contributorProfileId String
+  sessionFingerprint   String // Anonymized/hashed session identifier
+  ipHash               String? // Anonymized SHA-256 IP hash
+  userAgentHash        String?
+  status               QualifiedViewStatus @default(PENDING)
+  rejectionReason      String?
+  readTimeSeconds      Int                 @default(0)
+  scrollDepthPercent   Int                 @default(0)
+  isBot                Boolean             @default(false)
+  rewardId             String?
+  article              Article             @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  contributorProfile   ContributorProfile  @relation(fields: [contributorProfileId], references: [id], onDelete: Cascade)
+  reward               ContributorReward?  @relation(fields: [rewardId], references: [id], onDelete: SetNull)
+  viewedAt             DateTime            @default(now())
+  createdAt            DateTime            @default(now())
+
+  @@index([articleId, status])
+  @@index([contributorProfileId, status])
+  @@index([sessionFingerprint, articleId])
+  @@index([viewedAt])
+  @@map("qualified_views")
+}
+
+model ContributorReward {
+  id                   String               @id @default(cuid())
+  contributorProfileId String
+  articleId            String
+  baseRewardMinor      Int                  @default(0) // Integer minor units (e.g. 500 = RM 5.00)
+  viewBonusMinor       Int                  @default(0)
+  qualityBonusMinor    Int                  @default(0)
+  breakingBonusMinor   Int                  @default(0)
+  totalRewardMinor     Int                  @default(0)
+  qualifiedViewsCount  Int                  @default(0)
+  qualityScore         Decimal              @default(0.0) @db.Decimal(5, 2)
+  currency             Currency             @default(MYR)
+  status               RewardStatus         @default(PENDING)
+  calculationVersion   String               @default("reward_v1")
+  calculationMetadata  Json?
+  finalizedAt          DateTime?
+  contributorProfile   ContributorProfile   @relation(fields: [contributorProfileId], references: [id], onDelete: Cascade)
+  article              Article              @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  qualifiedViews       QualifiedView[]
+  ledgerEntries        WalletLedgerEntry[]
+  createdAt            DateTime             @default(now())
+  updatedAt            DateTime             @updatedAt
+
+  @@unique([contributorProfileId, articleId, calculationVersion])
+  @@index([contributorProfileId, status])
+  @@index([articleId])
+  @@map("contributor_rewards")
+}
+
+model Wallet {
+  id                         String               @id @default(cuid())
+  contributorProfileId       String               @unique
+  availableBalanceMinor      Int                  @default(0)
+  heldBalanceMinor           Int                  @default(0) // Currently locked in pending withdrawal
+  lifetimeEarningsMinor      Int                  @default(0)
+  lifetimeWithdrawnMinor     Int                  @default(0)
+  currency                   Currency             @default(MYR)
+  payoutBankName             String?
+  payoutAccountNumberMasked  String?
+  payoutAccountHolderName    String?
+  payoutAccountUpdatedAt     DateTime?
+  payoutCooldownUntil        DateTime?
+  contributorProfile         ContributorProfile   @relation(fields: [contributorProfileId], references: [id], onDelete: Cascade)
+  ledgerEntries              WalletLedgerEntry[]
+  withdrawals                WithdrawalRequest[]
+  createdAt                  DateTime             @default(now())
+  updatedAt                  DateTime             @updatedAt
+
+  @@index([contributorProfileId])
+  @@map("wallets")
+}
+
+model WalletLedgerEntry {
+  id                  String              @id @default(cuid())
+  walletId            String
+  type                LedgerEntryType
+  amountMinor         Int // Positive integer minor unit
+  currency            Currency            @default(MYR)
+  balanceBeforeMinor  Int
+  balanceAfterMinor   Int
+  referenceId         String? // rewardId, withdrawalId, payoutId, or adjustmentId
+  referenceType       String? // "REWARD", "WITHDRAWAL", "PAYOUT", "ADJUSTMENT", "REVERSAL"
+  reason              String
+  actorId             String? // Admin/system user ID
+  rewardId            String?
+  withdrawalId        String?
+  wallet              Wallet              @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  reward              ContributorReward?  @relation(fields: [rewardId], references: [id], onDelete: SetNull)
+  withdrawal          WithdrawalRequest?  @relation(fields: [withdrawalId], references: [id], onDelete: SetNull)
+  createdAt           DateTime            @default(now())
+
+  @@index([walletId, createdAt])
+  @@index([referenceId])
+  @@map("wallet_ledger_entries")
+}
+
+model WithdrawalRequest {
+  id                   String              @id @default(cuid())
+  walletId             String
+  contributorProfileId String
+  amountMinor          Int
+  currency             Currency            @default(MYR)
+  status               WithdrawalStatus    @default(PENDING_REVIEW)
+  idempotencyKey       String?             @unique
+  rejectionReason      String?
+  bankName             String
+  accountNumberMasked  String
+  accountHolderName    String
+  reviewedByUserId     String?
+  reviewedAt           DateTime?
+  wallet               Wallet              @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  contributorProfile   ContributorProfile  @relation(fields: [contributorProfileId], references: [id], onDelete: Cascade)
+  payout               Payout?
+  ledgerEntries        WalletLedgerEntry[]
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  @@index([walletId])
+  @@index([contributorProfileId, status])
+  @@index([status])
+  @@map("withdrawal_requests")
+}
+
+model Payout {
+  id                   String              @id @default(cuid())
+  withdrawalRequestId  String              @unique
+  contributorProfileId String
+  amountMinor          Int
+  currency             Currency            @default(MYR)
+  status               PayoutStatus        @default(PENDING_REVIEW)
+  provider             String              @default("mock") // "mock-payout-provider"
+  providerReference    String?
+  approvedByUserId     String?
+  processedByUserId    String?
+  failureReason        String?
+  withdrawalRequest    WithdrawalRequest   @relation(fields: [withdrawalRequestId], references: [id], onDelete: Cascade)
+  contributorProfile   ContributorProfile  @relation(fields: [contributorProfileId], references: [id], onDelete: Cascade)
+  attempts             PayoutAttempt[]
+  paidAt               DateTime?
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  @@index([contributorProfileId, status])
+  @@index([status])
+  @@map("payouts")
+}
+
+model PayoutAttempt {
+  id                String              @id @default(cuid())
+  payoutId          String
+  attemptNumber     Int                 @default(1)
+  provider          String              @default("mock")
+  providerReference String?
+  amountMinor       Int
+  currency          Currency            @default(MYR)
+  status            PayoutAttemptStatus @default(PENDING)
+  errorCode         String?
+  errorMessage      String?
+  payout            Payout              @relation(fields: [payoutId], references: [id], onDelete: Cascade)
+  startedAt         DateTime            @default(now())
+  completedAt       DateTime?
+  createdAt         DateTime            @default(now())
+
+  @@index([payoutId])
+  @@map("payout_attempts")
+}
+
+model FraudSignal {
+  id                   String              @id @default(cuid())
+  contributorProfileId String
+  articleId            String?
+  signalType           FraudSignalType
+  severity             FraudSignalSeverity @default(LOW)
+  riskScore            Int                 @default(0) // 0 to 100
+  evidence             String
+  metadata             Json?
+  isResolved           Boolean             @default(false)
+  resolvedByUserId     String?
+  resolutionNotes      String?
+  contributorProfile   ContributorProfile  @relation(fields: [contributorProfileId], references: [id], onDelete: Cascade)
+  article              Article?            @relation(fields: [articleId], references: [id], onDelete: SetNull)
+  createdAt            DateTime            @default(now())
+  updatedAt            DateTime            @updatedAt
+
+  @@index([contributorProfileId, isResolved])
+  @@index([severity])
+  @@map("fraud_signals")
+}
+
+model FinancialAuditLog {
+  id                   String                @id @default(cuid())
+  action               FinancialAuditAction
+  actorId              String? // User ID who performed action
+  contributorProfileId String?
+  entityType           String // "REWARD", "WALLET", "WITHDRAWAL", "PAYOUT", "ADJUSTMENT", "FRAUD"
+  entityId             String
+  amountMinor          Int?
+  currency             Currency?             @default(MYR)
+  previousState        Json?
+  newState             Json?
+  reason               String?
+  ipAddress            String?
+  userAgent            String?
+  contributorProfile   ContributorProfile?   @relation(fields: [contributorProfileId], references: [id], onDelete: SetNull)
+  createdAt            DateTime              @default(now())
+
+  @@index([action])
+  @@index([actorId])
+  @@index([contributorProfileId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+  @@map("financial_audit_logs")
+}
+
 

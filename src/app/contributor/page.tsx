@@ -19,6 +19,7 @@ import {
   ShieldCheck,
   ChevronRight,
   Layers,
+  DollarSign,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -89,6 +90,13 @@ export default async function ContributorDashboardPage() {
             </div>
 
             <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+              <Link
+                href="/contributor/earnings"
+                className="px-3.5 py-2 text-xs font-semibold text-emerald-400 bg-emerald-950/40 hover:bg-emerald-900/40 border border-emerald-800/60 flex items-center gap-2 transition-colors active:scale-[0.99]"
+              >
+                <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Earnings & Wallet</span>
+              </Link>
               <Link
                 href="/contributor/notifications"
                 className="px-3.5 py-2 text-xs font-semibold text-slate-300 bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 flex items-center gap-2 transition-colors active:scale-[0.99]"

@@ -69,6 +69,36 @@ export default async function AdminPortalPage() {
               <p className="text-[10px] text-slate-500">Transactional Activity Logs</p>
             </div>
           </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+            <a
+              href="/admin/finance"
+              className="p-5 bg-pitch-950 border border-pitch-800 hover:border-emerald-500/50 transition-colors block group"
+            >
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition-colors">
+                  Finance & Payout Command Center →
+                </h4>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Manage contributor rewards, verify double-entry wallet liabilities, review withdrawal requests, and disburse payouts.
+              </p>
+            </a>
+
+            <a
+              href="/admin/football"
+              className="p-5 bg-pitch-950 border border-pitch-800 hover:border-pitch-gold/50 transition-colors block group"
+            >
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold text-slate-100 group-hover:text-pitch-gold transition-colors">
+                  Football Sync & Telemetry Engine →
+                </h4>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Trigger full data synchronization, inspect provider health, and manage competition cache invalidation.
+              </p>
+            </a>
+          </div>
         </div>
       </PageContainer>
     </div>
