@@ -132,10 +132,14 @@ export class AdPlacementService {
    * List all ad placements for admin management
    */
   public async listPlacements() {
-    return await prisma.adPlacement.findMany({
-      include: { provider: true, schedules: true },
-      orderBy: { createdAt: "desc" },
-    });
+    try {
+      return await prisma.adPlacement.findMany({
+        include: { provider: true, schedules: true },
+        orderBy: { createdAt: "desc" },
+      });
+    } catch {
+      return [];
+    }
   }
 
   /**

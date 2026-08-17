@@ -8,6 +8,8 @@ import { ArticleSummary } from "@/types/article";
 import { footballService } from "@/lib/football/football.service";
 import Link from "next/link";
 import { Flame, ArrowUpRight, Shield, Zap } from "lucide-react";
+import { AdSlotBanner } from "@/components/ads/AdSlotBanner";
+import { AdPlacementPosition } from "@prisma/client";
 
 export const revalidate = 60; // 1 minute ISR
 
@@ -80,6 +82,11 @@ export default async function HomePage() {
 
   return (
     <div className="space-y-10 py-6">
+      {/* Top Billboard Sponsor Placement */}
+      <PageContainer>
+        <AdSlotBanner position={AdPlacementPosition.HOME_TOP} className="mb-6" />
+      </PageContainer>
+
       {/* Editorial Lead Section */}
       <PageContainer>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -139,6 +146,11 @@ export default async function HomePage() {
             </div>
           </div>
         </div>
+      </PageContainer>
+
+      {/* Mid-Feed In-Stream Ad Placement */}
+      <PageContainer>
+        <AdSlotBanner position={AdPlacementPosition.HOME_MIDDLE} />
       </PageContainer>
 
       {/* Primary Content Grid */}

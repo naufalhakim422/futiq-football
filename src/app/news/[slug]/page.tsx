@@ -4,7 +4,8 @@ import { prisma } from "@/lib/db";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { ExternalLink, User, Clock, ShieldCheck, Share2, ArrowLeft, BookOpen, Layers } from "lucide-react";
 import Link from "next/link";
-import { ArticleStatus } from "@prisma/client";
+import { ArticleStatus, AdPlacementPosition } from "@prisma/client";
+import { AdSlotBanner } from "@/components/ads/AdSlotBanner";
 
 interface ArticleDetailPageProps {
   params: Promise<{ slug: string }>;
@@ -100,6 +101,9 @@ As clubs adjust their wage structures and long-term financial modeling, squad de
             </span>
           </div>
 
+          {/* Top Article Billboard Banner */}
+          <AdSlotBanner position={AdPlacementPosition.ARTICLE_TOP} />
+
           {/* Article Header */}
           <header className="space-y-4">
             <div className="flex flex-wrap items-center gap-2">
@@ -179,6 +183,9 @@ As clubs adjust their wage structures and long-term financial modeling, squad de
           <div className="prose prose-invert max-w-none text-slate-200 text-sm sm:text-base leading-relaxed whitespace-pre-line font-sans space-y-4">
             {article.body}
           </div>
+
+          {/* End of Article Sponsor Banner */}
+          <AdSlotBanner position={AdPlacementPosition.ARTICLE_BOTTOM} />
 
           {/* Editorial Sources & Verified References */}
           {article.sources && article.sources.length > 0 && (
