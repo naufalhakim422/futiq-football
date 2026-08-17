@@ -40,8 +40,12 @@ model User {
   articles           Article[]
   editorialReviews   EditorialReview[]
   notifications      ContributorNotification[]
-  overrideLogs       EditorialOverrideLog[]
-  createdAt          DateTime                  @default(now())
+  overrideLogs          EditorialOverrideLog[]
+  favoriteTeams         UserFavoriteTeam[]
+  favoritePlayers       UserFavoritePlayer[]
+  favoriteCompetitions  UserFavoriteCompetition[]
+  notificationPreference NotificationPreference?
+  createdAt             DateTime                  @default(now())
   updatedAt          DateTime                  @updatedAt
 
   @@index([email])
@@ -166,6 +170,7 @@ model Competition {
   seasons     CompetitionSeason[]
   matches     Match[]
   articles    Article[]
+  favoritedBy UserFavoriteCompetition[]
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @updatedAt
 
@@ -232,6 +237,7 @@ model Team {
   lineups       MatchLineup[]
   events        MatchEvent[]
   articles      Article[]
+  favoritedBy   UserFavoriteTeam[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -276,6 +282,7 @@ model Player {
   events       MatchEvent[]      @relation("PlayerEvents")
   assistEvents MatchEvent[]      @relation("AssistPlayerEvents")
   articles     Article[]
+  favoritedBy  UserFavoritePlayer[]
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
 
@@ -643,6 +650,7 @@ model Article {
   qualifiedViews       QualifiedView[]
   fraudSignals         FraudSignal[]
   articleAnalytics     ArticleAnalytics[]
+  trendScore           ArticleTrendScore?
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
 
@@ -1462,6 +1470,119 @@ model KycWebhookEvent {
   @@index([provider, isProcessed])
   @@map("kyc_webhook_events")
 }
+
+// ==========================================
+// 8. GROWTH, SEO & CONTENT DISTRIBUTION (SPRINT 7)
+// ==========================================
+
+model UserFavoriteTeam {
+  id        String   @id @default(cuid())
+  userId    String
+  teamId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, teamId])
+  @@index([userId])
+  @@index([teamId])
+  @@map("user_favorite_teams")
+}
+
+model UserFavoritePlayer {
+  id        String   @id @default(cuid())
+  userId    String
+  playerId  String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  player    Player   @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, playerId])
+  @@index([userId])
+  @@index([playerId])
+  @@map("user_favorite_players")
+}
+
+model UserFavoriteCompetition {
+  id            String      @id @default(cuid())
+  userId        String
+  competitionId String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@unique([userId, competitionId])
+  @@index([userId])
+  @@index([competitionId])
+  @@map("user_favorite_competitions")
+}
+
+model NotificationPreference {
+  id                 String   @id @default(cuid())
+  userId             String   @unique
+  breakingNews       Boolean  @default(true)
+  transfers          Boolean  @default(true)
+  matchResults       Boolean  @default(true)
+  favoriteClubs      Boolean  @default(true)
+  articlePublished   Boolean  @default(true)
+  financialPayouts   Boolean  @default(true)
+  emailNotifications Boolean  @default(true)
+  pushNotifications  Boolean  @default(true)
+  inAppNotifications Boolean  @default(true)
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("notification_preferences")
+}
+
+model UrlRedirect {
+  id              String    @id @default(cuid())
+  sourcePath      String    @unique // e.g. "/news/old-slug"
+  targetPath      String    // e.g. "/news/new-slug"
+  statusCode      Int       @default(301) // 301 or 302
+  isActive        Boolean   @default(true)
+  hitCount        Int       @default(0)
+  lastHitAt       DateTime?
+  createdByUserId String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([sourcePath, isActive])
+  @@map("url_redirects")
+}
+
+model ArticleTrendScore {
+  id                 String   @id @default(cuid())
+  articleId          String   @unique
+  score              Decimal  @default(0.0) @db.Decimal(10, 4)
+  recencyScore       Decimal  @default(0.0) @db.Decimal(10, 4)
+  engagementScore    Decimal  @default(0.0) @db.Decimal(10, 4)
+  qualifiedReadScore Decimal  @default(0.0) @db.Decimal(10, 4)
+  shareScore         Decimal  @default(0.0) @db.Decimal(10, 4)
+  article            Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  updatedAt          DateTime @updatedAt
+
+  @@index([score])
+  @@map("article_trend_scores")
+}
+
+model SeoGlobalSetting {
+  id                     String   @id @default(cuid())
+  siteName               String   @default("Football Media Platform")
+  defaultTitle           String   @default("Football Media Platform | Live Scores, News & Tactical Analysis")
+  defaultDescription     String   @default("Comprehensive football journalism, live scores, tactical insights, and real-time transfer news.")
+  canonicalDomain        String   @default("https://football.example.com")
+  defaultOgImageUrl      String   @default("/images/og-default.jpg")
+  twitterHandle          String   @default("@footballmedia")
+  googleSiteVerification String?
+  isDiscoverOptimized    Boolean  @default(true)
+  updatedByUserId        String?
+  updatedAt              DateTime @updatedAt
+
+  @@map("seo_global_settings")
+}
+
 
 
 

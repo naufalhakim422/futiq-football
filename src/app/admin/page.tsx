@@ -126,6 +126,20 @@ export default async function AdminPortalPage() {
                 Full provider synchronization and cache invalidation controls.
               </p>
             </a>
+
+            <a
+              href="/admin/seo"
+              className="p-5 bg-pitch-950 border border-pitch-800 hover:border-brand-green/50 transition-colors block group sm:col-span-2 lg:col-span-4"
+            >
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold text-slate-100 group-hover:text-brand-green transition-colors">
+                  Growth, SEO & Content Distribution Engine →
+                </h4>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Google Discover readiness checklist, dynamic XML sitemaps, RSS 2.0 syndication feeds, and safe 301/302 URL redirects.
+              </p>
+            </a>
           </div>
         </div>
       </PageContainer>
