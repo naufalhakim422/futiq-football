@@ -2,32 +2,135 @@ import React from "react";
 import { getCurrentUser } from "@/lib/auth/session";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { SectionHeader } from "@/components/layout/SectionHeader";
-import { ShieldAlert, Users, Database, Layers, Lock } from "lucide-react";
+import Link from "next/link";
+import {
+  ShieldAlert,
+  Users,
+  Database,
+  Layers,
+  Lock,
+  ShieldCheck,
+  Cpu,
+  KeyRound,
+  Server,
+  ArrowRight,
+  TrendingUp,
+  DollarSign,
+  Globe,
+  Radio,
+  FileCheck,
+} from "lucide-react";
+
+export const dynamic = "force-dynamic";
 
 export default async function AdminPortalPage() {
   const user = await getCurrentUser();
   const isAdmin = user?.roles.includes("SUPER_ADMIN");
 
+  // ============================================================================
+  // 1. UNAUTHENTICATED / PRIVATE ADMIN ACCESS GATEWAY
+  // ============================================================================
+  if (!user || !isAdmin) {
+    return (
+      <div className="py-12 md:py-16">
+        <PageContainer>
+          <div className="max-w-3xl mx-auto space-y-8">
+            {/* Masthead */}
+            <div className="text-center space-y-3">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-red/10 border border-brand-red/30 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-red">
+                <Lock className="w-3.5 h-3.5" />
+                <span>Level-1 Security Zone • SUPER_ADMIN Required</span>
+              </div>
+              <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-100 font-sans tracking-tight">
+                Platform Administration Console
+              </h1>
+              <p className="text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
+                This private backoffice terminal is restricted to authorized platform administrators, infrastructure engineers, and senior finance officers.
+              </p>
+            </div>
+
+            {/* Security Notice & Protocol Card */}
+            <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 shadow-2xl space-y-6">
+              <div className="flex items-start gap-4 pb-6 border-b border-pitch-800">
+                <div className="w-12 h-12 bg-pitch-850 border border-pitch-750 text-brand-green flex items-center justify-center shrink-0">
+                  <KeyRound className="w-6 h-6" />
+                </div>
+                <div className="space-y-1">
+                  <h3 className="text-base font-bold text-slate-100 font-sans">
+                    Cryptographic Session & RBAC Verification
+                  </h3>
+                  <p className="text-xs text-slate-400 leading-relaxed font-sans">
+                    Access requires an active HTTP-only cryptographic session cookie with explicit <code className="text-brand-green font-mono">SUPER_ADMIN</code> role clearance. All administrative actions are recorded into immutable audit logs.
+                  </p>
+                </div>
+              </div>
+
+              {/* Protocol Spec Matrix */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
+                <div className="p-3.5 bg-pitch-950 border border-pitch-800 space-y-1">
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Session State</span>
+                  <div className="text-sm font-bold text-brand-red">UNAUTHENTICATED</div>
+                  <span className="text-[9px] text-slate-500">Cookie signature required</span>
+                </div>
+
+                <div className="p-3.5 bg-pitch-950 border border-pitch-800 space-y-1">
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Database Security</span>
+                  <div className="text-sm font-bold text-brand-green">ISOLATED</div>
+                  <span className="text-[9px] text-slate-500">Zero public port exposure</span>
+                </div>
+
+                <div className="p-3.5 bg-pitch-950 border border-pitch-800 space-y-1">
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Ledger Guard</span>
+                  <div className="text-sm font-bold text-slate-200">INTEGER-MATH</div>
+                  <span className="text-[9px] text-slate-500">Server-authoritative balance</span>
+                </div>
+
+                <div className="p-3.5 bg-pitch-950 border border-pitch-800 space-y-1">
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Audit Trail</span>
+                  <div className="text-sm font-bold text-emerald-400">ACTIVE</div>
+                  <span className="text-[9px] text-slate-500">IP & timestamp recorded</span>
+                </div>
+              </div>
+
+              <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-pitch-800">
+                <Link
+                  href="/"
+                  className="w-full sm:w-auto px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-300 bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 text-center transition-colors"
+                >
+                  Return to Public Media Site
+                </Link>
+                <span className="text-[10px] text-slate-500 font-mono">
+                  Antigravity Security Engine v1.0
+                </span>
+              </div>
+            </div>
+          </div>
+        </PageContainer>
+      </div>
+    );
+  }
+
+  // ============================================================================
+  // 2. AUTHENTICATED SUPER_ADMIN MASTER CONSOLE
+  // ============================================================================
   return (
     <div className="py-8 space-y-8">
       <PageContainer>
         <SectionHeader
           title="Platform Administration & Security Operations"
           subtitle="System configuration, RBAC management, audit trails, and infrastructure telemetry"
-          badgeText="Protected Root"
+          badgeText="Super Admin Root"
         />
 
-        <div className="bg-pitch-900 border border-pitch-800 p-6 space-y-6">
+        <div className="bg-pitch-900 border border-pitch-800 p-6 space-y-6 shadow-xl">
           <div className="flex items-center gap-3 p-4 bg-pitch-950 border border-pitch-800">
-            <Lock className="w-5 h-5 text-brand-red" />
+            <Lock className="w-5 h-5 text-brand-green" />
             <div>
               <h4 className="text-sm font-bold text-slate-100 font-sans">
                 RBAC Security Zone & Server Authorization
               </h4>
-              <p className="text-xs text-slate-400">
-                {isAdmin
-                  ? `Authenticated as SUPER_ADMIN: ${user?.email}`
-                  : "Restricted Area — Requires SUPER_ADMIN privileges verified via server-side session cookies."}
+              <p className="text-xs text-brand-green font-mono">
+                Authenticated as SUPER_ADMIN: {user.fullName} ({user.email})
               </p>
             </div>
           </div>
@@ -71,7 +174,7 @@ export default async function AdminPortalPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
-            <a
+            <Link
               href="/admin/finance"
               className="p-5 bg-pitch-950 border border-pitch-800 hover:border-emerald-500/50 transition-colors block group"
             >
@@ -83,9 +186,9 @@ export default async function AdminPortalPage() {
               <p className="text-xs text-slate-400 mt-1">
                 Auto-payout rules, manual review queues, and gateway reconciliation.
               </p>
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/admin/advertising"
               className="p-5 bg-pitch-950 border border-pitch-800 hover:border-pitch-gold/50 transition-colors block group"
             >
@@ -97,9 +200,9 @@ export default async function AdminPortalPage() {
               <p className="text-xs text-slate-400 mt-1">
                 Sandboxed sponsor slots, device targeting, and placement schedules.
               </p>
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/admin/analytics"
               className="p-5 bg-pitch-950 border border-pitch-800 hover:border-blue-500/50 transition-colors block group"
             >
@@ -111,9 +214,9 @@ export default async function AdminPortalPage() {
               <p className="text-xs text-slate-400 mt-1">
                 Privacy-preserving traffic, ad click-through rates, and estimated RPM.
               </p>
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/admin/football"
               className="p-5 bg-pitch-950 border border-pitch-800 hover:border-purple-500/50 transition-colors block group"
             >
@@ -125,9 +228,9 @@ export default async function AdminPortalPage() {
               <p className="text-xs text-slate-400 mt-1">
                 Full provider synchronization and cache invalidation controls.
               </p>
-            </a>
+            </Link>
 
-            <a
+            <Link
               href="/admin/seo"
               className="p-5 bg-pitch-950 border border-pitch-800 hover:border-brand-green/50 transition-colors block group sm:col-span-2 lg:col-span-4"
             >
@@ -139,7 +242,7 @@ export default async function AdminPortalPage() {
               <p className="text-xs text-slate-400 mt-1">
                 Google Discover readiness checklist, dynamic XML sitemaps, RSS 2.0 syndication feeds, and safe 301/302 URL redirects.
               </p>
-            </a>
+            </Link>
           </div>
         </div>
       </PageContainer>
