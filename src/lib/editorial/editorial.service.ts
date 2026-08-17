@@ -4,10 +4,12 @@ import {
   ReviewDecision,
   SubmissionStatus,
   NotificationType,
+  GateStatus,
 } from "@prisma/client";
 
 export interface ReviewQueueFilters {
   status?: ArticleStatus;
+  gateStatus?: GateStatus;
   category?: string;
   page?: number;
   limit?: number;
@@ -38,7 +40,6 @@ export class EditorialService {
     if (filters?.status) {
       where.status = filters.status;
     } else {
-      // Default to articles needing editorial attention
       where.status = {
         in: [
           ArticleStatus.SUBMITTED,
@@ -48,6 +49,10 @@ export class EditorialService {
           ArticleStatus.REJECTED,
         ],
       };
+    }
+
+    if (filters?.gateStatus) {
+      where.gateStatus = filters.gateStatus;
     }
 
     if (filters?.category) {
@@ -79,6 +84,18 @@ export class EditorialService {
             },
           },
           sources: true,
+          gateRuns: {
+            orderBy: { createdAt: "desc" },
+            take: 1,
+            select: {
+              id: true,
+              status: true,
+              overallScore: true,
+              originalityScore: true,
+              factScore: true,
+              summary: true,
+            },
+          },
           submissions: {
             orderBy: { submittedAt: "desc" },
             take: 1,
@@ -134,6 +151,26 @@ export class EditorialService {
             },
           },
         },
+        gateRuns: {
+          orderBy: { createdAt: "desc" },
+          include: {
+            findings: {
+              orderBy: { severity: "desc" },
+            },
+          },
+        },
+        overrideLogs: {
+          orderBy: { createdAt: "desc" },
+          include: {
+            user: {
+              select: {
+                id: true,
+                fullName: true,
+                email: true,
+              },
+            },
+          },
+        },
         competition: { select: { id: true, name: true, code: true } },
         team: { select: { id: true, name: true, tla: true } },
         player: { select: { id: true, name: true, position: true } },
@@ -142,7 +179,7 @@ export class EditorialService {
   }
 
   /**
-   * Approve an article in review
+   * Approve an article in review with PUBLISH GATE ENFORCEMENT
    */
   public async approveArticle(
     reviewerId: string,
@@ -157,6 +194,14 @@ export class EditorialService {
           orderBy: { submittedAt: "desc" },
           take: 1,
         },
+        gateRuns: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
+        overrideLogs: {
+          orderBy: { createdAt: "desc" },
+          take: 1,
+        },
       },
     });
 
@@ -165,6 +210,24 @@ export class EditorialService {
     // Contributor cannot self-approve
     if (article.authorId === reviewerId) {
       throw new Error("Security Violation: Contributors cannot approve their own articles.");
+    }
+
+    // PUBLISH GATE ENFORCEMENT
+    const latestGateStatus = article.gateStatus;
+    const hasAuthorizedOverride = article.overrideLogs && article.overrideLogs.length > 0;
+
+    if (!hasAuthorizedOverride) {
+      if (latestGateStatus === GateStatus.NOT_RUN || latestGateStatus === GateStatus.CHECKING) {
+        throw new Error(
+          `Publish Gate Blocked: AI Editorial Gate has not completed analysis (Status: ${latestGateStatus}). Run the gate before approving.`
+        );
+      }
+
+      if (latestGateStatus === GateStatus.REJECTED) {
+        throw new Error(
+          "Publish Gate Blocked: Article was REJECTED by the AI Editorial Gate due to critical copyright/originality/factual violations. Super Admin override required."
+        );
+      }
     }
 
     const latestSubmission = article.submissions[0];
@@ -237,7 +300,6 @@ export class EditorialService {
 
     if (!article) throw new Error("Article not found.");
 
-    // Contributor cannot review own article
     if (article.authorId === reviewerId) {
       throw new Error("Security Violation: Contributors cannot review their own articles.");
     }
@@ -354,12 +416,22 @@ export class EditorialService {
   public async publishArticle(reviewerId: string, articleId: string) {
     const article = await prisma.article.findUnique({
       where: { id: articleId },
+      include: {
+        overrideLogs: {
+          take: 1,
+        },
+      },
     });
 
     if (!article) throw new Error("Article not found.");
 
-    if (article.status !== ArticleStatus.APPROVED && article.status !== ArticleStatus.DRAFT) {
-      throw new Error(`Cannot publish article in "${article.status}" state.`);
+    if (article.status !== ArticleStatus.APPROVED) {
+      throw new Error(`Cannot publish article in "${article.status}" state. Article must be APPROVED.`);
+    }
+
+    const hasOverride = article.overrideLogs && article.overrideLogs.length > 0;
+    if (article.gateStatus === GateStatus.REJECTED && !hasOverride) {
+      throw new Error("Cannot publish article: AI Editorial Gate is REJECTED without authorized admin override.");
     }
 
     const updated = await prisma.article.update({
@@ -381,6 +453,52 @@ export class EditorialService {
     });
 
     return updated;
+  }
+
+  /**
+   * Super Admin / Senior Editor Override for AI Editorial Gate
+   * Mandates an audit log entry with explicit reason.
+   */
+  public async overrideGate(
+    userId: string,
+    articleId: string,
+    decision: ReviewDecision,
+    reason: string,
+    ipAddress?: string
+  ) {
+    if (!reason || reason.trim().length < 10) {
+      throw new Error("Administrative override requires a comprehensive justification reason (minimum 10 characters).");
+    }
+
+    const article = await prisma.article.findUnique({
+      where: { id: articleId },
+    });
+
+    if (!article) throw new Error("Article not found.");
+
+    // Create immutable audit log
+    const overrideLog = await prisma.editorialOverrideLog.create({
+      data: {
+        articleId,
+        userId,
+        previousGateStatus: article.gateStatus,
+        newDecision: decision,
+        reason: reason.trim(),
+        ipAddress: ipAddress || null,
+      },
+    });
+
+    // Update article gate status to PASSED if decision was APPROVE
+    const updatedGateStatus = decision === ReviewDecision.APPROVE ? GateStatus.PASSED : article.gateStatus;
+
+    const updatedArticle = await prisma.article.update({
+      where: { id: articleId },
+      data: {
+        gateStatus: updatedGateStatus,
+      },
+    });
+
+    return { overrideLog, article: updatedArticle };
   }
 }
 

@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ReviewActionPanel } from "./ReviewActionPanel";
+import { AIGateConsole } from "./AIGateConsole";
 
 export const dynamic = "force-dynamic";
 
@@ -170,44 +171,18 @@ export default async function ArticleReviewDetailPage({ params }: ArticleReviewP
             </div>
           </div>
 
-          {/* Right Column: Decision Action Console & Intelligence */}
+          {/* Right Column: AI Gate, Decision Action Console & Intelligence */}
           <div className="lg:col-span-4 space-y-6">
+            {/* Live AI Editorial Gate Console */}
+            <AIGateConsole
+              articleId={article.id}
+              gateStatus={article.gateStatus}
+              initialGateRun={article.gateRuns?.[0]}
+              userRoles={user?.roles || []}
+            />
+
             {/* Decision Action Console */}
             <ReviewActionPanel articleId={article.id} currentStatus={article.status} />
-
-            {/* AI Editorial Gate (Sprint 4 Placeholder) */}
-            <div className="bg-pitch-900 border border-pitch-800 p-5 space-y-4 shadow-xl font-mono text-xs">
-              <div className="flex items-center justify-between pb-3 border-b border-pitch-800">
-                <div className="flex items-center gap-2">
-                  <Cpu className="w-4 h-4 text-brand-green" />
-                  <span className="font-bold text-slate-200 uppercase tracking-wider">
-                    AI Editorial Gate
-                  </span>
-                </div>
-                <span className="px-2 py-0.5 text-[9px] font-bold bg-pitch-950 text-slate-400 border border-pitch-800">
-                  STATUS: NOT_RUN
-                </span>
-              </div>
-
-              <div className="space-y-2 text-[11px] text-slate-400">
-                <div className="flex justify-between py-1.5 border-b border-pitch-850">
-                  <span>Plagiarism Similarity:</span>
-                  <span className="text-slate-500 font-bold">— (Sprint 4 Gate)</span>
-                </div>
-                <div className="flex justify-between py-1.5 border-b border-pitch-850">
-                  <span>Image Duplication Audit:</span>
-                  <span className="text-slate-500 font-bold">— (Sprint 4 Gate)</span>
-                </div>
-                <div className="flex justify-between py-1.5">
-                  <span>Source Verification Feed:</span>
-                  <span className="text-slate-500 font-bold">— (Sprint 4 Gate)</span>
-                </div>
-              </div>
-
-              <p className="text-[10px] text-slate-500 italic leading-relaxed pt-1">
-                Automated AI vector similarity, OCR verification, and copyright checks will be integrated in Sprint 4.
-              </p>
-            </div>
 
             {/* Author Credibility Dossier */}
             <div className="bg-pitch-900 border border-pitch-800 p-5 space-y-4 shadow-xl font-mono text-xs">

@@ -24,6 +24,8 @@ const inMemoryDb = {
   submissions: new Map<string, any>(),
   reviews: new Map<string, any>(),
   notifications: new Map<string, any[]>(),
+  gateRuns: new Map<string, any[]>(),
+  overrideLogs: new Map<string, any[]>(),
   users: new Map<string, any>([
     ["user-a", { id: "user-a", email: "author-a@example.com", fullName: "Author Alpha", roles: [] }],
     ["user-b", { id: "user-b", email: "author-b@example.com", fullName: "Author Beta", roles: [] }],
@@ -118,6 +120,8 @@ function mockPrisma() {
         revisions: include?.revisions ? revisions : undefined,
         submissions: include?.submissions ? submissions : undefined,
         reviews: include?.reviews ? reviews : undefined,
+        gateRuns: inMemoryDb.gateRuns.get(art.id) || [],
+        overrideLogs: inMemoryDb.overrideLogs.get(art.id) || [],
         author: inMemoryDb.users.get(art.authorId) || { id: art.authorId, fullName: "Author", email: "author@fmp.com" },
       };
     },
@@ -125,6 +129,7 @@ function mockPrisma() {
       const id = `art_${Date.now()}_${Math.random().toString().slice(2, 6)}`;
       const record = {
         id,
+        gateStatus: "NOT_RUN",
         ...data,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -231,12 +236,9 @@ function mockPrisma() {
 
   (prisma as any).contributorNotification = {
     create: async ({ data }: any) => {
-      const id = `notif_${Date.now()}_${Math.random()}`;
-      const record = { id, ...data, isRead: false, createdAt: new Date() };
       const list = inMemoryDb.notifications.get(data.userId) || [];
-      list.push(record);
-      inMemoryDb.notifications.set(data.userId, list);
-      return record;
+      inMemoryDb.notifications.set(data.userId, [data, ...list]);
+      return data;
     },
     findMany: async ({ where }: any) => inMemoryDb.notifications.get(where.userId) || [],
     findUnique: async ({ where }: any) => {
@@ -248,11 +250,37 @@ function mockPrisma() {
     },
     update: async ({ where, data }: any) => {
       for (const list of Array.from(inMemoryDb.notifications.values())) {
-        const item = list.find((n: any) => n.id === where.id);
-        if (item) Object.assign(item, data);
-        return item;
+        const idx = list.findIndex((n: any) => n.id === where.id);
+        if (idx >= 0) {
+          list[idx] = { ...list[idx], ...data };
+          return list[idx];
+        }
       }
       return null;
+    },
+  };
+
+  (prisma as any).editorialGateRun = {
+    create: async ({ data }: any) => {
+      const id = `gr_${Date.now()}`;
+      const record = { id, ...data, createdAt: new Date() };
+      const list = inMemoryDb.gateRuns.get(data.articleId) || [];
+      inMemoryDb.gateRuns.set(data.articleId, [record, ...list]);
+      return record;
+    },
+    findFirst: async ({ where }: any) => {
+      const list = inMemoryDb.gateRuns.get(where.articleId) || [];
+      return list[0] || null;
+    },
+  };
+
+  (prisma as any).editorialOverrideLog = {
+    create: async ({ data }: any) => {
+      const id = `ovr_${Date.now()}`;
+      const record = { id, ...data, createdAt: new Date() };
+      const list = inMemoryDb.overrideLogs.get(data.articleId) || [];
+      inMemoryDb.overrideLogs.set(data.articleId, [record, ...list]);
+      return record;
     },
   };
 }

@@ -9,6 +9,7 @@ import {
   ContributorStatus,
   ApplicationStatus,
 } from "@prisma/client";
+import { editorialGateService } from "@/lib/editorial/ai-gate/editorial-gate.service";
 
 export interface CreateApplicationInput {
   fullName: string;
@@ -536,6 +537,13 @@ export class ContributorService {
         linkUrl: `/contributor/articles/${article.id}/edit`,
       },
     });
+
+    // 5. Trigger AI Editorial Gate Pipeline automatically
+    try {
+      await editorialGateService.runGate(articleId, submission.id);
+    } catch (gateErr) {
+      console.warn(`[AI Editorial Gate Warning on submit]:`, gateErr);
+    }
 
     return { submission, article: updatedArticle };
   }

@@ -39,6 +39,7 @@ model User {
   articles           Article[]
   editorialReviews   EditorialReview[]
   notifications      ContributorNotification[]
+  overrideLogs       EditorialOverrideLog[]
   createdAt          DateTime                  @default(now())
   updatedAt          DateTime                  @updatedAt
 
@@ -590,6 +591,7 @@ model Article {
   imageAttribution     String?
   imageSource          String?
   status               ArticleStatus          @default(DRAFT)
+  gateStatus           GateStatus             @default(NOT_RUN)
   category             String // e.g. "Tactical Analysis", "Match Report", "Transfers"
   tags                 Json                   @default("[]") // Array of string tags
   seoTitle             String?
@@ -614,12 +616,15 @@ model Article {
   submissions          ArticleSubmission[]
   reviews              EditorialReview[]
   analytics            ContributorAnalytics[]
+  gateRuns             EditorialGateRun[]
+  overrideLogs         EditorialOverrideLog[]
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
 
   @@index([slug])
   @@index([authorId])
   @@index([status])
+  @@index([gateStatus])
   @@index([category])
   @@index([publishedAt])
   @@map("articles")
@@ -722,3 +727,100 @@ model ContributorAnalytics {
   @@index([articleId])
   @@map("contributor_analytics")
 }
+
+// ==========================================
+// 4. AI EDITORIAL GATE & COPYRIGHT PROTECTION (SPRINT 4)
+// ==========================================
+
+enum GateStatus {
+  NOT_RUN
+  CHECKING
+  PASSED
+  REVIEW
+  REJECTED
+}
+
+enum FindingSeverity {
+  PASS
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum FindingCategory {
+  ORIGINALITY
+  SIMILARITY
+  EXACT_PHRASE
+  FACT_CHECK
+  CLICKBAIT
+  QUALITY
+  IMAGE_RIGHTS
+  IMAGE_DUPLICATE
+  IMAGE_OCR
+}
+
+model EditorialGateRun {
+  id               String             @id @default(cuid())
+  articleId        String
+  submissionId     String?
+  status           GateStatus         @default(NOT_RUN)
+  overallScore     Decimal            @default(100.0) @db.Decimal(5, 2)
+  originalityScore Decimal            @default(100.0) @db.Decimal(5, 2)
+  sourceScore      Decimal            @default(100.0) @db.Decimal(5, 2)
+  factScore        Decimal            @default(100.0) @db.Decimal(5, 2)
+  qualityScore     Decimal            @default(100.0) @db.Decimal(5, 2)
+  clickbaitScore   Decimal            @default(100.0) @db.Decimal(5, 2)
+  plagiarismRisk   FindingSeverity    @default(PASS)
+  imageRisk        FindingSeverity    @default(PASS)
+  provider         String             @default("mock")
+  model            String?
+  summary          String?
+  findings         EditorialFinding[]
+  article          Article            @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  startedAt        DateTime           @default(now())
+  completedAt      DateTime?
+  createdAt        DateTime           @default(now())
+
+  @@index([articleId])
+  @@index([status])
+  @@map("editorial_gate_runs")
+}
+
+model EditorialFinding {
+  id             String           @id @default(cuid())
+  gateRunId      String
+  category       FindingCategory
+  severity       FindingSeverity
+  finding        String
+  evidence       String?
+  sourceUrl      String?
+  sourceTitle    String?
+  matchedText    String?
+  recommendation String?
+  gateRun        EditorialGateRun @relation(fields: [gateRunId], references: [id], onDelete: Cascade)
+  createdAt      DateTime         @default(now())
+
+  @@index([gateRunId])
+  @@index([category])
+  @@index([severity])
+  @@map("editorial_findings")
+}
+
+model EditorialOverrideLog {
+  id                 String         @id @default(cuid())
+  articleId          String
+  userId             String
+  previousGateStatus GateStatus
+  newDecision        ReviewDecision
+  reason             String
+  ipAddress          String?
+  article            Article        @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  user               User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime       @default(now())
+
+  @@index([articleId])
+  @@index([userId])
+  @@map("editorial_override_logs")
+}
+
