@@ -132,14 +132,14 @@ export default async function AdminFinancePage() {
       <div>
         <Link
           href="/admin"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2 transition-colors font-mono"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          Back to Admin Central
+          Kembali ke Pusat Admin
         </Link>
         <SectionHeader
-          title="Platform Finance & Automated Payout Operations"
-          subtitle="Real-time financial telemetry, dual-approval withdrawal management, auto-payout state machine, and fraud control"
+          title="Pusat Keuangan & Operasional Pembayaran Otomatis"
+          subtitle="Telemetri keuangan real-time, persetujuan penarikan ganda, mesin status auto-payout, dan deteksi fraud"
         />
       </div>
 

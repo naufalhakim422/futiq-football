@@ -46,14 +46,14 @@ export default async function AdminAnalyticsPage() {
       <div>
         <Link
           href="/admin"
-          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2 transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2 transition-colors font-mono"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          Back to Admin Central
+          Kembali ke Pusat Admin
         </Link>
         <SectionHeader
-          title="Platform Traffic & Commercial Revenue Analytics"
-          subtitle="Privacy-first telemetry, reader engagement metrics, ad click-through yields, and estimated RPM performance"
+          title="Analitik Trafik Platform & Pendapatan Komersial"
+          subtitle="Telemetri berbasis privasi, keterlibatan pembaca, rasio klik iklan (CTR), dan estimasi performa RPM"
         />
       </div>
 

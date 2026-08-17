@@ -3,30 +3,17 @@
 import React, { useState } from "react";
 import {
   Megaphone,
-  Layers,
   Plus,
-  Radio,
-  CheckCircle2,
-  AlertCircle,
   TrendingUp,
-  Globe,
   ExternalLink,
   Shield,
-  Smartphone,
-  Laptop,
-  Calendar,
   Sparkles,
-  DollarSign,
   Download,
-  Filter,
-  Lock,
   Eye,
   MousePointerClick,
   Users,
-  Settings,
-  HelpCircle,
 } from "lucide-react";
-import { AdPlacementPosition, AdSlotStatus } from "@prisma/client";
+import { AdPlacementPosition } from "@prisma/client";
 import { AdProviderConfig } from "@/lib/ads/ad-provider.interface";
 import {
   AdSponsorRecord,
@@ -60,12 +47,12 @@ export function AdConsole({
     "overview" | "providers" | "sponsors" | "campaigns" | "creatives" | "placements" | "popunder" | "reports" | "audit"
   >("overview");
 
-  const [providers, setProviders] = useState<AdProviderConfig[]>(initialProviders);
+  const [providers] = useState<AdProviderConfig[]>(initialProviders);
   const [sponsors, setSponsors] = useState<AdSponsorRecord[]>(initialSponsors);
   const [campaigns, setCampaigns] = useState<AdCampaignRecord[]>(initialCampaigns);
-  const [placements, setPlacements] = useState<any[]>(initialPlacements);
+  const [placements] = useState<any[]>(initialPlacements);
   const [popunderPolicy, setPopunderPolicy] = useState<PopunderPolicy | null>(initialPopunderPolicy);
-  const [auditLogs, setAuditLogs] = useState<AdAuditLogEntry[]>(initialAuditLogs);
+  const [auditLogs] = useState<AdAuditLogEntry[]>(initialAuditLogs);
 
   // Wizard Modal State
   const [isWizardOpen, setIsWizardOpen] = useState(false);
@@ -96,7 +83,7 @@ export function AdConsole({
     imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80",
     mobileImageUrl: "",
     targetUrl: "https://example.com/sponsor",
-    ctaText: "Shop Collection",
+    ctaText: "Lihat Koleksi",
     placementPosition: AdPlacementPosition.ARTICLE_TOP,
     pricingModel: "FLAT_RATE",
     agreedPrice: 5000,
@@ -139,7 +126,7 @@ export function AdConsole({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          campaignName: wizardData.campaignName || `${wizardData.source} - ${wizardData.format} Campaign`,
+          campaignName: wizardData.campaignName || `Kampanye ${wizardData.source} - ${wizardData.format}`,
           sponsorId: wizardData.sponsorId || (sponsors[0]?.id),
           providerId: wizardData.source === "DIRECT_SPONSOR" ? "sponsor-direct" : wizardData.source === "NETWORK" ? "adsterra" : "house-ad",
           type: wizardData.source,
@@ -151,14 +138,14 @@ export function AdConsole({
           priority: Number(wizardData.priority),
           targetDevice: "ALL",
           creative: {
-            name: `${wizardData.title} Creative`,
+            name: `${wizardData.title} Kreatif`,
             format: wizardData.format,
-            title: wizardData.title || "Promoted Football Showcase",
-            description: wizardData.description || "Official partner promotion",
+            title: wizardData.title || "Promosi Sponsor Resmi",
+            description: wizardData.description || "Kampanye partner resmi",
             imageUrl: wizardData.imageUrl,
             mobileImageUrl: wizardData.mobileImageUrl || undefined,
             targetUrl: wizardData.targetUrl,
-            ctaText: wizardData.ctaText || "Explore",
+            ctaText: wizardData.ctaText || "Selengkapnya",
           },
         }),
       });
@@ -168,13 +155,13 @@ export function AdConsole({
         setCampaigns((prev) => [data.campaign, ...prev]);
         setIsWizardOpen(false);
         setWizardStep(1);
-        setMessage({ type: "success", text: "New campaign and creative activated successfully!" });
+        setMessage({ type: "success", text: "Kampanye iklan baru berhasil diaktifkan!" });
       } else {
         const err = await res.json();
-        setMessage({ type: "error", text: err.error || "Failed to create campaign." });
+        setMessage({ type: "error", text: err.error || "Gagal membuat kampanye." });
       }
     } catch {
-      setMessage({ type: "error", text: "Network error occurred." });
+      setMessage({ type: "error", text: "Terjadi kesalahan jaringan." });
     } finally {
       setSaving(false);
     }
@@ -195,10 +182,10 @@ export function AdConsole({
         setSponsors((prev) => [data.sponsor, ...prev]);
         setIsSponsorModalOpen(false);
         setSponsorForm({ companyName: "", contactName: "", email: "", phone: "", website: "", billingEmail: "", notes: "" });
-        setMessage({ type: "success", text: `Sponsor "${data.sponsor.companyName}" registered.` });
+        setMessage({ type: "success", text: `Sponsor "${data.sponsor.companyName}" berhasil didaftarkan.` });
       }
     } catch {
-      setMessage({ type: "error", text: "Failed to create sponsor." });
+      setMessage({ type: "error", text: "Gagal mendaftarkan sponsor." });
     } finally {
       setSaving(false);
     }
@@ -214,16 +201,16 @@ export function AdConsole({
       if (res.ok) {
         const data = await res.json();
         setPopunderPolicy(data.policy);
-        setMessage({ type: "success", text: "Popunder safety policy updated." });
+        setMessage({ type: "success", text: "Kebijakan keamanan popunder berhasil diperbarui." });
       }
     } catch {
-      setMessage({ type: "error", text: "Failed to update popunder policy." });
+      setMessage({ type: "error", text: "Gagal memperbarui kebijakan popunder." });
     }
   };
 
   return (
     <div className="space-y-6">
-      {/* Top Banner Alert / Flash */}
+      {/* Top Banner Alert */}
       {message && (
         <div
           className={cn(
@@ -245,52 +232,52 @@ export function AdConsole({
         <div className="bg-pitch-900 border border-pitch-800 p-4 rounded-xl">
           <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
             <Megaphone className="w-3.5 h-3.5 text-[#c3ff00]" />
-            <span>Active Campaigns</span>
+            <span>Kampanye Aktif</span>
           </div>
           <p className="text-xl font-bold text-slate-100 mt-1">{activeCampaignsCount}</p>
-          <span className="text-[10px] text-slate-500 font-mono">In Flight</span>
+          <span className="text-[10px] text-slate-500 font-mono">Sedang Tayang</span>
         </div>
 
         <div className="bg-pitch-900 border border-pitch-800 p-4 rounded-xl">
           <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
             <Users className="w-3.5 h-3.5 text-blue-400" />
-            <span>Direct Sponsors</span>
+            <span>Sponsor Langsung</span>
           </div>
           <p className="text-xl font-bold text-slate-100 mt-1">{activeSponsorsCount}</p>
-          <span className="text-[10px] text-slate-500 font-mono">Direct Partners</span>
+          <span className="text-[10px] text-slate-500 font-mono">Partner Resmi</span>
         </div>
 
         <div className="bg-pitch-900 border border-pitch-800 p-4 rounded-xl">
           <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
             <Eye className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Total Delivered</span>
+            <span>Total Impresi</span>
           </div>
           <p className="text-xl font-bold text-slate-100 mt-1">{totalDeliveredImpressions.toLocaleString()}</p>
-          <span className="text-[10px] text-slate-500 font-mono">Impressions</span>
+          <span className="text-[10px] text-slate-500 font-mono">Tayangan Terverifikasi</span>
         </div>
 
         <div className="bg-pitch-900 border border-pitch-800 p-4 rounded-xl">
           <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
             <MousePointerClick className="w-3.5 h-3.5 text-amber-400" />
-            <span>Verified Clicks</span>
+            <span>Total Klik</span>
           </div>
           <p className="text-xl font-bold text-slate-100 mt-1">{totalDeliveredClicks.toLocaleString()}</p>
-          <span className="text-[10px] text-slate-500 font-mono">Audited Hits</span>
+          <span className="text-[10px] text-slate-500 font-mono">Klik Riil Tervalidasi</span>
         </div>
 
         <div className="bg-pitch-900 border border-pitch-800 p-4 rounded-xl">
           <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
             <TrendingUp className="w-3.5 h-3.5 text-[#c3ff00]" />
-            <span>Average CTR</span>
+            <span>Rata-rata CTR</span>
           </div>
           <p className="text-xl font-bold text-[#c3ff00] mt-1">{averageCtr}%</p>
-          <span className="text-[10px] text-slate-500 font-mono">Engagement</span>
+          <span className="text-[10px] text-slate-500 font-mono">Rasio Interaksi</span>
         </div>
 
         <div className="bg-pitch-900 border border-pitch-800 p-4 rounded-xl flex flex-col justify-between">
           <div className="flex items-center gap-2 text-slate-400 text-xs font-medium">
             <Sparkles className="w-3.5 h-3.5 text-purple-400" />
-            <span>Quick Action</span>
+            <span>Aksi Cepat</span>
           </div>
           <button
             onClick={() => {
@@ -300,7 +287,7 @@ export function AdConsole({
             className="w-full mt-2 py-1.5 px-3 bg-[#c3ff00] hover:bg-[#a6ff00] text-slate-950 font-bold text-xs rounded transition-colors flex items-center justify-center gap-1 shadow"
           >
             <Plus className="w-3.5 h-3.5" />
-            <span>+ Create Ad</span>
+            <span>+ Buat Iklan</span>
           </button>
         </div>
       </div>
@@ -308,15 +295,15 @@ export function AdConsole({
       {/* Navigation Sub-Tabs */}
       <div className="flex items-center gap-1 border-b border-pitch-800 pb-2 overflow-x-auto">
         {[
-          { id: "overview", label: "Overview" },
-          { id: "providers", label: `Providers (${providers.length})` },
-          { id: "sponsors", label: `Direct Sponsors (${sponsors.length})` },
-          { id: "campaigns", label: `Campaigns & Deals (${campaigns.length})` },
-          { id: "creatives", label: "Creative Studio" },
-          { id: "placements", label: `Placements (${placements.length})` },
-          { id: "popunder", label: "Popunder Policy" },
-          { id: "reports", label: "Reports & CSV" },
-          { id: "audit", label: `Audit Log (${auditLogs.length})` },
+          { id: "overview", label: "Ringkasan" },
+          { id: "providers", label: `Provider Jaringan (${providers.length})` },
+          { id: "sponsors", label: `Sponsor Langsung (${sponsors.length})` },
+          { id: "campaigns", label: `Kampanye & Kontrak (${campaigns.length})` },
+          { id: "creatives", label: "Studio Kreatif / Banner" },
+          { id: "placements", label: `Penempatan Slot (${placements.length})` },
+          { id: "popunder", label: "Kebijakan Popunder" },
+          { id: "reports", label: "Laporan & Export CSV" },
+          { id: "audit", label: `Log Audit (${auditLogs.length})` },
         ].map((tab) => (
           <button
             key={tab.id}
@@ -333,7 +320,7 @@ export function AdConsole({
         ))}
       </div>
 
-      {/* TAB 1: OVERVIEW */}
+      {/* TAB 1: OVERVIEW / RINGKASAN */}
       {activeTab === "overview" && (
         <div className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -342,9 +329,9 @@ export function AdConsole({
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
                   <Megaphone className="w-4 h-4 text-[#c3ff00]" />
-                  Active Sponsorship Deals & Campaigns
+                  Kampanye Aktif & Kontrak Sponsor
                 </h3>
-                <span className="text-xs text-slate-400 font-mono">Priority Cascade Enabled</span>
+                <span className="text-xs text-slate-400 font-mono">Prioritas Bertingkat Aktif</span>
               </div>
 
               <div className="space-y-3">
@@ -371,18 +358,18 @@ export function AdConsole({
                       </div>
                       <p className="text-[11px] text-slate-400">
                         {camp.sponsorName ? `Sponsor: ${camp.sponsorName} • ` : ""}
-                        Pricing: {camp.pricingModel} {camp.agreedPriceMinor > 0 ? `(${camp.currency} ${(camp.agreedPriceMinor / 100).toLocaleString()})` : ""}
+                        Model Biaya: {camp.pricingModel} {camp.agreedPriceMinor > 0 ? `(${camp.currency} ${(camp.agreedPriceMinor / 100).toLocaleString()})` : ""}
                       </p>
                     </div>
 
                     <div className="flex items-center gap-4 text-xs font-mono">
                       <div className="text-right">
                         <span className="text-slate-200 font-bold">{camp.impressionsDelivered.toLocaleString()}</span>
-                        <span className="text-slate-500 text-[10px] block">imp.</span>
+                        <span className="text-slate-500 text-[10px] block">impresi</span>
                       </div>
                       <div className="text-right">
                         <span className="text-slate-200 font-bold">{camp.clicksDelivered.toLocaleString()}</span>
-                        <span className="text-slate-500 text-[10px] block">clicks</span>
+                        <span className="text-slate-500 text-[10px] block">klik</span>
                       </div>
                       <div className="text-right">
                         <span className="text-[#c3ff00] font-bold">
@@ -405,35 +392,35 @@ export function AdConsole({
             <div className="bg-pitch-900 border border-pitch-800 rounded-xl p-5 space-y-4">
               <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
                 <Shield className="w-4 h-4 text-[#c3ff00]" />
-                Ad Safety & Architecture Rules
+                Aturan Keamanan & Perlindungan
               </h3>
 
               <div className="space-y-2.5 text-xs text-slate-300">
                 <div className="p-2.5 bg-pitch-950 border border-pitch-800 rounded">
-                  <span className="font-bold text-slate-100 block mb-0.5">1. Zero Arbitrary JS</span>
+                  <span className="font-bold text-slate-100 block mb-0.5">1. Zero Arbitrary JavaScript</span>
                   <p className="text-slate-400 text-[11px]">
-                    No raw scripts in DOM. All creatives are sandboxed or rendered through controlled adapters.
+                    Tidak ada injeksi skrip bebas ke DOM. Semua materi iklan terisolasi dalam sandbox aman.
                   </p>
                 </div>
 
                 <div className="p-2.5 bg-pitch-950 border border-pitch-800 rounded">
-                  <span className="font-bold text-slate-100 block mb-0.5">2. Strict Priority Hierarchy</span>
+                  <span className="font-bold text-slate-100 block mb-0.5">2. Urutan Prioritas Ketat</span>
                   <p className="text-slate-400 text-[11px]">
-                    Direct Sponsor (P100) → Paid Deals (P75) → Adsterra (P50) → House Ad (P10).
+                    Sponsor Langsung (P100) → Kontrak Berbayar (P75) → Jaringan Adsterra (P50) → Iklan Internal FUTIQ (P10).
                   </p>
                 </div>
 
                 <div className="p-2.5 bg-pitch-950 border border-pitch-800 rounded">
-                  <span className="font-bold text-slate-100 block mb-0.5">3. Fallback Protection</span>
+                  <span className="font-bold text-slate-100 block mb-0.5">3. Fallback Otomatis</span>
                   <p className="text-slate-400 text-[11px]">
-                    Expired sponsors fall back instantly to Adsterra or House Ads without blank containers.
+                    Jika sponsor habis masa tayang, sistem otomatis beralih ke Adsterra atau House Ad tanpa slot kosong.
                   </p>
                 </div>
 
                 <div className="p-2.5 bg-pitch-950 border border-pitch-800 rounded">
-                  <span className="font-bold text-slate-100 block mb-0.5">4. Safe Click Redirect</span>
+                  <span className="font-bold text-slate-100 block mb-0.5">4. Pengalihan Klik Aman</span>
                   <p className="text-slate-400 text-[11px]">
-                    Destination URLs are strictly validated to prevent open-redirects and XSS attacks.
+                    URL tujuan divalidasi ketat di sisi server untuk mencegah serangan phishing dan open-redirect.
                   </p>
                 </div>
               </div>
@@ -442,11 +429,11 @@ export function AdConsole({
         </div>
       )}
 
-      {/* TAB 2: PROVIDERS HUB */}
+      {/* TAB 2: PROVIDERS HUB / JARINGAN IKLAN */}
       {activeTab === "providers" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-100">Registered Ad Providers</h3>
+            <h3 className="text-sm font-bold text-slate-100">Daftar Provider Jaringan Iklan</h3>
             <span className="text-xs text-slate-400 font-mono">Provider-Agnostic Abstraction Layer</span>
           </div>
 
@@ -470,12 +457,12 @@ export function AdConsole({
                 </div>
 
                 <div className="space-y-1 text-[11px] text-slate-400">
-                  <p>Type: <span className="text-slate-200 font-semibold">{p.providerType}</span></p>
-                  <p>Mode: <span className="text-slate-200 font-semibold">{p.isTestMode ? "Test / Sandbox" : "Production"}</span></p>
+                  <p>Tipe: <span className="text-slate-200 font-semibold">{p.providerType}</span></p>
+                  <p>Mode: <span className="text-slate-200 font-semibold">{p.isTestMode ? "Sandbox / Uji Coba" : "Produksi"}</span></p>
                 </div>
 
                 <div className="pt-2 border-t border-pitch-800">
-                  <span className="text-[10px] font-bold text-slate-400 block mb-1">Supported Formats:</span>
+                  <span className="text-[10px] font-bold text-slate-400 block mb-1">Format Didukung:</span>
                   <div className="flex flex-wrap gap-1">
                     {p.supportedFormats.map((fmt) => (
                       <span key={fmt} className="px-1.5 py-0.5 text-[9px] bg-pitch-950 text-slate-300 border border-pitch-800 rounded">
@@ -495,15 +482,15 @@ export function AdConsole({
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-slate-100">Direct Sponsor Directory</h3>
-              <p className="text-xs text-slate-400">Manage direct advertisers, negotiated deals, and client contacts</p>
+              <h3 className="text-sm font-bold text-slate-100">Direktori Sponsor Langsung</h3>
+              <p className="text-xs text-slate-400">Kelola partner pengiklan langsung, kontrak sponsor, dan kontak perusahaan</p>
             </div>
             <button
               onClick={() => setIsSponsorModalOpen(true)}
               className="py-1.5 px-3 bg-[#c3ff00] hover:bg-[#a6ff00] text-slate-950 font-bold text-xs rounded transition-colors flex items-center gap-1 shadow"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>+ Add Sponsor</span>
+              <span>+ Tambah Sponsor</span>
             </button>
           </div>
 
@@ -511,12 +498,12 @@ export function AdConsole({
             <table className="w-full text-left text-xs">
               <thead className="bg-pitch-950 text-slate-400 uppercase font-mono text-[10px] border-b border-pitch-800">
                 <tr>
-                  <th className="p-3">Company</th>
-                  <th className="p-3">Contact</th>
+                  <th className="p-3">Perusahaan</th>
+                  <th className="p-3">Kontak Person</th>
                   <th className="p-3">Email</th>
                   <th className="p-3">Website</th>
                   <th className="p-3">Status</th>
-                  <th className="p-3">Created</th>
+                  <th className="p-3">Terdaftar</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-pitch-800 text-slate-300">
@@ -533,7 +520,7 @@ export function AdConsole({
                     <td className="p-3">
                       {s.website ? (
                         <a href={s.website} target="_blank" rel="noreferrer" className="text-[#c3ff00] hover:underline flex items-center gap-1">
-                          <span>visit</span>
+                          <span>kunjungi</span>
                           <ExternalLink className="w-3 h-3" />
                         </a>
                       ) : (
@@ -560,7 +547,7 @@ export function AdConsole({
       {activeTab === "campaigns" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-100">Advertising Campaigns & Flight Dates</h3>
+            <h3 className="text-sm font-bold text-slate-100">Daftar Kampanye Iklan & Jadwal Tayang</h3>
             <button
               onClick={() => {
                 setWizardStep(1);
@@ -569,7 +556,7 @@ export function AdConsole({
               className="py-1.5 px-3 bg-[#c3ff00] hover:bg-[#a6ff00] text-slate-950 font-bold text-xs rounded transition-colors flex items-center gap-1 shadow"
             >
               <Plus className="w-3.5 h-3.5" />
-              <span>+ Create Campaign</span>
+              <span>+ Buat Kampanye</span>
             </button>
           </div>
 
@@ -580,8 +567,8 @@ export function AdConsole({
                   <div>
                     <span className="text-sm font-bold text-slate-100">{camp.campaignName}</span>
                     <p className="text-xs text-slate-400">
-                      Sponsor: <span className="text-slate-200 font-semibold">{camp.sponsorName || "Direct / House"}</span> •
-                      Pricing: <span className="text-[#c3ff00] font-semibold">{camp.pricingModel} {camp.agreedPriceMinor > 0 ? `(${camp.currency} ${(camp.agreedPriceMinor / 100).toLocaleString()})` : ""}</span>
+                      Sponsor: <span className="text-slate-200 font-semibold">{camp.sponsorName || "Langsung / House"}</span> •
+                      Biaya: <span className="text-[#c3ff00] font-semibold">{camp.pricingModel} {camp.agreedPriceMinor > 0 ? `(${camp.currency} ${(camp.agreedPriceMinor / 100).toLocaleString()})` : ""}</span>
                     </p>
                   </div>
 
@@ -590,26 +577,26 @@ export function AdConsole({
                       {camp.status}
                     </span>
                     <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-pitch-950 text-slate-300 border border-pitch-800">
-                      Priority: P{camp.priority}
+                      Prioritas: P{camp.priority}
                     </span>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
                   <div className="bg-pitch-950 p-2.5 rounded border border-pitch-800">
-                    <span className="text-[10px] text-slate-500 uppercase block font-mono">Flight Window</span>
+                    <span className="text-[10px] text-slate-500 uppercase block font-mono">Masa Tayang</span>
                     <span className="text-slate-200 font-medium">
-                      {new Date(camp.startAt).toLocaleDateString()} → {camp.endAt ? new Date(camp.endAt).toLocaleDateString() : "Indefinite"}
+                      {new Date(camp.startAt).toLocaleDateString()} → {camp.endAt ? new Date(camp.endAt).toLocaleDateString() : "Tanpa Batas"}
                     </span>
                   </div>
 
                   <div className="bg-pitch-950 p-2.5 rounded border border-pitch-800">
-                    <span className="text-[10px] text-slate-500 uppercase block font-mono">Impressions</span>
+                    <span className="text-[10px] text-slate-500 uppercase block font-mono">Impresi Terkirim</span>
                     <span className="text-slate-200 font-bold">{camp.impressionsDelivered.toLocaleString()}</span>
                   </div>
 
                   <div className="bg-pitch-950 p-2.5 rounded border border-pitch-800">
-                    <span className="text-[10px] text-slate-500 uppercase block font-mono">Clicks / CTR</span>
+                    <span className="text-[10px] text-slate-500 uppercase block font-mono">Klik / Rasio CTR</span>
                     <span className="text-slate-200 font-bold">
                       {camp.clicksDelivered.toLocaleString()} (
                       {camp.impressionsDelivered > 0
@@ -619,9 +606,9 @@ export function AdConsole({
                   </div>
 
                   <div className="bg-pitch-950 p-2.5 rounded border border-pitch-800">
-                    <span className="text-[10px] text-slate-500 uppercase block font-mono">Targeting</span>
+                    <span className="text-[10px] text-slate-500 uppercase block font-mono">Target Penonton</span>
                     <span className="text-slate-200">
-                      {camp.targetCompetition || camp.targetCategory || "Global Football"}
+                      {camp.targetCompetition || camp.targetCategory || "Sepak Bola Global"}
                     </span>
                   </div>
                 </div>
@@ -635,7 +622,7 @@ export function AdConsole({
       {activeTab === "creatives" && (
         <div className="space-y-6">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-100">Creative Studio & Live Mockup Preview</h3>
+            <h3 className="text-sm font-bold text-slate-100">Studio Kreatif & Pratinjau Tampilan Iklan</h3>
             <span className="text-xs text-slate-400 font-mono">Responsive Sandbox Renderer</span>
           </div>
 
@@ -643,14 +630,14 @@ export function AdConsole({
             {/* Live Interactive Preview */}
             <div className="bg-pitch-900 border border-pitch-800 rounded-xl p-5 space-y-4">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Desktop & Mobile Billboard Preview
+                Pratinjau Banner Billboard (Desktop & Mobile)
               </h4>
 
               <div className="bg-pitch-950 border border-[#c3ff00]/30 rounded-xl overflow-hidden shadow-2xl">
                 <div className="px-3 py-1.5 bg-black border-b border-pitch-800 flex items-center justify-between text-[10px] font-mono">
                   <span className="text-[#c3ff00] font-bold flex items-center gap-1">
                     <Sparkles className="w-3 h-3" />
-                    Official Sponsor • Nike Football
+                    Sponsor Resmi • Nike Football
                   </span>
                   <span className="text-slate-500">ads.futiq.com</span>
                 </div>
@@ -664,13 +651,13 @@ export function AdConsole({
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent flex flex-col justify-end p-4">
                     <h5 className="text-base font-bold text-white leading-snug">
-                      Nike Football Performance Collection 2026
+                      Koleksi Performa Nike Football 2026
                     </h5>
                     <p className="text-xs text-slate-300 line-clamp-1 mt-0.5">
-                      Engineered for explosive transitions and precision control on European matchdays.
+                      Didesain khusus untuk akselerasi dan akurasi sentuhan maksimal di malam Liga Champions.
                     </p>
                     <span className="mt-2 text-[11px] font-bold text-[#c3ff00] uppercase">
-                      Shop Collection →
+                      Lihat Koleksi →
                     </span>
                   </div>
                 </div>
@@ -680,23 +667,23 @@ export function AdConsole({
             {/* Creative Specifications */}
             <div className="bg-pitch-900 border border-pitch-800 rounded-xl p-5 space-y-3 text-xs">
               <h4 className="text-xs font-bold uppercase tracking-wider text-slate-300">
-                Creative Asset Standards
+                Standar Aset Kreatif & Dimensi Gambar
               </h4>
 
               <div className="space-y-2 text-slate-300">
                 <div className="p-3 bg-pitch-950 border border-pitch-800 rounded">
                   <span className="font-bold text-slate-100">Banner / Billboard:</span>
-                  <p className="text-slate-400 mt-0.5">Recommended 1200x250 (Desktop) and 600x300 (Mobile). Max 350KB JPG/WebP/PNG.</p>
+                  <p className="text-slate-400 mt-0.5">Ukuran rekomendasi 1200x250 (Desktop) dan 600x300 (Mobile). Maks 350KB JPG/WebP/PNG.</p>
                 </div>
 
                 <div className="p-3 bg-pitch-950 border border-pitch-800 rounded">
                   <span className="font-bold text-slate-100">Native In-Feed:</span>
-                  <p className="text-slate-400 mt-0.5">Headline (60 chars max), Description (140 chars max), 1:1 or 16:9 thumbnail.</p>
+                  <p className="text-slate-400 mt-0.5">Judul (maks 60 karakter), Deskripsi (maks 140 karakter), Thumbnail rasio 1:1 atau 16:9.</p>
                 </div>
 
                 <div className="p-3 bg-pitch-950 border border-pitch-800 rounded">
-                  <span className="font-bold text-slate-100">Sponsored Card / Article:</span>
-                  <p className="text-slate-400 mt-0.5">Includes &quot;Sponsored&quot; editorial badge, brand logo, and click-through CTA.</p>
+                  <span className="font-bold text-slate-100">Kartu / Artikel Bersponsor:</span>
+                  <p className="text-slate-400 mt-0.5">Menyertakan badge tanda &quot;Sponsored&quot;, logo sponsor, dan tombol CTA pengalihan.</p>
                 </div>
               </div>
             </div>
@@ -708,18 +695,18 @@ export function AdConsole({
       {activeTab === "placements" && (
         <div className="space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-100">Ad Placement Slots</h3>
-            <span className="text-xs text-slate-400 font-mono">Website Layout Injection Points</span>
+            <h3 className="text-sm font-bold text-slate-100">Slot Penempatan Iklan di Website</h3>
+            <span className="text-xs text-slate-400 font-mono">Titik Injeksi Tata Letak Web</span>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
             {[
-              { slot: "HOME_TOP", name: "Homepage Billboard Top", status: "ACTIVE", priority: "P100" },
-              { slot: "HOME_MIDDLE", name: "Homepage Mid-Feed Stream", status: "ACTIVE", priority: "P75" },
-              { slot: "ARTICLE_TOP", name: "Article Manuscript Header", status: "ACTIVE", priority: "P100" },
-              { slot: "ARTICLE_BOTTOM", name: "Article Manuscript Footer", status: "ACTIVE", priority: "P50" },
-              { slot: "MOBILE_STICKY", name: "Mobile Sticky Footer Anchor", status: "ACTIVE", priority: "P50" },
-              { slot: "NEWS_TOP", name: "News Archive Header", status: "ACTIVE", priority: "P50" },
+              { slot: "HOME_TOP", name: "Billboard Atas Beranda", status: "AKTIF", priority: "P100" },
+              { slot: "HOME_MIDDLE", name: "Tengah Feed Beranda", status: "AKTIF", priority: "P75" },
+              { slot: "ARTICLE_TOP", name: "Kepala Naskah Artikel", status: "AKTIF", priority: "P100" },
+              { slot: "ARTICLE_BOTTOM", name: "Bawah Naskah Artikel", status: "AKTIF", priority: "P50" },
+              { slot: "MOBILE_STICKY", name: "Banner Melayang Bawah Mobile", status: "AKTIF", priority: "P50" },
+              { slot: "NEWS_TOP", name: "Kepala Halaman Berita", status: "AKTIF", priority: "P50" },
             ].map((slot) => (
               <div key={slot.slot} className="bg-pitch-900 border border-pitch-800 rounded-xl p-4 space-y-2">
                 <div className="flex items-center justify-between">
@@ -730,8 +717,8 @@ export function AdConsole({
                 </div>
                 <p className="text-[11px] text-slate-500 font-mono">{slot.slot}</p>
                 <div className="pt-2 border-t border-pitch-800 flex items-center justify-between text-[11px] text-slate-400">
-                  <span>Priority: <strong className="text-slate-200">{slot.priority}</strong></span>
-                  <span>Fallback: <strong className="text-[#c3ff00]">House Ad</strong></span>
+                  <span>Prioritas: <strong className="text-slate-200">{slot.priority}</strong></span>
+                  <span>Cadangan: <strong className="text-[#c3ff00]">House Ad</strong></span>
                 </div>
               </div>
             ))}
@@ -746,10 +733,10 @@ export function AdConsole({
             <div>
               <h3 className="text-sm font-bold text-slate-100 flex items-center gap-2">
                 <Shield className="w-4 h-4 text-[#c3ff00]" />
-                Popunder Policy & Anti-Abuse Frequency Controls
+                Kebijakan Popunder & Kontrol Frekuensi Anti-Spam
               </h3>
               <p className="text-xs text-slate-400">
-                Configure non-intrusive popunder limits, cooldown intervals, and blacklisted routes
+                Atur jeda penayangan popunder agar tidak mengganggu pembaca, durasi cooldown, dan halaman yang diblacklist
               </p>
             </div>
 
@@ -762,39 +749,39 @@ export function AdConsole({
                   : "bg-red-950 text-red-400 border border-red-800 hover:bg-red-900"
               )}
             >
-              {popunderPolicy?.enabled ? "● POPUNDER ENABLED" : "○ POPUNDER DISABLED"}
+              {popunderPolicy?.enabled ? "● POPUNDER AKTIF" : "○ POPUNDER NONAKTIF"}
             </button>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
             <div className="space-y-1">
-              <label className="text-slate-400 font-semibold">Frequency Cooldown (Minutes):</label>
+              <label className="text-slate-400 font-semibold">Jeda Cooldown Antar Tayang (Menit):</label>
               <input
                 type="number"
                 defaultValue={popunderPolicy?.frequencyCapMinutes || 30}
                 className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100 font-mono text-xs"
               />
-              <span className="text-[10px] text-slate-500">Minimum time between popunder triggers for a single user</span>
+              <span className="text-[10px] text-slate-500">Waktu jeda minimal sebelum popunder boleh muncul lagi untuk 1 user</span>
             </div>
 
             <div className="space-y-1">
-              <label className="text-slate-400 font-semibold">Max Impressions Per Session:</label>
+              <label className="text-slate-400 font-semibold">Batas Maksimal per Sesi Pembaca:</label>
               <input
                 type="number"
                 defaultValue={popunderPolicy?.maxPerSession || 1}
                 className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100 font-mono text-xs"
               />
-              <span className="text-[10px] text-slate-500">Hard limit to prevent user frustration</span>
+              <span className="text-[10px] text-slate-500">Batas ketat agar pengunjung tidak merasa terganggu</span>
             </div>
           </div>
 
           <div className="space-y-2 text-xs">
-            <label className="text-slate-400 font-semibold">Blacklisted Excluded Routes:</label>
+            <label className="text-slate-400 font-semibold">Daftar Rute yang Diblokir (Blacklist):</label>
             <div className="p-3 bg-pitch-950 border border-pitch-800 rounded font-mono text-[11px] text-slate-300">
               /admin, /contributor, /auth, /login, /editor
             </div>
             <span className="text-[10px] text-slate-500">
-              Popunders are strictly blocked on all administrative and authentication surfaces.
+              Iklan popunder otomatis diblokir di seluruh halaman admin, newsroom penulis, dan halaman otentikasi.
             </span>
           </div>
         </div>
@@ -805,8 +792,8 @@ export function AdConsole({
         <div className="bg-pitch-900 border border-pitch-800 rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-bold text-slate-100">Sponsor Performance & Campaign Reports</h3>
-              <p className="text-xs text-slate-400">Export verified impression and engagement data for direct advertisers</p>
+              <h3 className="text-sm font-bold text-slate-100">Laporan Performa Sponsor & Kampanye</h3>
+              <p className="text-xs text-slate-400">Unduh data impresi dan keterlibatan klik tervalidasi untuk laporan pengiklan</p>
             </div>
 
             <a
@@ -814,7 +801,7 @@ export function AdConsole({
               className="py-1.5 px-3 bg-[#c3ff00] hover:bg-[#a6ff00] text-slate-950 font-bold text-xs rounded transition-colors flex items-center gap-1.5 shadow"
             >
               <Download className="w-3.5 h-3.5" />
-              <span>Export CSV Report</span>
+              <span>Unduh Laporan CSV</span>
             </a>
           </div>
 
@@ -822,12 +809,12 @@ export function AdConsole({
             <table className="w-full text-left text-xs">
               <thead className="bg-black text-slate-400 uppercase font-mono text-[10px] border-b border-pitch-800">
                 <tr>
-                  <th className="p-3">Campaign</th>
+                  <th className="p-3">Nama Kampanye</th>
                   <th className="p-3">Sponsor</th>
                   <th className="p-3">Model</th>
-                  <th className="p-3">Deal Value</th>
-                  <th className="p-3">Delivered</th>
-                  <th className="p-3">Clicks</th>
+                  <th className="p-3">Nilai Kontrak</th>
+                  <th className="p-3">Impresi</th>
+                  <th className="p-3">Klik</th>
                   <th className="p-3">CTR</th>
                   <th className="p-3">Status</th>
                 </tr>
@@ -836,7 +823,7 @@ export function AdConsole({
                 {campaigns.map((camp) => (
                   <tr key={camp.id} className="hover:bg-pitch-900/50 font-mono">
                     <td className="p-3 font-sans font-bold text-slate-100">{camp.campaignName}</td>
-                    <td className="p-3 font-sans text-slate-300">{camp.sponsorName || "Network"}</td>
+                    <td className="p-3 font-sans text-slate-300">{camp.sponsorName || "Jaringan"}</td>
                     <td className="p-3">{camp.pricingModel}</td>
                     <td className="p-3 text-[#c3ff00]">
                       {camp.agreedPriceMinor > 0 ? `${camp.currency} ${(camp.agreedPriceMinor / 100).toLocaleString()}` : "—"}
@@ -865,8 +852,8 @@ export function AdConsole({
       {activeTab === "audit" && (
         <div className="bg-pitch-900 border border-pitch-800 rounded-xl p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-sm font-bold text-slate-100">Advertising Operations Audit Log</h3>
-            <span className="text-xs text-slate-400 font-mono">Immutable Operations Trail</span>
+            <h3 className="text-sm font-bold text-slate-100">Log Audit Aktivitas Operasional Iklan</h3>
+            <span className="text-xs text-slate-400 font-mono">Pencatatan Permanen Tanpa Manipulasi</span>
           </div>
 
           <div className="space-y-2">
@@ -883,7 +870,7 @@ export function AdConsole({
                     <span className="text-slate-300">{log.details}</span>
                   </div>
                   <span className="text-[10px] text-slate-500 font-mono">
-                    Actor: {log.actorEmail || log.actorId} • Entity: {log.entityType} ({log.entityId})
+                    Aktor: {log.actorEmail || log.actorId} • Entitas: {log.entityType} ({log.entityId})
                   </span>
                 </div>
                 <span className="text-[10px] text-slate-500 font-mono whitespace-nowrap">
@@ -903,9 +890,9 @@ export function AdConsole({
               <div>
                 <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-[#c3ff00]" />
-                  Launch Ad Campaign Wizard
+                  Panduan Pembuatan Iklan Baru (Wizard)
                 </h3>
-                <span className="text-xs text-slate-400">Step {wizardStep} of 4</span>
+                <span className="text-xs text-slate-400">Langkah {wizardStep} dari 4</span>
               </div>
               <button
                 onClick={() => setIsWizardOpen(false)}
@@ -915,16 +902,16 @@ export function AdConsole({
               </button>
             </div>
 
-            {/* STEP 1: Source & Format */}
+            {/* STEP 1: Sumber & Format */}
             {wizardStep === 1 && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-300 uppercase">1. Select Campaign Source</label>
+                  <label className="text-xs font-bold text-slate-300 uppercase">1. Pilih Sumber Iklan</label>
                   <div className="grid grid-cols-3 gap-2">
                     {[
-                      { id: "DIRECT_SPONSOR", label: "Direct Sponsor", desc: "Nike, Betting, Sports Brands" },
-                      { id: "NETWORK", label: "Ad Network", desc: "Adsterra / Programmatic" },
-                      { id: "HOUSE_AD", label: "House Ad", desc: "Internal FUTIQ Promotion" },
+                      { id: "DIRECT_SPONSOR", label: "Sponsor Langsung", desc: "Nike, Betting, Brand Olahraga" },
+                      { id: "NETWORK", label: "Jaringan Iklan", desc: "Adsterra / Programmatic" },
+                      { id: "HOUSE_AD", label: "Iklan Internal", desc: "Promosi Internal FUTIQ" },
                     ].map((s) => (
                       <button
                         key={s.id}
@@ -945,7 +932,7 @@ export function AdConsole({
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-300 uppercase">2. Select Ad Format</label>
+                  <label className="text-xs font-bold text-slate-300 uppercase">2. Pilih Format Iklan</label>
                   <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 text-xs">
                     {[
                       "BANNER",
@@ -979,38 +966,38 @@ export function AdConsole({
                   onClick={() => setWizardStep(2)}
                   className="w-full py-2.5 bg-[#c3ff00] hover:bg-[#a6ff00] text-slate-950 font-bold text-xs rounded transition-colors"
                 >
-                  Continue to Creative Setup →
+                  Lanjut ke Pengaturan Materi Iklan →
                 </button>
               </div>
             )}
 
-            {/* STEP 2: Creative & Copy */}
+            {/* STEP 2: Materi & Teks */}
             {wizardStep === 2 && (
               <div className="space-y-4 text-xs">
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-300">Campaign Name</label>
+                  <label className="font-bold text-slate-300">Nama Kampanye</label>
                   <input
                     type="text"
                     value={wizardData.campaignName}
                     onChange={(e) => setWizardData((prev) => ({ ...prev, campaignName: e.target.value }))}
-                    placeholder="e.g. Nike Football Boots Launch"
+                    placeholder="contoh: Peluncuran Sepatu Nike Football"
                     className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-300">Ad Headline / Title</label>
+                  <label className="font-bold text-slate-300">Judul / Headline Iklan</label>
                   <input
                     type="text"
                     value={wizardData.title}
                     onChange={(e) => setWizardData((prev) => ({ ...prev, title: e.target.value }))}
-                    placeholder="e.g. Official Performance Collection 2026"
+                    placeholder="contoh: Koleksi Performa Resmi Musim 2026"
                     className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100"
                   />
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-300">Image Asset URL</label>
+                  <label className="font-bold text-slate-300">URL Gambar Banner</label>
                   <input
                     type="text"
                     value={wizardData.imageUrl}
@@ -1021,7 +1008,7 @@ export function AdConsole({
                 </div>
 
                 <div className="space-y-1">
-                  <label className="font-bold text-slate-300">Destination / Click URL</label>
+                  <label className="font-bold text-slate-300">URL Tujuan / Link Saat Diklik</label>
                   <input
                     type="text"
                     value={wizardData.targetUrl}
@@ -1033,28 +1020,28 @@ export function AdConsole({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-300">CTA Button Text</label>
+                    <label className="font-bold text-slate-300">Teks Tombol CTA</label>
                     <input
                       type="text"
                       value={wizardData.ctaText}
                       onChange={(e) => setWizardData((prev) => ({ ...prev, ctaText: e.target.value }))}
-                      placeholder="Shop Now"
+                      placeholder="Beli Sekarang"
                       className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100"
                     />
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-300">Placement Slot</label>
+                    <label className="font-bold text-slate-300">Slot Penempatan</label>
                     <select
                       value={wizardData.placementPosition}
                       onChange={(e) => setWizardData((prev) => ({ ...prev, placementPosition: e.target.value as any }))}
                       className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100"
                     >
-                      <option value="HOME_TOP">HOME_TOP</option>
-                      <option value="HOME_MIDDLE">HOME_MIDDLE</option>
-                      <option value="ARTICLE_TOP">ARTICLE_TOP</option>
-                      <option value="ARTICLE_BOTTOM">ARTICLE_BOTTOM</option>
-                      <option value="MOBILE_STICKY">MOBILE_STICKY</option>
+                      <option value="HOME_TOP">HOME_TOP (Atas Beranda)</option>
+                      <option value="HOME_MIDDLE">HOME_MIDDLE (Tengah Beranda)</option>
+                      <option value="ARTICLE_TOP">ARTICLE_TOP (Atas Artikel)</option>
+                      <option value="ARTICLE_BOTTOM">ARTICLE_BOTTOM (Bawah Artikel)</option>
+                      <option value="MOBILE_STICKY">MOBILE_STICKY (Melayang Mobile)</option>
                     </select>
                   </div>
                 </div>
@@ -1065,39 +1052,39 @@ export function AdConsole({
                     onClick={() => setWizardStep(1)}
                     className="w-1/3 py-2 bg-pitch-800 hover:bg-pitch-750 text-slate-300 rounded font-semibold"
                   >
-                    ← Back
+                    ← Kembali
                   </button>
                   <button
                     type="button"
                     onClick={() => setWizardStep(3)}
                     className="w-2/3 py-2 bg-[#c3ff00] hover:bg-[#a6ff00] text-slate-950 font-bold rounded"
                   >
-                    Continue to Financials →
+                    Lanjut ke Nilai Kontrak & Biaya →
                   </button>
                 </div>
               </div>
             )}
 
-            {/* STEP 3: Financials & Pricing */}
+            {/* STEP 3: Biaya & Jadwal */}
             {wizardStep === 3 && (
               <div className="space-y-4 text-xs">
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-300">Pricing Model</label>
+                    <label className="font-bold text-slate-300">Model Pembayaran</label>
                     <select
                       value={wizardData.pricingModel}
                       onChange={(e) => setWizardData((prev) => ({ ...prev, pricingModel: e.target.value as any }))}
                       className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100"
                     >
-                      <option value="FLAT_RATE">FLAT_RATE (Direct Negotiated Fixed Fee)</option>
-                      <option value="CPM">CPM (Cost per Mille)</option>
-                      <option value="CPC">CPC (Cost per Click)</option>
-                      <option value="FREE">FREE / House Ad</option>
+                      <option value="FLAT_RATE">FLAT_RATE (Biaya Tetap Hasil Negosiasi)</option>
+                      <option value="CPM">CPM (Biaya per 1.000 Tayang)</option>
+                      <option value="CPC">CPC (Biaya per Klik)</option>
+                      <option value="FREE">FREE / Iklan Internal</option>
                     </select>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-300">Agreed Fixed Price (MYR)</label>
+                    <label className="font-bold text-slate-300">Nominal Kesepakatan (MYR)</label>
                     <input
                       type="number"
                       value={wizardData.agreedPrice}
@@ -1109,7 +1096,7 @@ export function AdConsole({
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-300">Start Flight Date</label>
+                    <label className="font-bold text-slate-300">Tanggal Mulai Tayang</label>
                     <input
                       type="date"
                       value={wizardData.startAt}
@@ -1119,7 +1106,7 @@ export function AdConsole({
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-300">End Flight Date</label>
+                    <label className="font-bold text-slate-300">Tanggal Berakhir</label>
                     <input
                       type="date"
                       value={wizardData.endAt}
@@ -1135,30 +1122,30 @@ export function AdConsole({
                     onClick={() => setWizardStep(2)}
                     className="w-1/3 py-2 bg-pitch-800 hover:bg-pitch-750 text-slate-300 rounded font-semibold"
                   >
-                    ← Back
+                    ← Kembali
                   </button>
                   <button
                     type="button"
                     onClick={() => setWizardStep(4)}
                     className="w-2/3 py-2 bg-[#c3ff00] hover:bg-[#a6ff00] text-slate-950 font-bold rounded"
                   >
-                    Review & Activate Campaign →
+                    Tinjau & Aktifkan Kampanye →
                   </button>
                 </div>
               </div>
             )}
 
-            {/* STEP 4: Review & Launch */}
+            {/* STEP 4: Tinjau & Terbitkan */}
             {wizardStep === 4 && (
               <div className="space-y-4 text-xs">
                 <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-2">
-                  <span className="text-[10px] text-slate-500 uppercase font-mono block">Campaign Summary</span>
-                  <p className="text-sm font-bold text-slate-100">{wizardData.campaignName || "Untitled Campaign"}</p>
+                  <span className="text-[10px] text-slate-500 uppercase font-mono block">Ringkasan Kampanye</span>
+                  <p className="text-sm font-bold text-slate-100">{wizardData.campaignName || "Kampanye Tanpa Judul"}</p>
                   <div className="grid grid-cols-2 gap-2 text-slate-300 pt-2 border-t border-pitch-800 text-[11px]">
-                    <div>Source: <strong>{wizardData.source}</strong></div>
+                    <div>Sumber: <strong>{wizardData.source}</strong></div>
                     <div>Format: <strong>{wizardData.format}</strong></div>
-                    <div>Placement: <strong>{wizardData.placementPosition}</strong></div>
-                    <div>Pricing: <strong>{wizardData.pricingModel} (MYR {wizardData.agreedPrice.toLocaleString()})</strong></div>
+                    <div>Slot: <strong>{wizardData.placementPosition}</strong></div>
+                    <div>Biaya: <strong>{wizardData.pricingModel} (MYR {wizardData.agreedPrice.toLocaleString()})</strong></div>
                   </div>
                 </div>
 
@@ -1168,7 +1155,7 @@ export function AdConsole({
                     onClick={() => setWizardStep(3)}
                     className="w-1/3 py-2.5 bg-pitch-800 hover:bg-pitch-750 text-slate-300 rounded font-semibold"
                   >
-                    ← Back
+                    ← Kembali
                   </button>
                   <button
                     type="button"
@@ -1176,7 +1163,7 @@ export function AdConsole({
                     onClick={handleLaunchWizardAd}
                     className="w-2/3 py-2.5 bg-[#c3ff00] hover:bg-[#a6ff00] text-slate-950 font-bold rounded transition-colors flex items-center justify-center gap-2"
                   >
-                    {saving ? "Activating Campaign..." : "🚀 Launch & Mount Campaign"}
+                    {saving ? "Mengaktifkan Kampanye..." : "🚀 Terbitkan & Tayangkan Iklan"}
                   </button>
                 </div>
               </div>
@@ -1185,7 +1172,7 @@ export function AdConsole({
         </div>
       )}
 
-      {/* CREATE SPONSOR MODAL */}
+      {/* MODAL PENDAFTARAN SPONSOR */}
       {isSponsorModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <form
@@ -1193,7 +1180,7 @@ export function AdConsole({
             className="bg-pitch-900 border border-pitch-800 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl text-xs"
           >
             <div className="flex items-center justify-between border-b border-pitch-800 pb-3">
-              <h3 className="text-sm font-bold text-slate-100">Register Direct Sponsor</h3>
+              <h3 className="text-sm font-bold text-slate-100">Daftarkan Sponsor Langsung Baru</h3>
               <button
                 type="button"
                 onClick={() => setIsSponsorModalOpen(false)}
@@ -1204,43 +1191,43 @@ export function AdConsole({
             </div>
 
             <div className="space-y-1">
-              <label className="font-bold text-slate-300">Company / Brand Name *</label>
+              <label className="font-bold text-slate-300">Nama Perusahaan / Brand *</label>
               <input
                 required
                 type="text"
                 value={sponsorForm.companyName}
                 onChange={(e) => setSponsorForm((prev) => ({ ...prev, companyName: e.target.value }))}
-                placeholder="e.g. Nike Football"
+                placeholder="contoh: Nike Football"
                 className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100"
               />
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
-                <label className="font-bold text-slate-300">Contact Person</label>
+                <label className="font-bold text-slate-300">Nama Kontak Person</label>
                 <input
                   type="text"
                   value={sponsorForm.contactName}
                   onChange={(e) => setSponsorForm((prev) => ({ ...prev, contactName: e.target.value }))}
-                  placeholder="e.g. John Smith"
+                  placeholder="contoh: Budi Santoso"
                   className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="font-bold text-slate-300">Email Address</label>
+                <label className="font-bold text-slate-300">Alamat Email</label>
                 <input
                   type="email"
                   value={sponsorForm.email}
                   onChange={(e) => setSponsorForm((prev) => ({ ...prev, email: e.target.value }))}
-                  placeholder="contact@brand.com"
+                  placeholder="kontak@brand.com"
                   className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100"
                 />
               </div>
             </div>
 
             <div className="space-y-1">
-              <label className="font-bold text-slate-300">Official Website URL</label>
+              <label className="font-bold text-slate-300">Website Resmi</label>
               <input
                 type="url"
                 value={sponsorForm.website}
@@ -1255,7 +1242,7 @@ export function AdConsole({
               disabled={saving}
               className="w-full py-2.5 bg-[#c3ff00] hover:bg-[#a6ff00] text-slate-950 font-bold rounded transition-colors"
             >
-              {saving ? "Registering..." : "Save Sponsor Record"}
+              {saving ? "Mendaftarkan..." : "Simpan Data Sponsor"}
             </button>
           </form>
         </div>

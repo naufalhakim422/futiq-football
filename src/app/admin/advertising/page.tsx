@@ -66,11 +66,11 @@ export default async function AdminAdvertisingPage() {
           className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-2 transition-colors font-mono"
         >
           <ArrowLeft className="w-3.5 h-3.5" />
-          Back to Admin Central
+          Kembali ke Pusat Admin
         </Link>
         <SectionHeader
-          title="FUTIQ Advertising & Sponsorship Center"
-          subtitle="Provider-agnostic ad network integration, direct sponsor campaigns, placement routing, and revenue telemetry"
+          title="Pusat Manajemen Iklan & Sponsorship FUTIQ"
+          subtitle="Integrasi jaringan iklan (Adsterra), kampanye sponsor langsung, routing penempatan slot, dan laporan pendapatan"
         />
       </div>
 

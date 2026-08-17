@@ -9,16 +9,8 @@ import {
   Database,
   Layers,
   Lock,
-  ShieldCheck,
-  Cpu,
   KeyRound,
-  Server,
   ArrowRight,
-  TrendingUp,
-  DollarSign,
-  Globe,
-  Radio,
-  FileCheck,
   Unlock,
   LogOut,
 } from "lucide-react";
@@ -30,24 +22,24 @@ export default async function AdminPortalPage() {
   const isAdmin = user?.roles.includes("SUPER_ADMIN");
 
   // ============================================================================
-  // 1. UNAUTHENTICATED / PRIVATE ADMIN ACCESS GATEWAY
+  // 1. GERBANG AKSES ADMIN PRIVATE (BELUM TERAUTENTIKASI)
   // ============================================================================
   if (!user || !isAdmin) {
     return (
       <div className="py-12 md:py-16">
         <PageContainer>
           <div className="max-w-3xl mx-auto space-y-8">
-            {/* Masthead */}
+            {/* Masthead Header */}
             <div className="text-center space-y-3">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-brand-red/10 border border-brand-red/30 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-red">
                 <Lock className="w-3.5 h-3.5" />
-                <span>Level-1 Security Zone • SUPER_ADMIN Required</span>
+                <span>Area Keamanan Level 1 • Memerlukan Akses SUPER_ADMIN</span>
               </div>
               <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-100 font-sans tracking-tight">
-                Platform Administration Console
+                Konsol Administrasi Platform
               </h1>
               <p className="text-sm text-slate-400 max-w-xl mx-auto leading-relaxed">
-                This private backoffice terminal is restricted to authorized platform administrators, infrastructure engineers, and senior finance officers.
+                Terminal backoffice khusus ini dibatasi hanya untuk administrator platform, insinyur infrastruktur, dan manajer keuangan resmi.
               </p>
             </div>
 
@@ -59,10 +51,10 @@ export default async function AdminPortalPage() {
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-base font-bold text-slate-100 font-sans">
-                    Cryptographic Session & RBAC Verification
+                    Verifikasi Sesi Kriptografi & Otorisasi RBAC
                   </h3>
                   <p className="text-xs text-slate-400 leading-relaxed font-sans">
-                    Access requires an active HTTP-only cryptographic session cookie with explicit <code className="text-brand-green font-mono">SUPER_ADMIN</code> role clearance. All administrative actions are recorded into immutable audit logs.
+                    Akses memerlukan cookie sesi HTTP-only kriptografis aktif dengan izin peran <code className="text-brand-green font-mono">SUPER_ADMIN</code>. Seluruh aktivitas administratif dicatat ke dalam log audit permanen.
                   </p>
                 </div>
               </div>
@@ -70,27 +62,27 @@ export default async function AdminPortalPage() {
               {/* Protocol Spec Matrix */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 font-mono text-xs">
                 <div className="p-3.5 bg-pitch-950 border border-pitch-800 space-y-1">
-                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Session State</span>
-                  <div className="text-sm font-bold text-brand-red">UNAUTHENTICATED</div>
-                  <span className="text-[9px] text-slate-500">Cookie signature required</span>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Status Sesi</span>
+                  <div className="text-sm font-bold text-brand-red">BELUM LOGIN</div>
+                  <span className="text-[9px] text-slate-500">Tanda tangan cookie diperlukan</span>
                 </div>
 
                 <div className="p-3.5 bg-pitch-950 border border-pitch-800 space-y-1">
-                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Database Security</span>
-                  <div className="text-sm font-bold text-brand-green">ISOLATED</div>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Keamanan Database</span>
+                  <div className="text-sm font-bold text-brand-green">TERISOLASI</div>
                   <span className="text-[9px] text-slate-500">Zero public port exposure</span>
                 </div>
 
                 <div className="p-3.5 bg-pitch-950 border border-pitch-800 space-y-1">
-                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Ledger Guard</span>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Perlindungan Saldo</span>
                   <div className="text-sm font-bold text-slate-200">INTEGER-MATH</div>
-                  <span className="text-[9px] text-slate-500">Server-authoritative balance</span>
+                  <span className="text-[9px] text-slate-500">Perhitungan saldo presisi server</span>
                 </div>
 
                 <div className="p-3.5 bg-pitch-950 border border-pitch-800 space-y-1">
-                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Audit Trail</span>
-                  <div className="text-sm font-bold text-emerald-400">ACTIVE</div>
-                  <span className="text-[9px] text-slate-500">IP & timestamp recorded</span>
+                  <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Log Audit</span>
+                  <div className="text-sm font-bold text-emerald-400">AKTIF</div>
+                  <span className="text-[9px] text-slate-500">Pencatatan IP & waktu aktif</span>
                 </div>
               </div>
 
@@ -101,7 +93,7 @@ export default async function AdminPortalPage() {
                   className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover transition-all shadow-lg active:scale-[0.99]"
                 >
                   <Unlock className="w-4 h-4 text-slate-950" />
-                  <span>Aktifkan Sesi & Buka Console Super Admin</span>
+                  <span>Aktifkan Sesi & Buka Konsol Super Admin</span>
                   <ArrowRight className="w-4 h-4" />
                 </a>
               </div>
@@ -111,10 +103,10 @@ export default async function AdminPortalPage() {
                   href="/"
                   className="text-xs text-slate-400 hover:text-white transition-colors"
                 >
-                  ← Return to Public Media Site
+                  ← Kembali ke Beranda Publik
                 </Link>
                 <span className="text-[10px] text-slate-500 font-mono">
-                  Antigravity Security Engine v1.0
+                  Mesin Keamanan FUTIQ v1.0
                 </span>
               </div>
             </div>
@@ -125,14 +117,14 @@ export default async function AdminPortalPage() {
   }
 
   // ============================================================================
-  // 2. AUTHENTICATED SUPER_ADMIN MASTER CONSOLE
+  // 2. KONSOL MASTER SUPER_ADMIN (TERAUTENTIKASI)
   // ============================================================================
   return (
     <div className="py-8 space-y-8">
       <PageContainer>
         <SectionHeader
-          title="Platform Administration & Security Operations"
-          subtitle="System configuration, RBAC management, audit trails, and infrastructure telemetry"
+          title="Administrasi Platform & Pusat Operasi Keamanan"
+          subtitle="Konfigurasi sistem, manajemen peran RBAC, riwayat audit, dan telemetri infrastruktur"
           badgeText="Super Admin Root"
         />
 
@@ -142,10 +134,10 @@ export default async function AdminPortalPage() {
               <Lock className="w-5 h-5 text-brand-green shrink-0" />
               <div>
                 <h4 className="text-sm font-bold text-slate-100 font-sans">
-                  RBAC Security Zone & Server Authorization
+                  Zona Keamanan RBAC & Otorisasi Server
                 </h4>
                 <p className="text-xs text-brand-green font-mono">
-                  Authenticated as SUPER_ADMIN: {user.fullName} ({user.email})
+                  Login sebagai SUPER_ADMIN: {user.fullName} ({user.email})
                 </p>
               </div>
             </div>
@@ -162,25 +154,25 @@ export default async function AdminPortalPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-pitch-850 border border-pitch-750 p-4 space-y-1">
               <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-semibold uppercase">Users & RBAC</span>
+                <span className="text-xs font-semibold uppercase">Pengguna & RBAC</span>
                 <Users className="w-4 h-4 text-brand-green" />
               </div>
-              <div className="text-xl font-bold font-mono text-slate-100">Active</div>
-              <p className="text-[10px] text-slate-500">5 System Roles Configured</p>
+              <div className="text-xl font-bold font-mono text-slate-100">Aktif</div>
+              <p className="text-[10px] text-slate-500">5 Peran Sistem Dikonfigurasi</p>
             </div>
 
             <div className="bg-pitch-850 border border-pitch-750 p-4 space-y-1">
               <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-semibold uppercase">Database Engine</span>
+                <span className="text-xs font-semibold uppercase">Mesin Database</span>
                 <Database className="w-4 h-4 text-brand-green" />
               </div>
               <div className="text-xl font-bold font-mono text-slate-100">PostgreSQL 16</div>
-              <p className="text-[10px] text-slate-500">Prisma Migrations Managed</p>
+              <p className="text-[10px] text-slate-500">Prisma Migrations Terkelola</p>
             </div>
 
             <div className="bg-pitch-850 border border-pitch-750 p-4 space-y-1">
               <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-semibold uppercase">Ephemeral Cache</span>
+                <span className="text-xs font-semibold uppercase">Cache Efemeral</span>
                 <Layers className="w-4 h-4 text-brand-green" />
               </div>
               <div className="text-xl font-bold font-mono text-slate-100">Redis 7</div>
@@ -189,11 +181,11 @@ export default async function AdminPortalPage() {
 
             <div className="bg-pitch-850 border border-pitch-750 p-4 space-y-1">
               <div className="flex items-center justify-between text-slate-400">
-                <span className="text-xs font-semibold uppercase">Audit Logging</span>
+                <span className="text-xs font-semibold uppercase">Pencatatan Audit</span>
                 <ShieldAlert className="w-4 h-4 text-brand-green" />
               </div>
-              <div className="text-xl font-bold font-mono text-slate-100">Immutable</div>
-              <p className="text-[10px] text-slate-500">Transactional Activity Logs</p>
+              <div className="text-xl font-bold font-mono text-slate-100">Permanen</div>
+              <p className="text-[10px] text-slate-500">Log Aktivitas Transaksional</p>
             </div>
           </div>
 
@@ -204,25 +196,25 @@ export default async function AdminPortalPage() {
             >
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition-colors">
-                  Finance & Payouts →
+                  Keuangan & Pembayaran →
                 </h4>
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                Auto-payout rules, manual review queues, and gateway reconciliation.
+                Aturan auto-payout, antrean review manual, dan rekonsiliasi gateway bank.
               </p>
             </Link>
 
             <Link
               href="/admin/advertising"
-              className="p-5 bg-pitch-950 border border-pitch-800 hover:border-pitch-gold/50 transition-colors block group"
+              className="p-5 bg-pitch-950 border border-pitch-800 hover:border-[#c3ff00]/50 transition-colors block group"
             >
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-slate-100 group-hover:text-pitch-gold transition-colors">
-                  Ad Management →
+                <h4 className="text-sm font-bold text-slate-100 group-hover:text-[#c3ff00] transition-colors">
+                  Manajemen Iklan & Sponsor →
                 </h4>
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                Sandboxed sponsor slots, device targeting, and placement schedules.
+                Slot sponsor terisolasi, penargetan perangkat, Adsterra, dan jadwal penayangan.
               </p>
             </Link>
 
@@ -232,11 +224,11 @@ export default async function AdminPortalPage() {
             >
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold text-slate-100 group-hover:text-blue-400 transition-colors">
-                  Revenue Analytics →
+                  Analitik Pendapatan & Trafik →
                 </h4>
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                Privacy-preserving traffic, ad click-through rates, and estimated RPM.
+                Trafik privat, CTR rasio klik iklan, dan estimasi RPM pendapatan.
               </p>
             </Link>
 
@@ -246,11 +238,11 @@ export default async function AdminPortalPage() {
             >
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold text-slate-100 group-hover:text-purple-400 transition-colors">
-                  Football Engine →
+                  Mesin Data Sepak Bola →
                 </h4>
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                Full provider synchronization and cache invalidation controls.
+                Sinkronisasi provider jadwal/skor, live score, dan kontrol pembersihan cache.
               </p>
             </Link>
 
@@ -260,11 +252,11 @@ export default async function AdminPortalPage() {
             >
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold text-slate-100 group-hover:text-brand-green transition-colors">
-                  Growth, SEO & Content Distribution Engine →
+                  Mesin Pertumbuhan, SEO & Distribusi Konten →
                 </h4>
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                Google Discover readiness checklist, dynamic XML sitemaps, RSS 2.0 syndication feeds, and safe 301/302 URL redirects.
+                Kesiapan Google Discover, XML sitemap dinamis, sindikasi feed RSS 2.0, dan pengalihan URL 301/302.
               </p>
             </Link>
           </div>
