@@ -300,6 +300,45 @@ export function EarningsConsole({
         </button>
       </div>
 
+      {/* KYC Compliance Status Banner */}
+      <div className="bg-pitch-surface border border-pitch-border rounded-xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="flex items-start gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-pitch-border/60 flex items-center justify-center text-brand-green shrink-0 mt-0.5">
+            <ShieldCheck className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
+              Identity Verification (KYC Compliance)
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20">
+                Independent Compliance Layer
+              </span>
+            </h3>
+            <p className="text-xs text-muted-foreground mt-1">
+              Required for automated payouts and financial compliance. Documents are securely processed by an accredited KYC provider.
+            </p>
+          </div>
+        </div>
+
+        <button
+          onClick={async () => {
+            try {
+              const res = await fetch("/api/contributor/kyc/initiate", { method: "POST" });
+              const data = await res.json();
+              if (data.session?.hostedVerificationUrl) {
+                window.open(data.session.hostedVerificationUrl, "_blank");
+              } else {
+                alert("Verification initiated. Please complete the verification session.");
+              }
+            } catch {
+              alert("Failed to initiate verification session.");
+            }
+          }}
+          className="px-4 py-2 bg-pitch-gold text-slate-950 font-bold text-xs rounded-lg hover:bg-yellow-400 transition-colors shrink-0"
+        >
+          Verify Identity Now →
+        </button>
+      </div>
+
       {/* Navigation Tabs */}
       <div className="flex border-b border-pitch-border gap-6">
         <button

@@ -512,6 +512,11 @@ enum NotificationType {
   PAYOUT_SENT
   PAYOUT_FAILED
   FRAUD_ALERT
+  KYC_SUBMITTED
+  KYC_VERIFIED
+  KYC_REJECTED
+  KYC_EXPIRED
+  KYC_REVERIFICATION_REQUIRED
 }
 
 model ContributorProfile {
@@ -544,6 +549,7 @@ model ContributorProfile {
   payouts            Payout[]
   fraudSignals       FraudSignal[]
   financialAuditLogs FinancialAuditLog[]
+  kyc                KycVerification?
   createdAt          DateTime             @default(now())
   updatedAt          DateTime             @updatedAt
 
@@ -1373,6 +1379,90 @@ model AdAnalytics {
   @@index([date])
   @@map("ad_analytics")
 }
+
+// ==========================================
+// 7. PRODUCTION KYC & IDENTITY VERIFICATION
+// ==========================================
+
+enum KycStatus {
+  NOT_STARTED
+  PENDING
+  UNDER_REVIEW
+  VERIFIED
+  REJECTED
+  EXPIRED
+  REVERIFICATION_REQUIRED
+  SUSPENDED
+}
+
+enum KycVerificationLevel {
+  STANDARD
+  ENHANCED
+}
+
+model KycVerification {
+  id                     String               @id @default(cuid())
+  contributorProfileId   String               @unique
+  status                 KycStatus            @default(NOT_STARTED)
+  verificationLevel      KycVerificationLevel @default(STANDARD)
+  provider               String               @default("mock-kyc-provider")
+  providerCustomerId     String? // External applicant ID
+  providerVerificationId String? // External check ID
+  country                String?
+  rejectionReasonCode    String? // e.g. "DOC_EXPIRED", "UNREADABLE_DOC", "NAME_MISMATCH"
+  rejectionDetails       String? // Sanitized user-facing guidance
+  complianceNotes        String? // Internal officer notes
+  verifiedAt             DateTime?
+  expiresAt              DateTime?
+  lastCheckedAt          DateTime?
+  complianceHold         Boolean              @default(false)
+  complianceHoldReason   String?
+  metadata               Json? // Minimal non-sensitive compliance metadata
+  contributorProfile     ContributorProfile   @relation(fields: [contributorProfileId], references: [id], onDelete: Cascade)
+  auditLogs              KycAuditLog[]
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+
+  @@index([status])
+  @@index([providerCustomerId])
+  @@map("kyc_verifications")
+}
+
+model KycAuditLog {
+  id                String          @id @default(cuid())
+  kycVerificationId String
+  action            String // e.g. "INITIATED", "VERIFIED", "REJECTED", "EXPIRED", "OVERRIDDEN"
+  actorId           String? // User ID or "PROVIDER_WEBHOOK" / "SYSTEM"
+  previousStatus    KycStatus?
+  newStatus         KycStatus
+  reason            String?
+  ipAddress         String?
+  userAgent         String?
+  kycVerification   KycVerification @relation(fields: [kycVerificationId], references: [id], onDelete: Cascade)
+  createdAt         DateTime        @default(now())
+
+  @@index([kycVerificationId])
+  @@index([action])
+  @@map("kyc_audit_logs")
+}
+
+model KycWebhookEvent {
+  id           String    @id @default(cuid())
+  provider     String
+  eventId      String // Unique event id from provider
+  eventType    String
+  payload      Json
+  signature    String?
+  isProcessed  Boolean   @default(false)
+  processedAt  DateTime?
+  errorDetails String?
+  createdAt    DateTime  @default(now())
+
+  @@unique([provider, eventId])
+  @@index([provider, isProcessed])
+  @@map("kyc_webhook_events")
+}
+
 
 
 

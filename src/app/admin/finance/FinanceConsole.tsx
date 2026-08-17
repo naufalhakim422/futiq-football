@@ -18,6 +18,7 @@ import {
   Search,
   Zap,
   Scale,
+  ShieldCheck,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -44,8 +45,10 @@ export function FinanceConsole({
   const [reconciliations, setReconciliations] = useState<any[]>([]);
   const [policy, setPolicy] = useState<any>(null);
 
+  const [kycVerifications, setKycVerifications] = useState<any[]>([]);
+
   const [activeTab, setActiveTab] = useState<
-    "withdrawals" | "payouts" | "reconciliation" | "policy" | "fraud" | "audit" | "adjustments"
+    "withdrawals" | "payouts" | "reconciliation" | "policy" | "kyc" | "fraud" | "audit" | "adjustments"
   >("withdrawals");
 
   // Rejection Modal
@@ -112,6 +115,14 @@ export function FinanceConsole({
     } catch {}
   };
 
+  const fetchKyc = async () => {
+    try {
+      const res = await fetch("/api/admin/compliance/kyc");
+      const data = await res.json();
+      if (data.verifications) setKycVerifications(data.verifications);
+    } catch {}
+  };
+
   const refreshData = async () => {
     try {
       const [overRes, withRes, payRes, fraudRes, logRes] = await Promise.all([
@@ -129,6 +140,7 @@ export function FinanceConsole({
       if (logRes.logs) setAuditLogs(logRes.logs);
       await fetchReconciliations();
       await fetchPolicy();
+      await fetchKyc();
     } catch (err) {
       console.warn("Failed to refresh finance console:", err);
     }
@@ -416,6 +428,22 @@ export function FinanceConsole({
         </button>
 
         <button
+          onClick={() => {
+            setActiveTab("kyc");
+            fetchKyc();
+          }}
+          className={cn(
+            "px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5",
+            activeTab === "kyc"
+              ? "bg-brand-green text-slate-950"
+              : "bg-pitch-900 text-slate-400 hover:text-slate-200"
+          )}
+        >
+          <ShieldCheck className="w-3.5 h-3.5" />
+          KYC Compliance ({kycVerifications.length})
+        </button>
+
+        <button
           onClick={() => setActiveTab("fraud")}
           className={cn(
             "px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5",
@@ -686,6 +714,77 @@ export function FinanceConsole({
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* TAB: KYC COMPLIANCE QUEUE */}
+      {activeTab === "kyc" && (
+        <div className="overflow-x-auto border border-pitch-800 rounded-xl bg-pitch-900">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-pitch-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-pitch-800">
+              <tr>
+                <th className="p-3.5">Contributor / Email</th>
+                <th className="p-3.5">Country</th>
+                <th className="p-3.5">Provider / Level</th>
+                <th className="p-3.5">Verification Date</th>
+                <th className="p-3.5">Compliance Hold</th>
+                <th className="p-3.5 text-right">KYC Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-pitch-800/60">
+              {kycVerifications.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="p-6 text-center text-slate-500">
+                    No KYC verification records found.
+                  </td>
+                </tr>
+              ) : (
+                kycVerifications.map((k) => (
+                  <tr key={k.id} className="hover:bg-pitch-850/40 transition-colors">
+                    <td className="p-3.5">
+                      <div className="font-bold text-slate-100">
+                        {k.contributorProfile?.displayName || "Contributor"}
+                      </div>
+                      <div className="text-slate-500 text-[10px]">
+                        {k.contributorProfile?.user?.email}
+                      </div>
+                    </td>
+                    <td className="p-3.5 font-mono text-slate-300">{k.country || "MY"}</td>
+                    <td className="p-3.5 text-slate-400">
+                      <div>{k.provider}</div>
+                      <div className="text-[10px] text-pitch-gold font-bold">{k.verificationLevel}</div>
+                    </td>
+                    <td className="p-3.5 text-slate-400 font-mono text-[10px]">
+                      {k.verifiedAt ? new Date(k.verifiedAt).toLocaleDateString() : "Pending"}
+                    </td>
+                    <td className="p-3.5">
+                      {k.complianceHold ? (
+                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-red-500/10 text-red-400 border border-red-500/30">
+                          HOLD ACTIVE
+                        </span>
+                      ) : (
+                        <span className="text-slate-500 text-[10px]">Clear</span>
+                      )}
+                    </td>
+                    <td className="p-3.5 text-right">
+                      <span
+                        className={cn(
+                          "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+                          k.status === "VERIFIED"
+                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                            : k.status === "PENDING" || k.status === "UNDER_REVIEW"
+                            ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                            : "bg-red-500/10 text-red-400 border border-red-500/20"
+                        )}
+                      >
+                        {k.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       )}
 

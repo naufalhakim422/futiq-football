@@ -142,7 +142,14 @@ export class PayoutEligibilityService {
       reasonCodes.push("FRAUD_RISK_CRITICAL_BLOCK");
     }
 
-    // 9. Evaluate Final Eligibility & Auto-Approval Capability
+    // 9. KYC Identity Verification Check (Must be VERIFIED, active, and not on compliance hold)
+    const { kycService } = await import("@/lib/kyc/kyc.service");
+    const kyc = await kycService.evaluateKycForPayout(contributorProfileId);
+    if (!kyc.isKycCompliant) {
+      reasonCodes.push(...kyc.reasonCodes);
+    }
+
+    // 10. Evaluate Final Eligibility & Auto-Approval Capability
     const hasHardBlock = reasonCodes.some((code) =>
       [
         "CONTRIBUTOR_INACTIVE",
@@ -152,6 +159,16 @@ export class PayoutEligibilityService {
         "PAYOUT_ACCOUNT_COOLDOWN_ACTIVE",
         "ACTIVE_WITHDRAWAL_IN_FLIGHT",
         "FRAUD_RISK_CRITICAL_BLOCK",
+        "KYC_NOT_STARTED",
+        "KYC_STATUS_NOT_STARTED",
+        "KYC_STATUS_PENDING",
+        "KYC_STATUS_UNDER_REVIEW",
+        "KYC_STATUS_REJECTED",
+        "KYC_STATUS_EXPIRED",
+        "KYC_STATUS_REVERIFICATION_REQUIRED",
+        "KYC_STATUS_SUSPENDED",
+        "KYC_EXPIRED",
+        "KYC_COMPLIANCE_HOLD",
       ].includes(code)
     );
 

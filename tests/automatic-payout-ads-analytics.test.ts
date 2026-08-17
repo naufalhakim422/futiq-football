@@ -192,4 +192,48 @@ describe("Sprint 6 — Production Automatic Payout, Advertising & Analytics Suit
       assert.equal(result.recorded, true);
     });
   });
+
+  /* =========================================================
+     7. PRODUCTION KYC & IDENTITY VERIFICATION SUITE
+     ========================================================= */
+  describe("7. KYC Compliance & Identity Verification", () => {
+    const { MockKycProvider } = require("../src/lib/kyc/mock-kyc.provider");
+    const kycProvider = new MockKycProvider();
+
+    it("declares MockKycProvider as MOCK status", () => {
+      assert.equal(kycProvider.providerName, "mock-kyc-provider");
+      assert.equal(kycProvider.status, "MOCK");
+    });
+
+    it("generates secure verification session with token and hosted URL", async () => {
+      const session = await kycProvider.initiateSession("contrib_123", "MY", "STANDARD");
+      assert.ok(session.sessionToken.startsWith("kyc_sess_"));
+      assert.ok(session.hostedVerificationUrl.includes(session.sessionToken));
+      assert.equal(session.provider, "mock-kyc-provider");
+    });
+
+    it("verifies valid HMAC-SHA256 signature for KYC webhooks", () => {
+      const payload = JSON.stringify({
+        eventId: "kyc_evt_1",
+        eventType: "KYC_VERIFIED",
+        status: "VERIFIED",
+        providerCustomerId: "kyc_sess_abc",
+      });
+
+      const secret = "mock-kyc-secret-key-123456";
+      const signature = crypto.createHmac("sha256", secret).update(payload).digest("hex");
+      assert.equal(kycProvider.verifyWebhookSignature(payload, signature), true);
+    });
+
+    it("rejects tampered or forged KYC webhook signature", () => {
+      const payload = JSON.stringify({ eventId: "kyc_evt_tampered", status: "VERIFIED" });
+      const badSig = "1111111111111111111111111111111111111111111111111111111111111111";
+      assert.equal(kycProvider.verifyWebhookSignature(payload, badSig), false);
+    });
+
+    it("rejects missing KYC webhook signature", () => {
+      const payload = JSON.stringify({ eventId: "kyc_evt_no_sig" });
+      assert.equal(kycProvider.verifyWebhookSignature(payload, null), false);
+    });
+  });
 });
