@@ -18,55 +18,59 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    // Aggregate key financial metrics
-    const [
-      totalRewardsAgg,
-      totalWalletsAgg,
-      pendingWithdrawalsCount,
-      pendingWithdrawalsAgg,
-      processingPayoutsCount,
-      paidPayoutsAgg,
-      activeFraudSignalsCount,
-    ] = await Promise.all([
-      // Total finalized rewards
-      prisma.contributorReward.aggregate({
-        where: { status: RewardStatus.FINALIZED },
-        _sum: { totalRewardMinor: true },
-        _count: true,
-      }),
-      // Total wallet liability (Available + Held)
-      prisma.wallet.aggregate({
-        _sum: {
-          availableBalanceMinor: true,
-          heldBalanceMinor: true,
-          lifetimeEarningsMinor: true,
-          lifetimeWithdrawnMinor: true,
-        },
-      }),
-      // Pending withdrawal requests count
-      prisma.withdrawalRequest.count({
-        where: { status: WithdrawalStatus.PENDING_REVIEW },
-      }),
-      // Pending withdrawal total amount
-      prisma.withdrawalRequest.aggregate({
-        where: { status: WithdrawalStatus.PENDING_REVIEW },
-        _sum: { amountMinor: true },
-      }),
-      // Processing payouts count
-      prisma.payout.count({
-        where: { status: PayoutStatus.PROCESSING },
-      }),
-      // Total paid out
-      prisma.payout.aggregate({
-        where: { status: PayoutStatus.PAID },
-        _sum: { amountMinor: true },
-        _count: true,
-      }),
-      // Active fraud signals
-      prisma.fraudSignal.count({
-        where: { isResolved: false },
-      }),
-    ]);
+    let totalRewardsAgg: any = { _sum: { totalRewardMinor: 0 }, _count: 0 };
+    let totalWalletsAgg: any = { _sum: { availableBalanceMinor: 0, heldBalanceMinor: 0, lifetimeEarningsMinor: 0, lifetimeWithdrawnMinor: 0 } };
+    let pendingWithdrawalsCount = 0;
+    let pendingWithdrawalsAgg: any = { _sum: { amountMinor: 0 } };
+    let processingPayoutsCount = 0;
+    let paidPayoutsAgg: any = { _sum: { amountMinor: 0 }, _count: 0 };
+    let activeFraudSignalsCount = 0;
+
+    try {
+      const results = await Promise.all([
+        prisma.contributorReward.aggregate({
+          where: { status: RewardStatus.FINALIZED },
+          _sum: { totalRewardMinor: true },
+          _count: true,
+        }),
+        prisma.wallet.aggregate({
+          _sum: {
+            availableBalanceMinor: true,
+            heldBalanceMinor: true,
+            lifetimeEarningsMinor: true,
+            lifetimeWithdrawnMinor: true,
+          },
+        }),
+        prisma.withdrawalRequest.count({
+          where: { status: WithdrawalStatus.PENDING_REVIEW },
+        }),
+        prisma.withdrawalRequest.aggregate({
+          where: { status: WithdrawalStatus.PENDING_REVIEW },
+          _sum: { amountMinor: true },
+        }),
+        prisma.payout.count({
+          where: { status: PayoutStatus.PROCESSING },
+        }),
+        prisma.payout.aggregate({
+          where: { status: PayoutStatus.PAID },
+          _sum: { amountMinor: true },
+          _count: true,
+        }),
+        prisma.fraudSignal.count({
+          where: { isResolved: false },
+        }),
+      ]);
+
+      totalRewardsAgg = results[0];
+      totalWalletsAgg = results[1];
+      pendingWithdrawalsCount = results[2];
+      pendingWithdrawalsAgg = results[3];
+      processingPayoutsCount = results[4];
+      paidPayoutsAgg = results[5];
+      activeFraudSignalsCount = results[6];
+    } catch (dbErr) {
+      console.warn("[Admin Finance API DB fallback]:", dbErr);
+    }
 
     const totalLiabilityMinor =
       (totalWalletsAgg._sum.availableBalanceMinor || 0) +
@@ -76,7 +80,7 @@ export async function GET(req: NextRequest) {
       success: true,
       overview: {
         totalFinalizedRewardsMinor: totalRewardsAgg._sum.totalRewardMinor || 0,
-        totalFinalizedRewardsCount: totalRewardsAgg._count,
+        totalFinalizedRewardsCount: totalRewardsAgg._count || 0,
         totalAvailableLiabilityMinor: totalWalletsAgg._sum.availableBalanceMinor || 0,
         totalHeldLiabilityMinor: totalWalletsAgg._sum.heldBalanceMinor || 0,
         totalWalletLiabilityMinor: totalLiabilityMinor,
@@ -84,7 +88,7 @@ export async function GET(req: NextRequest) {
         pendingWithdrawalsAmountMinor: pendingWithdrawalsAgg._sum.amountMinor || 0,
         processingPayoutsCount,
         totalPaidOutMinor: paidPayoutsAgg._sum.amountMinor || 0,
-        totalPaidOutCount: paidPayoutsAgg._count,
+        totalPaidOutCount: paidPayoutsAgg._count || 0,
         activeFraudSignalsCount,
         currency: "MYR",
       },

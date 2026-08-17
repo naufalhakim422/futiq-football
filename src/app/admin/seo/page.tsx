@@ -10,7 +10,7 @@ export const metadata = {
 export default async function AdminSeoPage() {
   const user = await getCurrentUser();
   if (!user) {
-    redirect("/auth/signin");
+    redirect("/admin");
   }
 
   const isAuthorized = user.roles.some((r) =>

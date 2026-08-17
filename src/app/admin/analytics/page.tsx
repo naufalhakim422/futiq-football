@@ -13,15 +13,35 @@ export const dynamic = "force-dynamic";
 export default async function AdminAnalyticsPage() {
   const user = await getCurrentUser();
   if (!user) {
-    redirect("/login?unauthorized=true");
+    redirect("/admin");
   }
 
   const isAuthorized = user.roles.some((r) => ["SUPER_ADMIN", "SENIOR_EDITOR", "FINANCE"].includes(r));
   if (!isAuthorized) {
-    redirect("/unauthorized");
+    redirect("/admin");
   }
 
-  const performance = await analyticsService.getRevenuePerformance(14);
+  let performance: any = {
+    dailyStats: [],
+    totals: {
+      pageViews: 0,
+      qualifiedViews: 0,
+      totalReadTimeMinutes: 0,
+      avgScrollDepthPct: 0,
+      uniqueSessions: 0,
+      adImpressions: 0,
+      adClicks: 0,
+      estimatedAdRevenueMinor: 0,
+    },
+    topArticles: [],
+    adPlacements: [],
+  };
+
+  try {
+    performance = await analyticsService.getRevenuePerformance(14);
+  } catch (err) {
+    console.warn("[Admin Analytics DB offline fallback]:", err);
+  }
 
   return (
     <PageContainer className="py-8 space-y-8">

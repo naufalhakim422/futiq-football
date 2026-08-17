@@ -14,18 +14,27 @@ export const dynamic = "force-dynamic";
 export default async function AdminAdvertisingPage() {
   const user = await getCurrentUser();
   if (!user) {
-    redirect("/login?unauthorized=true");
+    redirect("/admin");
   }
 
   const isAuthorized = user.roles.some((r) => ["SUPER_ADMIN", "SENIOR_EDITOR", "FINANCE"].includes(r));
   if (!isAuthorized) {
-    redirect("/unauthorized");
+    redirect("/admin");
   }
 
-  const [placements, providers] = await Promise.all([
-    adPlacementService.listPlacements(),
-    prisma.adProvider.findMany({ orderBy: { name: "asc" } }),
-  ]);
+  let placements: any[] = [];
+  let providers: any[] = [];
+
+  try {
+    const results = await Promise.all([
+      adPlacementService.listPlacements(),
+      prisma.adProvider.findMany({ orderBy: { name: "asc" } }),
+    ]);
+    placements = results[0];
+    providers = results[1];
+  } catch (err) {
+    console.warn("[Admin Advertising DB offline fallback]:", err);
+  }
 
   return (
     <PageContainer className="py-8 space-y-8">
