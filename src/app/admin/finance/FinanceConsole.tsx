@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   DollarSign,
   TrendingUp,
@@ -16,6 +16,8 @@ import {
   Eye,
   Lock,
   Search,
+  Zap,
+  Scale,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -39,9 +41,11 @@ export function FinanceConsole({
   const [payouts, setPayouts] = useState(initialPayouts);
   const [fraudSignals, setFraudSignals] = useState(initialFraudSignals);
   const [auditLogs, setAuditLogs] = useState(initialAuditLogs);
+  const [reconciliations, setReconciliations] = useState<any[]>([]);
+  const [policy, setPolicy] = useState<any>(null);
 
   const [activeTab, setActiveTab] = useState<
-    "withdrawals" | "payouts" | "fraud" | "audit" | "adjustments"
+    "withdrawals" | "payouts" | "reconciliation" | "policy" | "fraud" | "audit" | "adjustments"
   >("withdrawals");
 
   // Rejection Modal
@@ -51,14 +55,23 @@ export function FinanceConsole({
   const [actionError, setActionError] = useState("");
   const [actionSuccess, setActionSuccess] = useState("");
 
-  // Approval Loading State
+  // Approval / Process Loading State
   const [processingWithdrawalId, setProcessingWithdrawalId] = useState<string | null>(null);
   const [processingPayoutId, setProcessingPayoutId] = useState<string | null>(null);
+  const [retryingPayoutId, setRetryingPayoutId] = useState<string | null>(null);
+  const [isRunningSweep, setIsRunningSweep] = useState(false);
 
   // Fraud Resolution Modal
   const [resolvingSignalId, setResolvingSignalId] = useState<string | null>(null);
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [isResolvingSignal, setIsResolvingSignal] = useState(false);
+
+  // Policy Form State
+  const [minWithdrawalMYR, setMinWithdrawalMYR] = useState("20.00");
+  const [maxAutoMYR, setMaxAutoMYR] = useState("500.00");
+  const [maxRiskScore, setMaxRiskScore] = useState("29");
+  const [isAutoEnabled, setIsAutoEnabled] = useState(true);
+  const [isSavingPolicy, setIsSavingPolicy] = useState(false);
 
   // Adjustment Modal
   const [adjustmentWalletId, setAdjustmentWalletId] = useState("");
@@ -70,6 +83,33 @@ export function FinanceConsole({
   // Helpers
   const formatMYR = (minor: number) => {
     return `RM ${(minor / 100).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+  };
+
+  useEffect(() => {
+    fetchPolicy();
+    fetchReconciliations();
+  }, []);
+
+  const fetchPolicy = async () => {
+    try {
+      const res = await fetch("/api/admin/finance/policy");
+      const data = await res.json();
+      if (data.policy) {
+        setPolicy(data.policy);
+        setMinWithdrawalMYR((data.policy.minimumWithdrawalMinor / 100).toFixed(2));
+        setMaxAutoMYR((data.policy.maxAutomaticWithdrawalMinor / 100).toFixed(2));
+        setMaxRiskScore(data.policy.autoPayoutMaxRiskScore.toString());
+        setIsAutoEnabled(data.policy.isAutoPayoutEnabled);
+      }
+    } catch {}
+  };
+
+  const fetchReconciliations = async () => {
+    try {
+      const res = await fetch("/api/admin/finance/reconciliation");
+      const data = await res.json();
+      if (data.reconciliations) setReconciliations(data.reconciliations);
+    } catch {}
   };
 
   const refreshData = async () => {
@@ -87,6 +127,8 @@ export function FinanceConsole({
       if (payRes.withdrawals) setPayouts(payRes.withdrawals);
       if (fraudRes.signals) setFraudSignals(fraudRes.signals);
       if (logRes.logs) setAuditLogs(logRes.logs);
+      await fetchReconciliations();
+      await fetchPolicy();
     } catch (err) {
       console.warn("Failed to refresh finance console:", err);
     }
@@ -162,621 +204,608 @@ export function FinanceConsole({
     }
   };
 
-  const handleResolveSignal = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!resolvingSignalId || !resolutionNotes.trim()) return;
-
+  const handleRetryPayout = async (payoutId: string) => {
     setActionError("");
     setActionSuccess("");
-    setIsResolvingSignal(true);
+    setRetryingPayoutId(payoutId);
 
     try {
-      const res = await fetch("/api/admin/finance/fraud-signals", {
+      const res = await fetch(`/api/admin/finance/payouts/${payoutId}/retry`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          signalId: resolvingSignalId,
-          resolutionNotes,
-        }),
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to resolve signal");
+      if (!res.ok) throw new Error(data.error || "Retry failed");
 
-      setActionSuccess("Fraud signal marked resolved.");
-      setResolvingSignalId(null);
-      setResolutionNotes("");
+      setActionSuccess("Payout retry processed successfully.");
       await refreshData();
     } catch (err: any) {
-      setActionError(err.message || "Failed to resolve signal");
+      setActionError(err.message || "Failed to retry payout");
     } finally {
-      setIsResolvingSignal(false);
+      setRetryingPayoutId(null);
     }
   };
 
-  const handleAdjustmentSubmit = async (e: React.FormEvent) => {
+  const handleRunReconciliation = async () => {
+    setActionError("");
+    setActionSuccess("");
+    setIsRunningSweep(true);
+
+    try {
+      const res = await fetch("/api/admin/finance/reconciliation", { method: "POST" });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Reconciliation failed");
+
+      setActionSuccess(data.message || "Reconciliation sweep finished.");
+      await refreshData();
+    } catch (err: any) {
+      setActionError(err.message || "Failed to run reconciliation sweep");
+    } finally {
+      setIsRunningSweep(false);
+    }
+  };
+
+  const handleSavePolicy = async (e: React.FormEvent) => {
     e.preventDefault();
     setActionError("");
     setActionSuccess("");
+    setIsSavingPolicy(true);
 
-    const amountFloat = parseFloat(adjustmentAmount);
-    if (isNaN(amountFloat) || amountFloat <= 0) {
-      setActionError("Please specify a valid positive amount.");
-      return;
-    }
-
-    if (!adjustmentWalletId.trim() || !adjustmentReason.trim() || adjustmentReason.length < 10) {
-      setActionError("Wallet ID and a minimum 10-character reason are required.");
-      return;
-    }
-
-    setIsSubmittingAdjustment(true);
     try {
-      const res = await fetch("/api/admin/finance/adjustments", {
-        method: "POST",
+      const res = await fetch("/api/admin/finance/policy", {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          walletId: adjustmentWalletId.trim(),
-          amountMinor: Math.round(amountFloat * 100),
-          type: adjustmentType,
-          reason: adjustmentReason.trim(),
+          minimumWithdrawalMinor: Math.round(parseFloat(minWithdrawalMYR) * 100),
+          maxAutomaticWithdrawalMinor: Math.round(parseFloat(maxAutoMYR) * 100),
+          autoPayoutMaxRiskScore: parseInt(maxRiskScore, 10),
+          isAutoPayoutEnabled: isAutoEnabled,
         }),
       });
-
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Adjustment failed");
+      if (!res.ok) throw new Error(data.error || "Failed to update policy");
 
-      setActionSuccess("Adjustment applied and logged successfully.");
-      setAdjustmentAmount("");
-      setAdjustmentReason("");
-      setAdjustmentWalletId("");
-      await refreshData();
+      setActionSuccess("Payout policy saved and active.");
+      await fetchPolicy();
     } catch (err: any) {
-      setActionError(err.message || "Failed to apply adjustment");
+      setActionError(err.message || "Failed to save policy");
     } finally {
-      setIsSubmittingAdjustment(false);
+      setIsSavingPolicy(false);
     }
   };
 
   return (
-    <div className="space-y-8">
-      {/* KPI Overview Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
-        <div className="bg-pitch-surface/90 border border-pitch-border rounded-xl p-4">
-          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
-            Total Rewards Finalized
-          </span>
-          <div className="text-xl font-extrabold text-foreground mt-1">
-            {formatMYR(overview?.totalFinalizedRewardsMinor || 0)}
+    <div className="space-y-6">
+      {/* Overview Cards */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3.5">
+        <div className="bg-pitch-900 border border-pitch-800 rounded-xl p-4">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-[10px] uppercase font-bold tracking-wider">Available Liab.</span>
+            <DollarSign className="w-4 h-4 text-brand-green" />
           </div>
-          <span className="text-[10px] text-muted-foreground block mt-1">
-            {overview?.totalFinalizedRewardsCount || 0} articles
-          </span>
+          <div className="text-xl font-extrabold text-slate-100 mt-2">
+            {formatMYR(overview.totalAvailableLiabilitiesMinor)}
+          </div>
+          <span className="text-[10px] text-slate-500 mt-1 block">Active wallet balances</span>
         </div>
 
-        <div className="bg-pitch-surface/90 border border-pitch-border rounded-xl p-4">
-          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
-            Wallet Liabilities
-          </span>
-          <div className="text-xl font-extrabold text-amber-400 mt-1">
-            {formatMYR(overview?.totalWalletLiabilityMinor || 0)}
+        <div className="bg-pitch-900 border border-pitch-800 rounded-xl p-4">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-[10px] uppercase font-bold tracking-wider">Held In Payout</span>
+            <Clock className="w-4 h-4 text-amber-400" />
           </div>
-          <span className="text-[10px] text-muted-foreground block mt-1">
-            Available: {formatMYR(overview?.totalAvailableLiabilityMinor || 0)}
-          </span>
+          <div className="text-xl font-extrabold text-amber-400 mt-2">
+            {formatMYR(overview.totalHeldLiabilitiesMinor)}
+          </div>
+          <span className="text-[10px] text-slate-500 mt-1 block">Pending approval/transit</span>
         </div>
 
-        <div className="bg-pitch-surface/90 border border-pitch-border rounded-xl p-4">
-          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
-            Pending Withdrawals
-          </span>
-          <div className="text-xl font-extrabold text-blue-400 mt-1">
-            {overview?.pendingWithdrawalsCount || 0}
+        <div className="bg-pitch-900 border border-pitch-800 rounded-xl p-4">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-[10px] uppercase font-bold tracking-wider">Lifetime Paid</span>
+            <CheckCircle className="w-4 h-4 text-emerald-400" />
           </div>
-          <span className="text-[10px] text-muted-foreground block mt-1">
-            {formatMYR(overview?.pendingWithdrawalsAmountMinor || 0)}
-          </span>
+          <div className="text-xl font-extrabold text-emerald-400 mt-2">
+            {formatMYR(overview.totalLifetimeWithdrawnMinor)}
+          </div>
+          <span className="text-[10px] text-slate-500 mt-1 block">Successfully disbursed</span>
         </div>
 
-        <div className="bg-pitch-surface/90 border border-pitch-border rounded-xl p-4">
-          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
-            Processing Payouts
-          </span>
-          <div className="text-xl font-extrabold text-purple-400 mt-1">
-            {overview?.processingPayoutsCount || 0}
+        <div className="bg-pitch-900 border border-pitch-800 rounded-xl p-4">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-[10px] uppercase font-bold tracking-wider">Pending Review</span>
+            <Clock className="w-4 h-4 text-blue-400" />
           </div>
-          <span className="text-[10px] text-muted-foreground block mt-1">In flight at provider</span>
+          <div className="text-xl font-extrabold text-blue-400 mt-2">
+            {overview.pendingWithdrawalsCount}
+          </div>
+          <span className="text-[10px] text-slate-500 mt-1 block">Withdrawals in queue</span>
         </div>
 
-        <div className="bg-pitch-surface/90 border border-pitch-border rounded-xl p-4">
-          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
-            Total Disbursed
-          </span>
-          <div className="text-xl font-extrabold text-emerald-400 mt-1">
-            {formatMYR(overview?.totalPaidOutMinor || 0)}
+        <div className="bg-pitch-900 border border-pitch-800 rounded-xl p-4">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-[10px] uppercase font-bold tracking-wider">Fraud Signals</span>
+            <ShieldAlert className="w-4 h-4 text-red-400" />
           </div>
-          <span className="text-[10px] text-muted-foreground block mt-1">
-            {overview?.totalPaidOutCount || 0} payouts completed
-          </span>
+          <div className="text-xl font-extrabold text-red-400 mt-2">
+            {overview.unresolvedFraudSignalsCount}
+          </div>
+          <span className="text-[10px] text-slate-500 mt-1 block">Unresolved alerts</span>
         </div>
 
-        <div className="bg-pitch-surface/90 border border-pitch-border rounded-xl p-4">
-          <span className="text-[10px] uppercase font-bold text-muted-foreground tracking-wider block">
-            Active Fraud Alerts
-          </span>
-          <div
-            className={cn(
-              "text-xl font-extrabold mt-1",
-              (overview?.activeFraudSignalsCount || 0) > 0 ? "text-red-400" : "text-muted-foreground"
-            )}
-          >
-            {overview?.activeFraudSignalsCount || 0}
+        <div className="bg-pitch-900 border border-pitch-800 rounded-xl p-4">
+          <div className="flex items-center justify-between text-slate-400">
+            <span className="text-[10px] uppercase font-bold tracking-wider">Auto-Pay Engine</span>
+            <Zap className="w-4 h-4 text-pitch-gold" />
           </div>
-          <span className="text-[10px] text-muted-foreground block mt-1">Signals flagged</span>
+          <div className="text-sm font-extrabold text-pitch-gold mt-2 flex items-center gap-1">
+            {policy?.isAutoPayoutEnabled ? "ENABLED" : "PAUSED"}
+          </div>
+          <span className="text-[10px] text-slate-500 mt-1 block">
+            Max Auto: {policy ? formatMYR(policy.maxAutomaticWithdrawalMinor) : "RM 500"}
+          </span>
         </div>
       </div>
 
-      {/* Global Alerts */}
+      {/* Notifications / Alerts */}
       {actionError && (
         <div className="bg-red-500/10 border border-red-500/20 rounded-xl p-4 text-xs text-red-400 flex items-center justify-between">
           <span>{actionError}</span>
-          <button onClick={() => setActionError("")} className="text-muted-foreground hover:text-foreground">✕</button>
+          <button onClick={() => setActionError("")} className="text-red-400 hover:text-red-300">✕</button>
         </div>
       )}
 
       {actionSuccess && (
         <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-xs text-emerald-400 flex items-center justify-between">
           <span>{actionSuccess}</span>
-          <button onClick={() => setActionSuccess("")} className="text-muted-foreground hover:text-foreground">✕</button>
+          <button onClick={() => setActionSuccess("")} className="text-emerald-400 hover:text-emerald-300">✕</button>
         </div>
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-pitch-border gap-6">
+      <div className="flex flex-wrap items-center gap-2 border-b border-pitch-800 pb-3">
         <button
           onClick={() => setActiveTab("withdrawals")}
           className={cn(
-            "pb-3 text-sm font-semibold transition-colors border-b-2 -mb-px flex items-center gap-2",
+            "px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5",
             activeTab === "withdrawals"
-              ? "border-emerald-500 text-emerald-400"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "bg-brand-green text-slate-950"
+              : "bg-pitch-900 text-slate-400 hover:text-slate-200"
           )}
         >
-          <Clock className="w-4 h-4" />
-          Withdrawal Requests ({withdrawals.length})
+          <Clock className="w-3.5 h-3.5" />
+          Withdrawals Queue ({withdrawals.length})
         </button>
+
+        <button
+          onClick={() => setActiveTab("payouts")}
+          className={cn(
+            "px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5",
+            activeTab === "payouts"
+              ? "bg-brand-green text-slate-950"
+              : "bg-pitch-900 text-slate-400 hover:text-slate-200"
+          )}
+        >
+          <Send className="w-3.5 h-3.5" />
+          Disbursements & Retries
+        </button>
+
+        <button
+          onClick={() => setActiveTab("reconciliation")}
+          className={cn(
+            "px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5",
+            activeTab === "reconciliation"
+              ? "bg-brand-green text-slate-950"
+              : "bg-pitch-900 text-slate-400 hover:text-slate-200"
+          )}
+        >
+          <Scale className="w-3.5 h-3.5" />
+          Reconciliation ({reconciliations.length})
+        </button>
+
+        <button
+          onClick={() => setActiveTab("policy")}
+          className={cn(
+            "px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5",
+            activeTab === "policy"
+              ? "bg-brand-green text-slate-950"
+              : "bg-pitch-900 text-slate-400 hover:text-slate-200"
+          )}
+        >
+          <Zap className="w-3.5 h-3.5" />
+          Auto-Payout Policy
+        </button>
+
         <button
           onClick={() => setActiveTab("fraud")}
           className={cn(
-            "pb-3 text-sm font-semibold transition-colors border-b-2 -mb-px flex items-center gap-2",
+            "px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5",
             activeTab === "fraud"
-              ? "border-emerald-500 text-emerald-400"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "bg-brand-green text-slate-950"
+              : "bg-pitch-900 text-slate-400 hover:text-slate-200"
           )}
         >
-          <ShieldAlert className="w-4 h-4" />
-          Fraud & Risk Monitor ({fraudSignals.length})
+          <ShieldAlert className="w-3.5 h-3.5" />
+          Fraud Signals ({fraudSignals.length})
         </button>
+
         <button
           onClick={() => setActiveTab("audit")}
           className={cn(
-            "pb-3 text-sm font-semibold transition-colors border-b-2 -mb-px flex items-center gap-2",
+            "px-4 py-2 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5",
             activeTab === "audit"
-              ? "border-emerald-500 text-emerald-400"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "bg-brand-green text-slate-950"
+              : "bg-pitch-900 text-slate-400 hover:text-slate-200"
           )}
         >
-          <FileText className="w-4 h-4" />
-          Financial Audit Trail ({auditLogs.length})
+          <FileText className="w-3.5 h-3.5" />
+          Audit Trail
         </button>
+
         <button
-          onClick={() => setActiveTab("adjustments")}
-          className={cn(
-            "pb-3 text-sm font-semibold transition-colors border-b-2 -mb-px flex items-center gap-2",
-            activeTab === "adjustments"
-              ? "border-emerald-500 text-emerald-400"
-              : "border-transparent text-muted-foreground hover:text-foreground"
-          )}
+          onClick={refreshData}
+          className="ml-auto p-2 bg-pitch-900 hover:bg-pitch-800 text-slate-400 rounded-lg text-xs"
         >
-          <Sliders className="w-4 h-4" />
-          Manual Adjustments
+          <RefreshCw className="w-3.5 h-3.5" />
         </button>
       </div>
 
-      {/* TAB 1: WITHDRAWALS & PAYOUTS */}
+      {/* TAB 1: WITHDRAWALS QUEUE */}
       {activeTab === "withdrawals" && (
-        <div className="space-y-4">
-          {withdrawals.length === 0 ? (
-            <div className="bg-pitch-surface border border-pitch-border rounded-xl p-8 text-center text-muted-foreground text-sm">
-              No withdrawal requests recorded.
-            </div>
-          ) : (
-            <div className="overflow-x-auto border border-pitch-border rounded-xl bg-pitch-surface">
-              <table className="w-full text-left text-xs">
-                <thead className="bg-pitch-border/40 text-muted-foreground uppercase text-[10px] tracking-wider border-b border-pitch-border">
-                  <tr>
-                    <th className="p-3.5">Contributor</th>
-                    <th className="p-3.5">Bank Details</th>
-                    <th className="p-3.5">Requested At</th>
-                    <th className="p-3.5">Status</th>
-                    <th className="p-3.5 text-right">Amount</th>
-                    <th className="p-3.5 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-pitch-border/60">
-                  {withdrawals.map((w) => (
-                    <tr key={w.id} className="hover:bg-pitch-border/20 transition-colors">
-                      <td className="p-3.5">
-                        <div className="font-semibold text-foreground">
-                          {w.contributorProfile?.displayName || "Unknown Author"}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground">
-                          {w.contributorProfile?.user?.email}
-                        </div>
-                      </td>
-                      <td className="p-3.5">
-                        <div className="font-medium text-foreground">
-                          {w.bankName} • {w.accountNumberMasked}
-                        </div>
-                        <div className="text-[11px] text-muted-foreground">
-                          {w.accountHolderName}
-                        </div>
-                      </td>
-                      <td className="p-3.5 text-muted-foreground whitespace-nowrap">
-                        {new Date(w.createdAt).toLocaleString()}
-                      </td>
-                      <td className="p-3.5">
-                        <span
-                          className={cn(
-                            "px-2 py-0.5 rounded-full text-[10px] font-bold border",
-                            w.status === "PAID"
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                              : w.status === "APPROVED" || w.status === "PROCESSING"
-                              ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
-                              : w.status === "REJECTED"
-                              ? "bg-red-500/10 text-red-400 border-red-500/20"
-                              : "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                          )}
-                        >
-                          {w.status}
-                        </span>
-                      </td>
-                      <td className="p-3.5 text-right font-extrabold text-foreground whitespace-nowrap">
-                        {formatMYR(w.amountMinor)}
-                      </td>
-                      <td className="p-3.5 text-right whitespace-nowrap">
-                        {w.status === "PENDING_REVIEW" && (
-                          <div className="flex items-center justify-end gap-2">
-                            <button
-                              onClick={() => handleApproveWithdrawal(w.id)}
-                              disabled={processingWithdrawalId === w.id}
-                              className="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white rounded font-medium text-[11px] transition-colors flex items-center gap-1"
-                            >
-                              {processingWithdrawalId === w.id && (
-                                <RefreshCw className="w-3 h-3 animate-spin" />
-                              )}
-                              Approve
-                            </button>
-                            <button
-                              onClick={() => setRejectingWithdrawalId(w.id)}
-                              className="px-3 py-1 bg-red-600/20 hover:bg-red-600/40 text-red-400 rounded font-medium text-[11px] transition-colors"
-                            >
-                              Reject
-                            </button>
-                          </div>
-                        )}
-
-                        {w.status === "APPROVED" && w.payout && (
-                          <button
-                            onClick={() => handleProcessPayout(w.payout.id)}
-                            disabled={processingPayoutId === w.payout.id}
-                            className="px-3 py-1 bg-purple-600 hover:bg-purple-500 text-white rounded font-medium text-[11px] transition-colors flex items-center gap-1"
-                          >
-                            {processingPayoutId === w.payout.id && (
-                              <RefreshCw className="w-3 h-3 animate-spin" />
-                            )}
-                            Disburse Funds
-                          </button>
-                        )}
-
-                        {w.status === "PAID" && (
-                          <span className="text-[11px] text-emerald-400 font-medium">Disbursed</span>
-                        )}
-
-                        {w.status === "REJECTED" && (
-                          <span className="text-[11px] text-red-400 font-medium">Rejected</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* TAB 2: FRAUD SIGNALS & RISK MONITOR */}
-      {activeTab === "fraud" && (
-        <div className="space-y-4">
-          {fraudSignals.length === 0 ? (
-            <div className="bg-pitch-surface border border-pitch-border rounded-xl p-8 text-center text-muted-foreground text-sm">
-              Zero active fraud signals. All contributor view velocity and accounts are normal.
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 gap-3">
-              {fraudSignals.map((sig) => (
-                <div
-                  key={sig.id}
-                  className="bg-pitch-surface border border-pitch-border rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4"
-                >
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="font-bold text-foreground text-sm">
-                        {sig.contributorProfile?.displayName}
-                      </span>
+        <div className="overflow-x-auto border border-pitch-800 rounded-xl bg-pitch-900">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-pitch-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-pitch-800">
+              <tr>
+                <th className="p-3.5">ID / Date</th>
+                <th className="p-3.5">Contributor</th>
+                <th className="p-3.5">Bank / Account</th>
+                <th className="p-3.5 text-right">Amount</th>
+                <th className="p-3.5 text-right">Status</th>
+                <th className="p-3.5 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-pitch-800/60">
+              {withdrawals.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="p-6 text-center text-slate-500">
+                    No active withdrawal requests in queue.
+                  </td>
+                </tr>
+              ) : (
+                withdrawals.map((w) => (
+                  <tr key={w.id} className="hover:bg-pitch-850/40 transition-colors">
+                    <td className="p-3.5 font-mono text-[11px]">
+                      <div className="text-slate-200 font-bold">{w.id.slice(0, 8)}...</div>
+                      <div className="text-slate-500 text-[10px]">{new Date(w.createdAt).toLocaleDateString()}</div>
+                    </td>
+                    <td className="p-3.5">
+                      <div className="font-bold text-slate-100">{w.contributorProfile?.penName || "Contributor"}</div>
+                      <div className="text-slate-500 text-[10px]">{w.contributorProfile?.user?.email}</div>
+                    </td>
+                    <td className="p-3.5 text-slate-300">
+                      <div>{w.bankName}</div>
+                      <div className="font-mono text-slate-500 text-[10px]">{w.accountNumberMasked}</div>
+                    </td>
+                    <td className="p-3.5 text-right font-extrabold text-slate-100">{formatMYR(w.amountMinor)}</td>
+                    <td className="p-3.5 text-right">
                       <span
                         className={cn(
-                          "px-2 py-0.5 rounded-full text-[10px] font-bold uppercase",
-                          sig.severity === "CRITICAL"
-                            ? "bg-red-500/20 text-red-400 border border-red-500/30"
-                            : sig.severity === "HIGH"
-                            ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
-                            : "bg-blue-500/20 text-blue-400"
+                          "px-2 py-0.5 rounded-full text-[10px] font-bold border",
+                          w.status === "PAID" || w.status === "AUTO_APPROVED"
+                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                            : w.status === "MANUAL_REVIEW" || w.status === "PENDING_REVIEW"
+                            ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                            : "bg-red-500/10 text-red-400 border-red-500/20"
                         )}
                       >
-                        {sig.severity} (Score: {sig.riskScore})
+                        {w.status}
                       </span>
-                      <span className="text-[11px] text-muted-foreground uppercase font-mono">
-                        {sig.signalType}
-                      </span>
-                    </div>
-
-                    <p className="text-xs text-muted-foreground">Evidence: {sig.evidence}</p>
-                    <p className="text-[10px] text-slate-500">
-                      Logged at {new Date(sig.createdAt).toLocaleString()}
-                      {sig.isResolved && ` • Resolved: ${sig.resolutionNotes}`}
-                    </p>
-                  </div>
-
-                  <div>
-                    {!sig.isResolved ? (
-                      <button
-                        onClick={() => setResolvingSignalId(sig.id)}
-                        className="px-3.5 py-1.5 rounded-lg bg-pitch-border hover:bg-pitch-border/80 text-xs font-semibold text-foreground transition-colors"
-                      >
-                        Resolve Signal
-                      </button>
-                    ) : (
-                      <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-                        <CheckCircle className="w-3.5 h-3.5" /> Resolved
-                      </span>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                    </td>
+                    <td className="p-3.5 text-right space-x-2">
+                      {w.status === "PENDING_REVIEW" || w.status === "MANUAL_REVIEW" ? (
+                        <>
+                          <button
+                            onClick={() => handleApproveWithdrawal(w.id)}
+                            disabled={processingWithdrawalId === w.id}
+                            className="px-2.5 py-1 bg-brand-green text-slate-950 font-bold text-[10px] rounded hover:bg-brand-green-hover transition-colors"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            onClick={() => {
+                              setRejectingWithdrawalId(w.id);
+                              setRejectReason("");
+                            }}
+                            className="px-2.5 py-1 bg-red-500/10 border border-red-500/30 text-red-400 font-bold text-[10px] rounded hover:bg-red-500/20 transition-colors"
+                          >
+                            Reject
+                          </button>
+                        </>
+                      ) : (
+                        <span className="text-slate-500 text-[10px]">Processed</span>
+                      )}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
       )}
 
-      {/* TAB 3: FINANCIAL AUDIT TRAIL */}
-      {activeTab === "audit" && (
+      {/* TAB 2: RECONCILIATION */}
+      {activeTab === "reconciliation" && (
         <div className="space-y-4">
-          <div className="overflow-x-auto border border-pitch-border rounded-xl bg-pitch-surface">
-            <table className="w-full text-left text-xs font-mono">
-              <thead className="bg-pitch-border/40 text-muted-foreground uppercase text-[10px] tracking-wider border-b border-pitch-border">
+          <div className="flex items-center justify-between bg-pitch-900 border border-pitch-800 p-4 rounded-xl">
+            <div>
+              <h3 className="font-bold text-slate-100 text-sm">Automated Payment Gateway Reconciliation</h3>
+              <p className="text-xs text-slate-400">
+                Audits internal platform ledger records against payout provider responses and flags mismatches.
+              </p>
+            </div>
+            <button
+              onClick={handleRunReconciliation}
+              disabled={isRunningSweep}
+              className="px-4 py-2 bg-pitch-gold text-slate-950 font-bold text-xs rounded-lg hover:bg-yellow-400 transition-colors flex items-center gap-1.5"
+            >
+              {isRunningSweep ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Scale className="w-3.5 h-3.5" />}
+              Run Reconciliation Sweep
+            </button>
+          </div>
+
+          <div className="overflow-x-auto border border-pitch-800 rounded-xl bg-pitch-900">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-pitch-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-pitch-800">
                 <tr>
-                  <th className="p-3">Timestamp</th>
-                  <th className="p-3">Action</th>
-                  <th className="p-3">Entity</th>
-                  <th className="p-3">Actor</th>
-                  <th className="p-3">Amount</th>
-                  <th className="p-3">Reason / Details</th>
+                  <th className="p-3.5">Payout ID</th>
+                  <th className="p-3.5">Provider</th>
+                  <th className="p-3.5">Internal Status</th>
+                  <th className="p-3.5">Provider Status</th>
+                  <th className="p-3.5">Discrepancy Type</th>
+                  <th className="p-3.5 text-right">Match Result</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-pitch-border/60">
-                {auditLogs.map((log) => (
-                  <tr key={log.id} className="hover:bg-pitch-border/20 transition-colors">
-                    <td className="p-3 whitespace-nowrap text-muted-foreground">
-                      {new Date(log.createdAt).toLocaleString()}
-                    </td>
-                    <td className="p-3 whitespace-nowrap">
-                      <span className="px-1.5 py-0.5 rounded bg-pitch-border/50 text-[10px] font-bold text-foreground">
-                        {log.action}
-                      </span>
-                    </td>
-                    <td className="p-3 whitespace-nowrap text-slate-300">
-                      {log.entityType} ({log.entityId.slice(0, 8)}...)
-                    </td>
-                    <td className="p-3 whitespace-nowrap text-muted-foreground">
-                      {log.actorId ? `${log.actorId.slice(0, 8)}...` : "SYSTEM"}
-                    </td>
-                    <td className="p-3 whitespace-nowrap font-bold text-emerald-400">
-                      {log.amountMinor ? formatMYR(log.amountMinor) : "-"}
-                    </td>
-                    <td className="p-3 text-muted-foreground max-w-sm truncate">
-                      {log.reason || "-"}
+              <tbody className="divide-y divide-pitch-800/60">
+                {reconciliations.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-6 text-center text-slate-500">
+                      All scanned transactions matched perfectly. No discrepancies detected.
                     </td>
                   </tr>
-                ))}
+                ) : (
+                  reconciliations.map((r) => (
+                    <tr key={r.id} className="hover:bg-pitch-850/40 transition-colors">
+                      <td className="p-3.5 font-mono text-slate-200">{r.payoutId?.slice(0, 10) || "N/A"}</td>
+                      <td className="p-3.5 text-slate-400">{r.provider}</td>
+                      <td className="p-3.5 font-mono font-bold text-slate-300">{r.internalStatus}</td>
+                      <td className="p-3.5 font-mono text-slate-400">{r.providerStatus}</td>
+                      <td className="p-3.5 text-amber-400">{r.discrepancyType || "None"}</td>
+                      <td className="p-3.5 text-right">
+                        <span
+                          className={cn(
+                            "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+                            r.isMatched ? "bg-emerald-500/10 text-emerald-400" : "bg-red-500/10 text-red-400"
+                          )}
+                        >
+                          {r.isMatched ? "MATCHED" : "FLAGGED"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))
+                )}
               </tbody>
             </table>
           </div>
         </div>
       )}
 
-      {/* TAB 4: MANUAL ADJUSTMENTS */}
-      {activeTab === "adjustments" && (
-        <div className="max-w-xl bg-pitch-surface border border-pitch-border rounded-2xl p-6 space-y-4">
+      {/* TAB 3: AUTO-PAYOUT POLICY */}
+      {activeTab === "policy" && (
+        <div className="bg-pitch-900 border border-pitch-800 rounded-xl p-6 max-w-2xl space-y-4">
           <div>
-            <h3 className="font-bold text-foreground text-sm">Administrative Wallet Adjustment</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Apply a controlled balance adjustment. Every transaction creates an immutable double-entry ledger record and audit log.
+            <h3 className="font-bold text-slate-100 text-sm flex items-center gap-2">
+              <Zap className="w-4 h-4 text-pitch-gold" />
+              Automatic Payout & Threshold Configuration
+            </h3>
+            <p className="text-xs text-slate-400">
+              Control automated disbursement thresholds, minimum withdrawal limits, and fraud risk score ceilings.
             </p>
           </div>
 
-          <form onSubmit={handleAdjustmentSubmit} className="space-y-4">
-            <div>
-              <label className="text-xs font-semibold text-muted-foreground block mb-1">
-                Target Wallet ID
-              </label>
+          <form onSubmit={handleSavePolicy} className="space-y-4 pt-2">
+            <div className="flex items-center justify-between p-3 bg-pitch-950 border border-pitch-800 rounded-lg">
+              <div>
+                <span className="font-bold text-xs text-slate-200 block">Automatic Payout Engine</span>
+                <span className="text-[11px] text-slate-400">
+                  When enabled, verified low-risk withdrawals within the limit are paid instantly without manual intervention.
+                </span>
+              </div>
               <input
-                type="text"
-                value={adjustmentWalletId}
-                onChange={(e) => setAdjustmentWalletId(e.target.value)}
-                placeholder="e.g. clxxxxx..."
-                required
-                className="w-full bg-pitch-border/40 border border-pitch-border rounded-lg px-3 py-2 text-xs text-foreground font-mono focus:outline-none focus:border-emerald-500"
+                type="checkbox"
+                checked={isAutoEnabled}
+                onChange={(e) => setIsAutoEnabled(e.target.checked)}
+                className="w-4 h-4 rounded text-brand-green bg-pitch-850"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-xs font-semibold text-muted-foreground block mb-1">
-                  Type
-                </label>
-                <select
-                  value={adjustmentType}
-                  onChange={(e) => setAdjustmentType(e.target.value as any)}
-                  className="w-full bg-pitch-border/40 border border-pitch-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:border-emerald-500"
-                >
-                  <option value="ADJUSTMENT">ADJUSTMENT (Credit)</option>
-                  <option value="DEBIT">DEBIT (Deduction)</option>
-                  <option value="REVERSAL">REVERSAL</option>
-                  <option value="CREDIT">DIRECT CREDIT</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground block mb-1">
-                  Amount (MYR)
+                <label className="text-xs font-semibold text-slate-400 block mb-1">
+                  Minimum Withdrawal (MYR)
                 </label>
                 <input
                   type="number"
                   step="0.01"
-                  min="0.01"
-                  value={adjustmentAmount}
-                  onChange={(e) => setAdjustmentAmount(e.target.value)}
-                  placeholder="10.00"
+                  value={minWithdrawalMYR}
+                  onChange={(e) => setMinWithdrawalMYR(e.target.value)}
+                  className="w-full bg-pitch-950 border border-pitch-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-green"
                   required
-                  className="w-full bg-pitch-border/40 border border-pitch-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:border-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-slate-400 block mb-1">
+                  Max Auto-Disbursement Limit (MYR)
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={maxAutoMYR}
+                  onChange={(e) => setMaxAutoMYR(e.target.value)}
+                  className="w-full bg-pitch-950 border border-pitch-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-green"
+                  required
                 />
               </div>
             </div>
 
             <div>
-              <label className="text-xs font-semibold text-muted-foreground block mb-1">
-                Administrative Justification (Min 10 chars)
+              <label className="text-xs font-semibold text-slate-400 block mb-1">
+                Max Allowed Risk Score for Auto-Pay (0–40)
               </label>
-              <textarea
-                rows={3}
-                value={adjustmentReason}
-                onChange={(e) => setAdjustmentReason(e.target.value)}
-                placeholder="Provide specific business justification for this balance adjustment..."
+              <input
+                type="number"
+                min="0"
+                max="40"
+                value={maxRiskScore}
+                onChange={(e) => setMaxRiskScore(e.target.value)}
+                className="w-full bg-pitch-950 border border-pitch-800 rounded-lg px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-brand-green"
                 required
-                className="w-full bg-pitch-border/40 border border-pitch-border rounded-lg p-3 text-xs text-foreground focus:outline-none focus:border-emerald-500"
               />
+              <p className="text-[10px] text-slate-500 mt-1">
+                Withdrawals with risk scores above this threshold are automatically routed to Manual Finance Review.
+              </p>
             </div>
 
             <div className="pt-2">
               <button
                 type="submit"
-                disabled={isSubmittingAdjustment}
-                className="w-full py-2.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+                disabled={isSavingPolicy}
+                className="px-5 py-2 bg-brand-green text-slate-950 font-bold text-xs rounded-lg hover:bg-brand-green-hover transition-colors flex items-center gap-1.5"
               >
-                {isSubmittingAdjustment && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                Apply & Record Adjustment
+                {isSavingPolicy && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
+                Save Policy Configuration
               </button>
             </div>
           </form>
         </div>
       )}
 
-      {/* REJECTION REASON MODAL */}
+      {/* TAB 4: FRAUD SIGNALS */}
+      {activeTab === "fraud" && (
+        <div className="overflow-x-auto border border-pitch-800 rounded-xl bg-pitch-900">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-pitch-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-pitch-800">
+              <tr>
+                <th className="p-3.5">Contributor</th>
+                <th className="p-3.5">Signal Type</th>
+                <th className="p-3.5">Severity</th>
+                <th className="p-3.5 text-right">Risk Score</th>
+                <th className="p-3.5 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-pitch-800/60">
+              {fraudSignals.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="p-6 text-center text-slate-500">
+                    No active fraud signals detected.
+                  </td>
+                </tr>
+              ) : (
+                fraudSignals.map((s) => (
+                  <tr key={s.id} className="hover:bg-pitch-850/40 transition-colors">
+                    <td className="p-3.5 font-bold text-slate-100">
+                      {s.contributorProfile?.penName || s.contributorProfileId.slice(0, 8)}
+                    </td>
+                    <td className="p-3.5 text-slate-300 font-mono">{s.signalType}</td>
+                    <td className="p-3.5">
+                      <span
+                        className={cn(
+                          "px-2 py-0.5 rounded text-[10px] font-bold uppercase",
+                          s.severity === "CRITICAL" || s.severity === "HIGH"
+                            ? "bg-red-500/10 text-red-400"
+                            : "bg-amber-500/10 text-amber-400"
+                        )}
+                      >
+                        {s.severity}
+                      </span>
+                    </td>
+                    <td className="p-3.5 text-right font-bold text-red-400">{s.riskScore}/100</td>
+                    <td className="p-3.5 text-right">
+                      <span className="text-slate-400 text-[11px]">{s.isResolved ? "Resolved" : "Active"}</span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* TAB 5: AUDIT TRAIL */}
+      {activeTab === "audit" && (
+        <div className="overflow-x-auto border border-pitch-800 rounded-xl bg-pitch-900">
+          <table className="w-full text-left text-xs">
+            <thead className="bg-pitch-950 text-slate-400 uppercase text-[10px] tracking-wider border-b border-pitch-800">
+              <tr>
+                <th className="p-3.5">Timestamp</th>
+                <th className="p-3.5">Action</th>
+                <th className="p-3.5">Entity</th>
+                <th className="p-3.5">Reason / Note</th>
+                <th className="p-3.5 text-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-pitch-800/60">
+              {auditLogs.map((log) => (
+                <tr key={log.id} className="hover:bg-pitch-850/40 transition-colors">
+                  <td className="p-3.5 font-mono text-[10px] text-slate-400">
+                    {new Date(log.createdAt).toLocaleString()}
+                  </td>
+                  <td className="p-3.5 font-mono font-bold text-slate-200">{log.action}</td>
+                  <td className="p-3.5 text-slate-400">{log.entityType}</td>
+                  <td className="p-3.5 text-slate-300">{log.reason || "N/A"}</td>
+                  <td className="p-3.5 text-right font-mono font-bold text-slate-200">
+                    {log.amountMinor ? formatMYR(log.amountMinor) : "-"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+
+      {/* REJECT WITHDRAWAL MODAL */}
       {rejectingWithdrawalId && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-pitch-surface border border-pitch-border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <h3 className="font-bold text-foreground text-sm">Reject Withdrawal Request</h3>
-            <p className="text-xs text-muted-foreground">
-              Rejecting this request will immediately release all held funds back to the contributor&apos;s available wallet balance.
+          <div className="bg-pitch-900 border border-pitch-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <h3 className="font-bold text-slate-100 text-sm">Reject Withdrawal Request</h3>
+            <p className="text-xs text-slate-400">
+              Rejecting this request will immediately release all held funds back into the contributor&apos;s available wallet balance.
             </p>
-
             <form onSubmit={handleRejectWithdrawal} className="space-y-4">
               <div>
-                <label className="text-xs font-semibold text-muted-foreground block mb-1">
-                  Rejection Justification (Min 5 chars)
-                </label>
+                <label className="text-xs font-semibold text-slate-400 block mb-1">Reason for Rejection</label>
                 <textarea
-                  rows={3}
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
-                  placeholder="e.g. Account name mismatch, suspicious activity flagged..."
+                  placeholder="e.g. Mismatched beneficiary account name"
                   required
-                  className="w-full bg-pitch-border/40 border border-pitch-border rounded-lg p-3 text-xs text-foreground focus:outline-none focus:border-red-500"
+                  rows={3}
+                  className="w-full bg-pitch-950 border border-pitch-800 rounded-lg p-2.5 text-xs text-slate-100 focus:outline-none focus:border-brand-green"
                 />
               </div>
-
-              <div className="flex justify-end gap-3 pt-2">
+              <div className="flex justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setRejectingWithdrawalId(null)}
-                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-pitch-border/60 hover:bg-pitch-border text-muted-foreground"
+                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-pitch-800 hover:bg-pitch-750 text-slate-300"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isRejecting}
-                  className="px-5 py-2 text-xs font-semibold rounded-lg bg-red-600 hover:bg-red-500 text-white transition-colors flex items-center gap-1.5"
+                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-red-600 hover:bg-red-500 text-white"
                 >
-                  {isRejecting && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                  Confirm Rejection & Release Funds
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* RESOLVE FRAUD SIGNAL MODAL */}
-      {resolvingSignalId && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-pitch-surface border border-pitch-border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <h3 className="font-bold text-foreground text-sm">Resolve Fraud Signal</h3>
-            <p className="text-xs text-muted-foreground">
-              Provide resolution notes to confirm verification and unfreeze contributor risk restrictions.
-            </p>
-
-            <form onSubmit={handleResolveSignal} className="space-y-4">
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground block mb-1">
-                  Resolution Notes (Min 5 chars)
-                </label>
-                <textarea
-                  rows={3}
-                  value={resolutionNotes}
-                  onChange={(e) => setResolutionNotes(e.target.value)}
-                  placeholder="e.g. Traffic logs inspected and verified as authentic social media referral..."
-                  required
-                  className="w-full bg-pitch-border/40 border border-pitch-border rounded-lg p-3 text-xs text-foreground focus:outline-none focus:border-emerald-500"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setResolvingSignalId(null)}
-                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-pitch-border/60 hover:bg-pitch-border text-muted-foreground"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isResolvingSignal}
-                  className="px-5 py-2 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-colors flex items-center gap-1.5"
-                >
-                  {isResolvingSignal && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                  Confirm Resolution
+                  {isRejecting ? "Rejecting..." : "Confirm Rejection"}
                 </button>
               </div>
             </form>

@@ -64,7 +64,7 @@ export interface FinancialAuditEntry {
   action: FinancialAuditAction;
   actorId?: string;
   contributorProfileId?: string;
-  entityType: "REWARD" | "WALLET" | "WITHDRAWAL" | "PAYOUT" | "ADJUSTMENT" | "FRAUD";
+  entityType: "REWARD" | "WALLET" | "WITHDRAWAL" | "PAYOUT" | "ADJUSTMENT" | "FRAUD" | "POLICY" | "RECONCILIATION";
   entityId: string;
   amountMinor?: number;
   currency?: Currency;

@@ -636,6 +636,7 @@ model Article {
   rewards              ContributorReward[]
   qualifiedViews       QualifiedView[]
   fraudSignals         FraudSignal[]
+  articleAnalytics     ArticleAnalytics[]
   createdAt            DateTime               @default(now())
   updatedAt            DateTime               @updatedAt
 
@@ -880,10 +881,15 @@ enum LedgerEntryType {
 
 enum WithdrawalStatus {
   PENDING_REVIEW
+  RISK_CHECKING
+  AUTO_APPROVED
+  MANUAL_REVIEW
   WITHDRAWAL_HOLD
   APPROVED
   PROCESSING
   PAID
+  FAILED
+  RETRY_PENDING
   REJECTED
   CANCELLED
 }
@@ -895,6 +901,8 @@ enum PayoutStatus {
   PAID
   FAILED
   REJECTED
+  REVERSED
+  RECONCILIATION_REQUIRED
 }
 
 enum PayoutAttemptStatus {
@@ -938,6 +946,11 @@ enum FinancialAuditAction {
   ADJUSTMENT_CREATED
   FRAUD_FLAGGED
   PAYOUT_ACCOUNT_UPDATED
+  AUTO_PAYOUT_TRIGGERED
+  PAYOUT_RECONCILED
+  PAYOUT_REVERSED
+  WEBHOOK_RECEIVED
+  POLICY_UPDATED
 }
 
 model QualifiedView {
@@ -1159,5 +1172,207 @@ model FinancialAuditLog {
   @@index([createdAt])
   @@map("financial_audit_logs")
 }
+
+// ==========================================
+// 6. PRODUCTION AUTO-PAYOUT, ADS & ANALYTICS (SPRINT 6)
+// ==========================================
+
+enum AdPlacementPosition {
+  HOME_TOP
+  HOME_HERO
+  HOME_MIDDLE
+  HOME_BOTTOM
+  ARTICLE_TOP
+  ARTICLE_AFTER_P3
+  ARTICLE_AFTER_P5
+  ARTICLE_MIDDLE
+  ARTICLE_BOTTOM
+  MOBILE_STICKY
+}
+
+enum AdSlotStatus {
+  ACTIVE
+  PAUSED
+  DRAFT
+  ARCHIVED
+}
+
+enum AnalyticsEventType {
+  PAGE_VIEW
+  ARTICLE_VIEW
+  ARTICLE_READ
+  SCROLL_DEPTH
+  SESSION_START
+  AD_IMPRESSION
+  AD_CLICK
+}
+
+enum RevenueStatus {
+  ESTIMATED
+  IMPORTED
+  CONFIRMED
+}
+
+model PayoutPolicy {
+  id                          String   @id @default(cuid())
+  name                        String   @unique @default("default_policy")
+  minimumWithdrawalMinor      Int      @default(2000) // RM 20.00
+  maxAutomaticWithdrawalMinor Int      @default(50000) // RM 500.00 max for auto-payout
+  maxDailyWithdrawalMinor     Int      @default(200000) // RM 2,000.00 / day
+  maxMonthlyWithdrawalMinor   Int      @default(1000000) // RM 10,000.00 / month
+  autoPayoutMaxRiskScore      Int      @default(29) // 0-29 Low risk auto-approved
+  payoutCooldownHours         Int      @default(48) // 48h cooldown on bank change
+  isAutoPayoutEnabled         Boolean  @default(true)
+  updatedByUserId             String?
+  createdAt                   DateTime @default(now())
+  updatedAt                   DateTime @updatedAt
+
+  @@map("payout_policies")
+}
+
+model PayoutWebhookEvent {
+  id           String    @id @default(cuid())
+  provider     String
+  eventId      String // Unique event id from provider
+  eventType    String
+  payload      Json
+  signature    String?
+  isProcessed  Boolean   @default(false)
+  processedAt  DateTime?
+  errorDetails String?
+  createdAt    DateTime  @default(now())
+
+  @@unique([provider, eventId])
+  @@index([provider, isProcessed])
+  @@map("payout_webhook_events")
+}
+
+model PayoutReconciliation {
+  id                   String       @id @default(cuid())
+  payoutId             String?
+  withdrawalRequestId  String?
+  provider             String
+  providerReference    String?
+  internalStatus       PayoutStatus
+  providerStatus       String
+  internalAmountMinor  Int
+  providerAmountMinor  Int
+  isMatched            Boolean      @default(false)
+  discrepancyType      String? // "STATUS_MISMATCH", "AMOUNT_MISMATCH", "MISSING_PROVIDER_TX", "MISSING_INTERNAL_TX"
+  notes                String?
+  resolvedByUserId     String?
+  resolvedAt           DateTime?
+  createdAt            DateTime     @default(now())
+
+  @@index([isMatched])
+  @@index([payoutId])
+  @@map("payout_reconciliations")
+}
+
+model AdProvider {
+  id         String        @id @default(cuid())
+  name       String        @unique // e.g. "Direct Sponsor", "Google AdSense", "RevContent", "Mock"
+  slug       String        @unique
+  adapterKey String // "mock-ad-provider", "direct-sponsor", "external-network"
+  isActive   Boolean       @default(true)
+  config     Json? // Safe non-executable config
+  placements AdPlacement[]
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  @@map("ad_providers")
+}
+
+model AdPlacement {
+  id                    String              @id @default(cuid())
+  title                 String
+  slotKey               String              @unique // e.g. "home_top_banner", "article_p3_inline"
+  position              AdPlacementPosition
+  providerId            String
+  status                AdSlotStatus        @default(ACTIVE)
+  device                String              @default("ALL") // "ALL", "DESKTOP", "MOBILE"
+  targetCategory        String?
+  targetTeamSlug        String?
+  targetCompetitionCode String?
+  priority              Int                 @default(1)
+  customMarkupSafe      String? // Safe image URL or sponsor badge (Sandboxed, never arbitrary JS)
+  targetUrl             String?
+  impressionsCount      Int                 @default(0)
+  clicksCount           Int                 @default(0)
+  provider              AdProvider          @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  schedules             AdSchedule[]
+  analytics             AdAnalytics[]
+  createdAt             DateTime            @default(now())
+  updatedAt             DateTime            @updatedAt
+
+  @@index([position, status])
+  @@index([slotKey])
+  @@map("ad_placements")
+}
+
+model AdSchedule {
+  id            String      @id @default(cuid())
+  adPlacementId String
+  startDate     DateTime
+  endDate       DateTime?
+  isActive      Boolean     @default(true)
+  adPlacement   AdPlacement @relation(fields: [adPlacementId], references: [id], onDelete: Cascade)
+  createdAt     DateTime    @default(now())
+
+  @@index([adPlacementId, isActive])
+  @@map("ad_schedules")
+}
+
+model AnalyticsDailyAggregate {
+  id                   String        @id @default(cuid())
+  date                 DateTime      @db.Date
+  pageViewsCount       Int           @default(0)
+  uniqueVisitorsCount  Int           @default(0)
+  articleReadsCount    Int           @default(0)
+  adImpressionsCount   Int           @default(0)
+  adClicksCount        Int           @default(0)
+  estimatedRevenueMinor Int          @default(0) // In integer minor units
+  revenueStatus        RevenueStatus @default(ESTIMATED)
+  createdAt            DateTime      @default(now())
+  updatedAt            DateTime      @updatedAt
+
+  @@unique([date])
+  @@index([date])
+  @@map("analytics_daily_aggregates")
+}
+
+model ArticleAnalytics {
+  id                 String   @id @default(cuid())
+  articleId          String
+  date               DateTime @db.Date
+  viewsCount         Int      @default(0)
+  readsCount         Int      @default(0)
+  avgScrollDepth     Int      @default(0)
+  avgReadTimeSeconds Int      @default(0)
+  article            Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now())
+
+  @@unique([articleId, date])
+  @@index([articleId])
+  @@index([date])
+  @@map("article_analytics")
+}
+
+model AdAnalytics {
+  id                    String      @id @default(cuid())
+  adPlacementId         String
+  date                  DateTime    @db.Date
+  impressions           Int         @default(0)
+  clicks                Int         @default(0)
+  estimatedRevenueMinor Int         @default(0)
+  adPlacement           AdPlacement @relation(fields: [adPlacementId], references: [id], onDelete: Cascade)
+  createdAt             DateTime    @default(now())
+
+  @@unique([adPlacementId, date])
+  @@index([adPlacementId])
+  @@index([date])
+  @@map("ad_analytics")
+}
+
 
 

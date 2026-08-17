@@ -70,32 +70,60 @@ export default async function AdminPortalPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
             <a
               href="/admin/finance"
               className="p-5 bg-pitch-950 border border-pitch-800 hover:border-emerald-500/50 transition-colors block group"
             >
               <div className="flex items-center justify-between">
                 <h4 className="text-sm font-bold text-slate-100 group-hover:text-emerald-400 transition-colors">
-                  Finance & Payout Command Center →
+                  Finance & Payouts →
                 </h4>
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                Manage contributor rewards, verify double-entry wallet liabilities, review withdrawal requests, and disburse payouts.
+                Auto-payout rules, manual review queues, and gateway reconciliation.
+              </p>
+            </a>
+
+            <a
+              href="/admin/advertising"
+              className="p-5 bg-pitch-950 border border-pitch-800 hover:border-pitch-gold/50 transition-colors block group"
+            >
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold text-slate-100 group-hover:text-pitch-gold transition-colors">
+                  Ad Management →
+                </h4>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Sandboxed sponsor slots, device targeting, and placement schedules.
+              </p>
+            </a>
+
+            <a
+              href="/admin/analytics"
+              className="p-5 bg-pitch-950 border border-pitch-800 hover:border-blue-500/50 transition-colors block group"
+            >
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold text-slate-100 group-hover:text-blue-400 transition-colors">
+                  Revenue Analytics →
+                </h4>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Privacy-preserving traffic, ad click-through rates, and estimated RPM.
               </p>
             </a>
 
             <a
               href="/admin/football"
-              className="p-5 bg-pitch-950 border border-pitch-800 hover:border-pitch-gold/50 transition-colors block group"
+              className="p-5 bg-pitch-950 border border-pitch-800 hover:border-purple-500/50 transition-colors block group"
             >
               <div className="flex items-center justify-between">
-                <h4 className="text-sm font-bold text-slate-100 group-hover:text-pitch-gold transition-colors">
-                  Football Sync & Telemetry Engine →
+                <h4 className="text-sm font-bold text-slate-100 group-hover:text-purple-400 transition-colors">
+                  Football Engine →
                 </h4>
               </div>
               <p className="text-xs text-slate-400 mt-1">
-                Trigger full data synchronization, inspect provider health, and manage competition cache invalidation.
+                Full provider synchronization and cache invalidation controls.
               </p>
             </a>
           </div>

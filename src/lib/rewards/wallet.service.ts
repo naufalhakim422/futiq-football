@@ -179,7 +179,7 @@ export class WalletService {
       throw new Error("Withdrawals are currently on hold pending account risk review.");
     }
 
-    return await prisma.$transaction(async (tx) => {
+    const createdResult = await prisma.$transaction(async (tx) => {
       // 1. Fetch Wallet with concurrency lock
       const wallet = await tx.wallet.findUnique({
         where: { contributorProfileId },
@@ -287,6 +287,28 @@ export class WalletService {
 
       return { withdrawalRequest: withdrawal, isIdempotentReplay: false };
     });
+
+    // Auto-Payout Evaluation & Execution (Non-blocking fallback to manual review)
+    try {
+      const autoResult = await (await import("./auto-payout.service")).autoPayoutService.processAutomaticWithdrawal(
+        createdResult.withdrawalRequest.id,
+        ipAddress,
+        userAgent
+      );
+
+      const latestWithdrawal = await prisma.withdrawalRequest.findUnique({
+        where: { id: createdResult.withdrawalRequest.id },
+      });
+
+      return {
+        withdrawalRequest: latestWithdrawal || createdResult.withdrawalRequest,
+        isIdempotentReplay: false,
+        autoPayout: autoResult,
+      };
+    } catch (autoErr) {
+      console.warn("[Auto Payout Warning - Routing to Manual Review]:", autoErr);
+      return createdResult;
+    }
   }
 
   /**
