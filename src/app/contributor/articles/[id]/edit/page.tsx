@@ -17,9 +17,15 @@ import {
   Shield,
   Search,
   Undo2,
+  Clock,
+  Link2,
+  Globe,
+  HelpCircle,
+  Eye,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { calculateReadTime } from "@/lib/security/sanitizer";
 
 export default function ArticleEditorPage() {
   const params = useParams();
@@ -35,7 +41,26 @@ export default function ArticleEditorPage() {
 
   const [article, setArticle] = useState<any>(null);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    title: string;
+    subtitle: string;
+    excerpt: string;
+    category: string;
+    body: string;
+    featuredImageUrl: string;
+    featuredImageCaption: string;
+    imageRightsStatus: ImageRightsStatus;
+    imageAttribution: string;
+    seoTitle: string;
+    seoDescription: string;
+    changeSummary: string;
+    sources: Array<{
+      sourceName: string;
+      sourceUrl: string;
+      sourceType: SourceType;
+      notes?: string;
+    }>;
+  }>({
     title: "",
     subtitle: "",
     excerpt: "",
@@ -47,13 +72,11 @@ export default function ArticleEditorPage() {
     imageAttribution: "",
     seoTitle: "",
     seoDescription: "",
-    sources: [] as Array<{
-      sourceName: string;
-      sourceUrl: string;
-      sourceType: SourceType;
-      notes?: string;
-    }>,
+    changeSummary: "",
+    sources: [],
   });
+
+  const { wordCount, readTimeMinutes } = calculateReadTime(formData.body || "");
 
   const loadArticle = useCallback(async () => {
     try {
@@ -78,6 +101,7 @@ export default function ArticleEditorPage() {
         imageAttribution: data.data.imageAttribution || "",
         seoTitle: data.data.seoTitle || "",
         seoDescription: data.data.seoDescription || "",
+        changeSummary: "",
         sources: (data.data.sources || []).map((s: any) => ({
           sourceName: s.sourceName,
           sourceUrl: s.sourceUrl,
@@ -150,7 +174,7 @@ export default function ArticleEditorPage() {
         throw new Error(data.error || "Failed to save draft");
       }
 
-      setSuccessMessage("Draft saved successfully.");
+      setSuccessMessage("Manuscript draft saved and version revision recorded.");
       await loadArticle();
     } catch (err: any) {
       setError(err.message || "Error saving draft");
@@ -182,7 +206,7 @@ export default function ArticleEditorPage() {
         throw new Error(data.error || "Failed to submit article");
       }
 
-      setSuccessMessage("Article submitted for review!");
+      setSuccessMessage("Article manuscript submitted to Editorial Review Queue!");
       await loadArticle();
     } catch (err: any) {
       setError(err.message || "Submission failed");
@@ -199,7 +223,7 @@ export default function ArticleEditorPage() {
       });
       const data = await res.json();
       if (!res.ok || !data.success) throw new Error(data.error || "Failed to withdraw");
-      setSuccessMessage("Article withdrawn back to draft.");
+      setSuccessMessage("Article withdrawn back to draft state.");
       await loadArticle();
     } catch (err: any) {
       setError(err.message || "Withdrawal failed");
@@ -208,8 +232,9 @@ export default function ArticleEditorPage() {
 
   if (loading) {
     return (
-      <div className="py-16 text-center text-xs font-mono text-slate-400">
-        Loading Newsroom Draft...
+      <div className="py-20 text-center space-y-3 font-mono text-xs text-slate-400">
+        <div className="w-8 h-8 border-2 border-brand-green border-t-transparent rounded-full animate-spin mx-auto" />
+        <p>Loading Manuscript Studio...</p>
       </div>
     );
   }
@@ -220,46 +245,47 @@ export default function ArticleEditorPage() {
   return (
     <div className="py-8 space-y-6">
       <PageContainer>
-        {/* Top Navigation & Status Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-pitch-800">
-          <div className="flex items-center gap-3">
+        {/* Newsroom Top Bar */}
+        <div className="bg-pitch-900 border border-pitch-800 p-4 sm:p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-4 shadow-xl">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/contributor"
-              className="inline-flex items-center gap-1.5 text-xs font-mono text-slate-400 hover:text-slate-200"
+              className="inline-flex items-center gap-1.5 text-xs font-mono text-slate-400 hover:text-slate-200 transition-colors"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               <span>Desk</span>
             </Link>
 
-            <span className="text-slate-600">/</span>
+            <span className="text-slate-700">|</span>
 
             <span
               className={cn(
-                "px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider font-mono rounded",
-                article?.status === "DRAFT" && "bg-pitch-800 text-slate-300",
-                article?.status === "SUBMITTED" && "bg-brand-gold/20 text-brand-gold font-bold",
-                article?.status === "IN_REVIEW" && "bg-brand-gold/20 text-brand-gold font-bold",
-                article?.status === "REVISION_REQUIRED" && "bg-brand-red/20 text-brand-red font-bold",
-                article?.status === "APPROVED" && "bg-brand-green/20 text-brand-green font-bold",
-                article?.status === "PUBLISHED" && "bg-brand-green/25 text-brand-green font-bold"
+                "px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider font-mono border",
+                article?.status === "DRAFT" && "bg-pitch-800 text-slate-300 border-pitch-700",
+                article?.status === "SUBMITTED" && "bg-brand-gold/15 text-brand-gold border-brand-gold/30 font-bold",
+                article?.status === "IN_REVIEW" && "bg-brand-gold/15 text-brand-gold border-brand-gold/30 font-bold",
+                article?.status === "REVISION_REQUIRED" && "bg-brand-red/15 text-brand-red border-brand-red/30 font-bold",
+                article?.status === "APPROVED" && "bg-brand-green/15 text-brand-green border-brand-green/30 font-bold",
+                article?.status === "PUBLISHED" && "bg-brand-green/25 text-brand-green border-brand-green/40 font-bold"
               )}
             >
               {article?.status}
             </span>
 
             <span className="text-xs font-mono text-slate-400">
-              {article?.wordCount || 0} words • ~{article?.readTimeMinutes || 1} min read
+              {wordCount} words • ~{readTimeMinutes} min read
             </span>
           </div>
 
-          <div className="flex items-center gap-2">
+          {/* Action Group */}
+          <div className="flex flex-wrap items-center gap-2.5">
             {isEditable && (
               <>
                 <button
                   type="button"
                   onClick={handleSave}
                   disabled={saving || submitting}
-                  className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold bg-pitch-850 hover:bg-pitch-800 text-slate-200 border border-pitch-750 disabled:opacity-50 transition-colors"
+                  className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-pitch-850 hover:bg-pitch-800 text-slate-200 border border-pitch-750 disabled:opacity-50 transition-colors active:scale-[0.99]"
                 >
                   <Save className="w-3.5 h-3.5" />
                   <span>{saving ? "Saving..." : "Save Draft"}</span>
@@ -269,7 +295,7 @@ export default function ArticleEditorPage() {
                   type="button"
                   onClick={handleSubmitReview}
                   disabled={saving || submitting}
-                  className="inline-flex items-center gap-1.5 px-4 py-1.5 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover disabled:opacity-50 transition-colors"
+                  className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover disabled:opacity-50 transition-all shadow-md active:scale-[0.99]"
                 >
                   <Send className="w-3.5 h-3.5" />
                   <span>{submitting ? "Submitting..." : "Submit for Review"}</span>
@@ -281,7 +307,7 @@ export default function ArticleEditorPage() {
               <button
                 type="button"
                 onClick={handleWithdraw}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-semibold bg-pitch-850 hover:bg-pitch-800 text-brand-gold border border-pitch-750 transition-colors"
+                className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold bg-pitch-850 hover:bg-pitch-800 text-brand-gold border border-pitch-750 transition-colors active:scale-[0.99]"
               >
                 <Undo2 className="w-3.5 h-3.5" />
                 <span>Withdraw to Draft</span>
@@ -290,181 +316,211 @@ export default function ArticleEditorPage() {
           </div>
         </div>
 
-        {/* Feedback / Alert Banners */}
+        {/* Editorial Revision Memorandum Banner */}
         {article?.status === "REVISION_REQUIRED" && article?.reviews?.[0]?.contributorFeedback && (
-          <div className="p-4 bg-brand-red/10 border border-brand-red/30 rounded space-y-1">
-            <div className="flex items-center gap-2 text-brand-red text-xs font-bold font-mono uppercase">
+          <div className="p-5 bg-brand-red/10 border-l-4 border-l-brand-red border border-brand-red/30 space-y-2 shadow-lg">
+            <div className="flex items-center gap-2 text-brand-red text-xs font-bold font-mono uppercase tracking-wider">
               <AlertCircle className="w-4 h-4" />
-              <span>Editorial Revision Requested</span>
+              <span>Editorial Revision Memorandum from Desk</span>
             </div>
-            <p className="text-xs text-slate-200 leading-relaxed font-sans pl-6">
-              {article.reviews[0].contributorFeedback}
+            <p className="text-xs text-slate-100 leading-relaxed font-sans pl-6 italic">
+              &ldquo;{article.reviews[0].contributorFeedback}&rdquo;
+            </p>
+            <p className="text-[10px] text-slate-400 font-mono pl-6">
+              Please address the notes above in your manuscript and click &ldquo;Submit for Review&rdquo; once updated.
             </p>
           </div>
         )}
 
         {error && (
-          <div className="p-4 bg-brand-red/10 border border-brand-red/30 flex items-start gap-3 text-xs text-brand-red">
+          <div className="p-4 bg-brand-red/10 border border-brand-red/30 flex items-start gap-3 text-xs text-brand-red font-mono">
             <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
             <div className="whitespace-pre-line">{error}</div>
           </div>
         )}
 
         {successMessage && (
-          <div className="p-4 bg-brand-green/10 border border-brand-green/30 flex items-center gap-3 text-xs text-brand-green">
+          <div className="p-4 bg-brand-green/10 border border-brand-green/30 flex items-center gap-3 text-xs text-brand-green font-mono">
             <CheckCircle2 className="w-4 h-4 shrink-0" />
             <span>{successMessage}</span>
           </div>
         )}
 
         {/* Editor Tabs Navigation */}
-        <div className="flex items-center gap-2 border-b border-pitch-800 text-xs font-mono">
+        <div className="flex flex-wrap items-center gap-2 border-b border-pitch-800 text-xs font-mono">
           <button
             onClick={() => setActiveTab("content")}
             className={cn(
-              "px-4 py-2 border-b-2 font-bold transition-colors",
+              "px-4 py-2.5 border-b-2 font-bold transition-colors flex items-center gap-2",
               activeTab === "content"
-                ? "border-brand-green text-brand-green"
+                ? "border-brand-green text-brand-green bg-pitch-900/50"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             )}
           >
-            Manuscript & Body
+            <FileText className="w-3.5 h-3.5" />
+            <span>Manuscript & Body</span>
           </button>
+
           <button
             onClick={() => setActiveTab("sources")}
             className={cn(
-              "px-4 py-2 border-b-2 font-bold transition-colors",
+              "px-4 py-2.5 border-b-2 font-bold transition-colors flex items-center gap-2",
               activeTab === "sources"
-                ? "border-brand-green text-brand-green"
+                ? "border-brand-green text-brand-green bg-pitch-900/50"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             )}
           >
-            Sources ({formData.sources.length})
+            <Link2 className="w-3.5 h-3.5" />
+            <span>Sources ({formData.sources.length})</span>
           </button>
+
           <button
             onClick={() => setActiveTab("rights")}
             className={cn(
-              "px-4 py-2 border-b-2 font-bold transition-colors",
+              "px-4 py-2.5 border-b-2 font-bold transition-colors flex items-center gap-2",
               activeTab === "rights"
-                ? "border-brand-green text-brand-green"
+                ? "border-brand-green text-brand-green bg-pitch-900/50"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             )}
           >
-            Image Rights ({formData.imageRightsStatus})
+            <Shield className="w-3.5 h-3.5" />
+            <span>Image Rights ({formData.imageRightsStatus})</span>
           </button>
+
           <button
             onClick={() => setActiveTab("seo")}
             className={cn(
-              "px-4 py-2 border-b-2 font-bold transition-colors",
+              "px-4 py-2.5 border-b-2 font-bold transition-colors flex items-center gap-2",
               activeTab === "seo"
-                ? "border-brand-green text-brand-green"
+                ? "border-brand-green text-brand-green bg-pitch-900/50"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             )}
           >
-            SEO & Metadata
+            <Globe className="w-3.5 h-3.5" />
+            <span>SEO & Discovery</span>
           </button>
+
           <button
             onClick={() => setActiveTab("revisions")}
             className={cn(
-              "px-4 py-2 border-b-2 font-bold transition-colors",
+              "px-4 py-2.5 border-b-2 font-bold transition-colors flex items-center gap-2",
               activeTab === "revisions"
-                ? "border-brand-green text-brand-green"
+                ? "border-brand-green text-brand-green bg-pitch-900/50"
                 : "border-transparent text-slate-400 hover:text-slate-200"
             )}
           >
-            Revision History ({article?.revisions?.length || 0})
+            <History className="w-3.5 h-3.5" />
+            <span>Revisions History ({article?.revisions?.length || 0})</span>
           </button>
         </div>
 
         {/* Tab 1: Manuscript Content */}
         {activeTab === "content" && (
-          <div className="bg-pitch-900 border border-pitch-800 p-6 space-y-4 text-xs">
-            <div className="space-y-1">
-              <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                Headline *
-              </label>
-              <input
-                type="text"
-                name="title"
-                disabled={!isEditable}
-                value={formData.title}
-                onChange={handleChange}
-                className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2.5 text-slate-100 rounded focus:border-brand-green outline-none font-sans text-base font-bold"
-              />
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
+          <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 shadow-xl text-xs">
+            <div className="space-y-4">
+              <div className="space-y-1.5">
                 <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                  Category *
-                </label>
-                <select
-                  name="category"
-                  disabled={!isEditable}
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2 text-slate-100 rounded focus:border-brand-green outline-none font-sans"
-                >
-                  <option value="Tactical Analysis">Tactical Analysis</option>
-                  <option value="Match Reports">Match Reports</option>
-                  <option value="Transfer Center">Transfer Center</option>
-                  <option value="European Football">European Football</option>
-                  <option value="Club Features">Club Features</option>
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                  Subtitle / Deck
+                  Headline *
                 </label>
                 <input
                   type="text"
-                  name="subtitle"
+                  name="title"
                   disabled={!isEditable}
-                  value={formData.subtitle}
+                  value={formData.title}
                   onChange={handleChange}
-                  className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2 text-slate-100 rounded focus:border-brand-green outline-none font-sans"
+                  className="w-full bg-pitch-950 border border-pitch-750 p-3.5 text-slate-100 focus:border-brand-green outline-none font-sans text-base font-bold transition-all disabled:opacity-70"
                 />
               </div>
-            </div>
 
-            <div className="space-y-1">
-              <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                Summary Excerpt *
-              </label>
-              <textarea
-                name="excerpt"
-                rows={2}
-                disabled={!isEditable}
-                value={formData.excerpt}
-                onChange={handleChange}
-                className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2 text-slate-100 rounded focus:border-brand-green outline-none font-sans"
-              />
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
+                    Category Beat *
+                  </label>
+                  <select
+                    name="category"
+                    disabled={!isEditable}
+                    value={formData.category}
+                    onChange={handleChange}
+                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green outline-none font-sans transition-all disabled:opacity-70"
+                  >
+                    <option value="Tactical Analysis">Tactical Analysis</option>
+                    <option value="Match Reports">Match Reports</option>
+                    <option value="Transfer Center">Transfer Center</option>
+                    <option value="European Football">European Football</option>
+                    <option value="Club Features">Club Features</option>
+                  </select>
+                </div>
 
-            <div className="space-y-1">
-              <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                Article Body (Rich Text / Markdown) *
-              </label>
-              <textarea
-                name="body"
-                rows={16}
-                disabled={!isEditable}
-                value={formData.body}
-                onChange={handleChange}
-                className="w-full bg-pitch-950 border border-pitch-750 p-4 text-slate-100 rounded focus:border-brand-green outline-none font-sans leading-relaxed text-xs"
-              />
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
+                    Subtitle / Deck
+                  </label>
+                  <input
+                    type="text"
+                    name="subtitle"
+                    disabled={!isEditable}
+                    value={formData.subtitle}
+                    onChange={handleChange}
+                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green outline-none font-sans transition-all disabled:opacity-70"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
+                  Summary Excerpt *
+                </label>
+                <textarea
+                  name="excerpt"
+                  rows={2}
+                  disabled={!isEditable}
+                  value={formData.excerpt}
+                  onChange={handleChange}
+                  className="w-full bg-pitch-950 border border-pitch-750 p-3 text-slate-100 focus:border-brand-green outline-none font-sans leading-relaxed disabled:opacity-70"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
+                  Article Body (Rich Text / Markdown) *
+                </label>
+                <textarea
+                  name="body"
+                  rows={18}
+                  disabled={!isEditable}
+                  value={formData.body}
+                  onChange={handleChange}
+                  className="w-full bg-pitch-950 border border-pitch-750 p-4 text-slate-100 focus:border-brand-green outline-none font-sans leading-relaxed text-xs disabled:opacity-70"
+                />
+              </div>
+
+              {isEditable && (
+                <div className="space-y-1.5 pt-2 border-t border-pitch-800">
+                  <label className="font-bold text-slate-400 uppercase tracking-wider text-[10px] font-mono">
+                    Revision Change Summary (Optional description for next snapshot)
+                  </label>
+                  <input
+                    type="text"
+                    name="changeSummary"
+                    value={formData.changeSummary}
+                    onChange={handleChange}
+                    placeholder="e.g. Added tactical pressing data and revised conclusion"
+                    className="w-full bg-pitch-950 border border-pitch-800 px-3 py-2 text-slate-300 focus:border-brand-green outline-none font-mono text-xs"
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}
 
         {/* Tab 2: Sources */}
         {activeTab === "sources" && (
-          <div className="bg-pitch-900 border border-pitch-800 p-6 space-y-4 text-xs">
+          <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 shadow-xl text-xs">
             <div className="flex items-center justify-between pb-3 border-b border-pitch-800">
               <div>
                 <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-sans">
-                  Editorial Reference Sources
+                  Editorial Reference Sources ({formData.sources.length})
                 </h4>
                 <p className="text-[11px] text-slate-400">
                   Every claim, quote, or tactical stat must cite verifiable original sources.
@@ -475,9 +531,9 @@ export default function ArticleEditorPage() {
                 <button
                   type="button"
                   onClick={addSource}
-                  className="px-3 py-1 text-xs font-semibold bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 text-slate-200 flex items-center gap-1"
+                  className="px-3 py-1.5 text-xs font-semibold bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 text-slate-200 flex items-center gap-1.5 transition-colors active:scale-[0.99]"
                 >
-                  <Plus className="w-3.5 h-3.5" />
+                  <Plus className="w-3.5 h-3.5 text-brand-green" />
                   <span>Add Source</span>
                 </button>
               )}
@@ -485,48 +541,60 @@ export default function ArticleEditorPage() {
 
             <div className="space-y-3">
               {formData.sources.map((source, index) => (
-                <div key={index} className="p-3 bg-pitch-950 border border-pitch-800 space-y-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <input
-                      type="text"
-                      disabled={!isEditable}
-                      placeholder="Source Name"
-                      value={source.sourceName}
-                      onChange={(e) => handleSourceChange(index, "sourceName", e.target.value)}
-                      className="bg-pitch-900 border border-pitch-750 px-2.5 py-1.5 text-slate-200 rounded outline-none"
-                    />
-                    <input
-                      type="url"
-                      disabled={!isEditable}
-                      placeholder="Source URL"
-                      value={source.sourceUrl}
-                      onChange={(e) => handleSourceChange(index, "sourceUrl", e.target.value)}
-                      className="bg-pitch-900 border border-pitch-750 px-2.5 py-1.5 text-slate-200 rounded outline-none font-mono"
-                    />
-                    <div className="flex items-center gap-2">
-                      <select
+                <div key={index} className="p-4 bg-pitch-950 border border-pitch-800 space-y-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono text-slate-400 uppercase">Source Name *</label>
+                      <input
+                        type="text"
                         disabled={!isEditable}
-                        value={source.sourceType}
-                        onChange={(e) => handleSourceChange(index, "sourceType", e.target.value)}
-                        className="w-full bg-pitch-900 border border-pitch-750 px-2.5 py-1.5 text-slate-200 rounded outline-none"
-                      >
-                        <option value="OFFICIAL">Official</option>
-                        <option value="INTERVIEW">Interview</option>
-                        <option value="PRESS_RELEASE">Press Release</option>
-                        <option value="FOOTBALL_DATA">Football Data</option>
-                        <option value="NEWS_REPORT">News Report</option>
-                        <option value="SOCIAL">Social</option>
-                        <option value="OTHER">Other</option>
-                      </select>
-                      {isEditable && formData.sources.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeSource(index)}
-                          className="p-1.5 text-slate-500 hover:text-brand-red"
+                        placeholder="Source Name"
+                        value={source.sourceName}
+                        onChange={(e) => handleSourceChange(index, "sourceName", e.target.value)}
+                        className="w-full bg-pitch-900 border border-pitch-750 px-3 py-2 text-slate-200 focus:border-brand-green outline-none disabled:opacity-70"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono text-slate-400 uppercase">Source URL *</label>
+                      <input
+                        type="url"
+                        disabled={!isEditable}
+                        placeholder="Source URL"
+                        value={source.sourceUrl}
+                        onChange={(e) => handleSourceChange(index, "sourceUrl", e.target.value)}
+                        className="w-full bg-pitch-900 border border-pitch-750 px-3 py-2 text-slate-200 focus:border-brand-green outline-none font-mono disabled:opacity-70"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono text-slate-400 uppercase">Source Type *</label>
+                      <div className="flex items-center gap-2">
+                        <select
+                          disabled={!isEditable}
+                          value={source.sourceType}
+                          onChange={(e) => handleSourceChange(index, "sourceType", e.target.value)}
+                          className="w-full bg-pitch-900 border border-pitch-750 px-3 py-2 text-slate-200 focus:border-brand-green outline-none disabled:opacity-70"
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                          <option value="OFFICIAL">Official</option>
+                          <option value="INTERVIEW">Interview</option>
+                          <option value="PRESS_RELEASE">Press Release</option>
+                          <option value="FOOTBALL_DATA">Football Data</option>
+                          <option value="NEWS_REPORT">News Report</option>
+                          <option value="SOCIAL">Social</option>
+                          <option value="OTHER">Other</option>
+                        </select>
+                        {isEditable && formData.sources.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeSource(index)}
+                            className="p-2 text-slate-500 hover:text-brand-red transition-colors shrink-0"
+                            title="Remove Source"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -537,13 +605,13 @@ export default function ArticleEditorPage() {
 
         {/* Tab 3: Image Rights */}
         {activeTab === "rights" && (
-          <div className="bg-pitch-900 border border-pitch-800 p-6 space-y-4 text-xs">
+          <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 shadow-xl text-xs">
             <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-sans pb-2 border-b border-pitch-800">
-              Featured Image Rights Compliance
+              Featured Image & Rights Clearance
             </h4>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
                   Featured Image URL
                 </label>
@@ -554,11 +622,11 @@ export default function ArticleEditorPage() {
                   value={formData.featuredImageUrl}
                   onChange={handleChange}
                   placeholder="https://images.unsplash.com/..."
-                  className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2 text-slate-100 rounded focus:border-brand-green outline-none font-mono"
+                  className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green outline-none font-mono disabled:opacity-70"
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
                   Rights Clearance Status *
                 </label>
@@ -567,19 +635,19 @@ export default function ArticleEditorPage() {
                   disabled={!isEditable}
                   value={formData.imageRightsStatus}
                   onChange={handleChange}
-                  className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2 text-slate-100 rounded focus:border-brand-green outline-none font-sans"
+                  className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green outline-none font-sans disabled:opacity-70"
                 >
-                  <option value="OWNED">Owned (Author Original)</option>
-                  <option value="LICENSED">Licensed (Editorial License)</option>
-                  <option value="OFFICIAL_PRESS">Official Press Kit</option>
+                  <option value="OWNED">Owned (Author Original Photography/Graphic)</option>
+                  <option value="LICENSED">Licensed (Editorial Media License)</option>
+                  <option value="OFFICIAL_PRESS">Official Club Press Kit</option>
                   <option value="PUBLIC_DOMAIN">Public Domain</option>
                   <option value="PERMISSION_GRANTED">Permission Granted</option>
-                  <option value="UNKNOWN">Unknown (Blocked from Publication)</option>
+                  <option value="UNKNOWN">Unknown (Blocks Review Submission)</option>
                 </select>
               </div>
             </div>
 
-            <div className="space-y-1">
+            <div className="space-y-1.5">
               <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
                 Attribution & Credit
               </label>
@@ -590,7 +658,7 @@ export default function ArticleEditorPage() {
                 value={formData.imageAttribution}
                 onChange={handleChange}
                 placeholder="e.g. Photo by John Doe / Getty Images"
-                className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2 text-slate-100 rounded focus:border-brand-green outline-none font-sans"
+                className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green outline-none font-sans disabled:opacity-70"
               />
             </div>
           </div>
@@ -598,13 +666,13 @@ export default function ArticleEditorPage() {
 
         {/* Tab 4: SEO & Metadata */}
         {activeTab === "seo" && (
-          <div className="bg-pitch-900 border border-pitch-800 p-6 space-y-4 text-xs">
+          <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 shadow-xl text-xs">
             <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-sans pb-2 border-b border-pitch-800">
               Search Engine & Social Discovery Metadata
             </h4>
 
-            <div className="space-y-3">
-              <div className="space-y-1">
+            <div className="space-y-4">
+              <div className="space-y-1.5">
                 <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
                   SEO Title *
                 </label>
@@ -614,11 +682,11 @@ export default function ArticleEditorPage() {
                   disabled={!isEditable}
                   value={formData.seoTitle}
                   onChange={handleChange}
-                  className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2 text-slate-100 rounded focus:border-brand-green outline-none font-sans"
+                  className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green outline-none font-sans disabled:opacity-70"
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
                   SEO Meta Description *
                 </label>
@@ -628,7 +696,7 @@ export default function ArticleEditorPage() {
                   disabled={!isEditable}
                   value={formData.seoDescription}
                   onChange={handleChange}
-                  className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2 text-slate-100 rounded focus:border-brand-green outline-none font-sans"
+                  className="w-full bg-pitch-950 border border-pitch-750 p-3 text-slate-100 focus:border-brand-green outline-none font-sans leading-relaxed disabled:opacity-70"
                 />
               </div>
             </div>
@@ -637,26 +705,34 @@ export default function ArticleEditorPage() {
 
         {/* Tab 5: Revisions History */}
         {activeTab === "revisions" && (
-          <div className="bg-pitch-900 border border-pitch-800 p-6 space-y-4 text-xs">
+          <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 shadow-xl text-xs">
             <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-sans pb-2 border-b border-pitch-800">
-              Version History & Change Snapshots
+              Version History & Snapshot Log ({article?.revisions?.length || 0})
             </h4>
 
-            <div className="divide-y divide-pitch-800">
-              {(article?.revisions || []).map((rev: any) => (
-                <div key={rev.id} className="py-3 flex items-center justify-between">
-                  <div className="space-y-0.5">
-                    <span className="font-mono font-bold text-brand-green">
-                      Revision #{rev.revisionNumber}
-                    </span>
-                    <p className="text-slate-300">{rev.changeSummary || rev.title}</p>
+            {(!article?.revisions || article.revisions.length === 0) ? (
+              <p className="text-xs text-slate-500 font-mono">No revision snapshots recorded yet.</p>
+            ) : (
+              <div className="divide-y divide-pitch-800 border border-pitch-800">
+                {article.revisions.map((rev: any) => (
+                  <div key={rev.id} className="p-4 bg-pitch-950 flex items-start justify-between gap-4">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="font-mono font-bold text-brand-green text-xs">
+                          Revision #{rev.revisionNumber}
+                        </span>
+                        <span className="text-[10px] font-mono text-slate-500">
+                          {new Date(rev.createdAt).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-slate-200 text-xs font-sans">
+                        {rev.changeSummary || rev.title}
+                      </p>
+                    </div>
                   </div>
-                  <span className="text-[10px] font-mono text-slate-500">
-                    {new Date(rev.createdAt).toLocaleString()}
-                  </span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </PageContainer>

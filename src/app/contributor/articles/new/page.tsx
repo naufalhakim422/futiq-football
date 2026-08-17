@@ -5,8 +5,21 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { useRouter } from "next/navigation";
 import { ImageRightsStatus, SourceType } from "@prisma/client";
-import { Plus, Trash2, Save, ArrowLeft, AlertCircle } from "lucide-react";
+import {
+  Plus,
+  Trash2,
+  Save,
+  ArrowLeft,
+  AlertCircle,
+  FileText,
+  Shield,
+  Link2,
+  Sparkles,
+  Info,
+  Clock,
+} from "lucide-react";
 import Link from "next/link";
+import { calculateReadTime } from "@/lib/security/sanitizer";
 
 export default function NewArticleDraftPage() {
   const router = useRouter();
@@ -52,6 +65,8 @@ export default function NewArticleDraftPage() {
       },
     ],
   });
+
+  const { wordCount, readTimeMinutes } = calculateReadTime(formData.body || "");
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -118,174 +133,213 @@ export default function NewArticleDraftPage() {
   return (
     <div className="py-8 space-y-8">
       <PageContainer>
-        <div className="flex items-center justify-between">
+        {/* Navigation & Status Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-pitch-800">
           <Link
             href="/contributor"
-            className="inline-flex items-center gap-2 text-xs font-mono text-slate-400 hover:text-slate-200"
+            className="inline-flex items-center gap-2 text-xs font-mono text-slate-400 hover:text-slate-200 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Back to Dashboard</span>
+            <span>Back to Newsroom Desk</span>
           </Link>
+
+          <div className="flex items-center gap-3 text-xs font-mono text-slate-400">
+            <span>Live Word Count: <strong className="text-slate-200">{wordCount}</strong></span>
+            <span>•</span>
+            <span className="flex items-center gap-1">
+              <Clock className="w-3.5 h-3.5 text-brand-green" />
+              <span>~{readTimeMinutes} min read</span>
+            </span>
+          </div>
         </div>
 
         <SectionHeader
-          title="Create New Editorial Article"
-          subtitle="Draft initial manuscript, select category, attach verified sources, and define image rights"
-          badgeText="Draft Studio"
+          title="Create New Manuscript"
+          subtitle="Draft tactical analysis, configure citations, declare image rights, and prepare for editorial review"
+          badgeText="Manuscript Studio"
         />
 
         {error && (
-          <div className="p-4 bg-brand-red/10 border border-brand-red/30 flex items-center gap-3 text-xs text-brand-red">
+          <div className="p-4 bg-brand-red/10 border border-brand-red/30 flex items-center gap-3 text-xs text-brand-red font-mono">
             <AlertCircle className="w-4 h-4 shrink-0" />
             <span>{error}</span>
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 text-xs">
-          {/* Main Info */}
-          <div className="space-y-4">
-            <div className="space-y-1">
-              <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                Headline / Title *
-              </label>
-              <input
-                type="text"
-                name="title"
-                required
-                value={formData.title}
-                onChange={handleChange}
-                placeholder="e.g. Tactical Breakdown: How Arsenal Deconstructed Liverpool's Midfield Pivot"
-                className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2.5 text-slate-100 rounded focus:border-brand-green outline-none font-sans text-sm font-bold"
-              />
+        <form onSubmit={handleSubmit} className="space-y-8 text-xs">
+          {/* Main Editorial Manuscript */}
+          <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 shadow-xl">
+            <div className="flex items-center gap-2 pb-2 border-b border-pitch-800">
+              <FileText className="w-4 h-4 text-brand-green" />
+              <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-sans">
+                Article Headline & Manuscript Body
+              </h3>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
+            <div className="space-y-4">
+              <div className="space-y-1.5">
                 <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                  Category *
-                </label>
-                <select
-                  name="category"
-                  value={formData.category}
-                  onChange={handleChange}
-                  className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2 text-slate-100 rounded focus:border-brand-green outline-none font-sans"
-                >
-                  <option value="Tactical Analysis">Tactical Analysis</option>
-                  <option value="Match Reports">Match Reports</option>
-                  <option value="Transfer Center">Transfer Center</option>
-                  <option value="European Football">European Football</option>
-                  <option value="Club Features">Club Features</option>
-                </select>
-              </div>
-
-              <div className="space-y-1">
-                <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                  Subtitle / Deck (Optional)
+                  Headline / Title *
                 </label>
                 <input
                   type="text"
-                  name="subtitle"
-                  value={formData.subtitle}
+                  name="title"
+                  required
+                  value={formData.title}
                   onChange={handleChange}
-                  placeholder="Secondary supporting lead sentence..."
-                  className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2 text-slate-100 rounded focus:border-brand-green outline-none font-sans"
+                  placeholder="e.g. Tactical Breakdown: How Arsenal's Midfield Pivot Overwhelmed Liverpool's High Press"
+                  className="w-full bg-pitch-950 border border-pitch-750 p-3.5 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans text-base font-bold transition-all"
                 />
               </div>
-            </div>
 
-            <div className="space-y-1">
-              <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                Lead Excerpt / Summary *
-              </label>
-              <textarea
-                name="excerpt"
-                rows={2}
-                value={formData.excerpt}
-                onChange={handleChange}
-                placeholder="Short 2-3 sentence overview that appears in cards and previews..."
-                className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2 text-slate-100 rounded focus:border-brand-green outline-none font-sans"
-              />
-            </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
+                    Category Beat *
+                  </label>
+                  <select
+                    name="category"
+                    value={formData.category}
+                    onChange={handleChange}
+                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans transition-all"
+                  >
+                    <option value="Tactical Analysis">Tactical Analysis</option>
+                    <option value="Match Reports">Match Reports</option>
+                    <option value="Transfer Center">Transfer Center</option>
+                    <option value="European Football">European Football</option>
+                    <option value="Club Features">Club Features</option>
+                  </select>
+                </div>
 
-            <div className="space-y-1">
-              <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                Article Body (Rich Text / Markdown) *
-              </label>
-              <textarea
-                name="body"
-                required
-                rows={12}
-                value={formData.body}
-                onChange={handleChange}
-                placeholder="Draft your full editorial story here..."
-                className="w-full bg-pitch-950 border border-pitch-750 p-4 text-slate-100 rounded focus:border-brand-green outline-none font-sans leading-relaxed text-xs"
-              />
+                <div className="space-y-1.5">
+                  <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
+                    Subtitle / Deck (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    name="subtitle"
+                    value={formData.subtitle}
+                    onChange={handleChange}
+                    placeholder="Secondary supporting lead sentence..."
+                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans transition-all"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
+                  Lead Excerpt / Summary *
+                </label>
+                <textarea
+                  name="excerpt"
+                  rows={2}
+                  value={formData.excerpt}
+                  onChange={handleChange}
+                  placeholder="Short 2-3 sentence overview that appears in cards and feeds..."
+                  className="w-full bg-pitch-950 border border-pitch-750 p-3 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans leading-relaxed"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
+                    Article Body (Rich Text / Markdown) *
+                  </label>
+                  <span className="text-[10px] font-mono text-slate-500">
+                    Supports Markdown headings, bullet lists, and paragraphs
+                  </span>
+                </div>
+                <textarea
+                  name="body"
+                  required
+                  rows={14}
+                  value={formData.body}
+                  onChange={handleChange}
+                  placeholder="Draft your full analytical story here..."
+                  className="w-full bg-pitch-950 border border-pitch-750 p-4 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans leading-relaxed text-xs"
+                />
+              </div>
             </div>
           </div>
 
           {/* Sources Section */}
-          <div className="pt-6 border-t border-pitch-800 space-y-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-sans">
-                  Editorial Source References
-                </h4>
-                <p className="text-[11px] text-slate-400">
-                  Minimum 1 verified source required before review submission.
-                </p>
+          <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 shadow-xl">
+            <div className="flex items-center justify-between pb-2 border-b border-pitch-800">
+              <div className="flex items-center gap-2">
+                <Link2 className="w-4 h-4 text-brand-green" />
+                <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-sans">
+                  Editorial Citations & References ({formData.sources.length})
+                </h3>
               </div>
 
               <button
                 type="button"
                 onClick={addSource}
-                className="px-2.5 py-1 text-xs font-semibold bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 text-slate-200 flex items-center gap-1"
+                className="px-3 py-1.5 text-xs font-semibold bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 text-slate-200 flex items-center gap-1.5 transition-colors active:scale-[0.99]"
               >
-                <Plus className="w-3.5 h-3.5" />
+                <Plus className="w-3.5 h-3.5 text-brand-green" />
                 <span>Add Source</span>
               </button>
             </div>
 
+            <div className="p-3.5 bg-pitch-950 border border-pitch-800 text-slate-400 text-xs flex items-center gap-2">
+              <Info className="w-4 h-4 text-brand-green shrink-0" />
+              <span>Minimum 1 verified primary source required before editorial review submission.</span>
+            </div>
+
             <div className="space-y-3">
               {formData.sources.map((source, index) => (
-                <div key={index} className="p-3 bg-pitch-950 border border-pitch-800 space-y-2">
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                    <input
-                      type="text"
-                      placeholder="Source Name (e.g. Official Club Press)"
-                      value={source.sourceName}
-                      onChange={(e) => handleSourceChange(index, "sourceName", e.target.value)}
-                      className="bg-pitch-900 border border-pitch-750 px-2.5 py-1.5 text-slate-200 rounded outline-none"
-                    />
-                    <input
-                      type="url"
-                      placeholder="Source URL"
-                      value={source.sourceUrl}
-                      onChange={(e) => handleSourceChange(index, "sourceUrl", e.target.value)}
-                      className="bg-pitch-900 border border-pitch-750 px-2.5 py-1.5 text-slate-200 rounded outline-none font-mono"
-                    />
-                    <div className="flex items-center gap-2">
-                      <select
-                        value={source.sourceType}
-                        onChange={(e) => handleSourceChange(index, "sourceType", e.target.value)}
-                        className="w-full bg-pitch-900 border border-pitch-750 px-2.5 py-1.5 text-slate-200 rounded outline-none"
-                      >
-                        <option value="OFFICIAL">Official</option>
-                        <option value="INTERVIEW">Interview</option>
-                        <option value="PRESS_RELEASE">Press Release</option>
-                        <option value="FOOTBALL_DATA">Football Data</option>
-                        <option value="NEWS_REPORT">News Report</option>
-                        <option value="SOCIAL">Social</option>
-                        <option value="OTHER">Other</option>
-                      </select>
-                      {formData.sources.length > 1 && (
-                        <button
-                          type="button"
-                          onClick={() => removeSource(index)}
-                          className="p-1.5 text-slate-500 hover:text-brand-red"
+                <div key={index} className="p-4 bg-pitch-950 border border-pitch-800 space-y-2.5">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono text-slate-400 uppercase">Source Name *</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Official Club Statement"
+                        value={source.sourceName}
+                        onChange={(e) => handleSourceChange(index, "sourceName", e.target.value)}
+                        className="w-full bg-pitch-900 border border-pitch-750 px-3 py-2 text-slate-200 focus:border-brand-green outline-none"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono text-slate-400 uppercase">Source URL *</label>
+                      <input
+                        type="url"
+                        placeholder="https://..."
+                        value={source.sourceUrl}
+                        onChange={(e) => handleSourceChange(index, "sourceUrl", e.target.value)}
+                        className="w-full bg-pitch-900 border border-pitch-750 px-3 py-2 text-slate-200 focus:border-brand-green outline-none font-mono"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-[10px] font-mono text-slate-400 uppercase">Source Type *</label>
+                      <div className="flex items-center gap-2">
+                        <select
+                          value={source.sourceType}
+                          onChange={(e) => handleSourceChange(index, "sourceType", e.target.value)}
+                          className="w-full bg-pitch-900 border border-pitch-750 px-3 py-2 text-slate-200 focus:border-brand-green outline-none"
                         >
-                          <Trash2 className="w-4 h-4" />
-                        </button>
-                      )}
+                          <option value="OFFICIAL">Official</option>
+                          <option value="INTERVIEW">Interview</option>
+                          <option value="PRESS_RELEASE">Press Release</option>
+                          <option value="FOOTBALL_DATA">Football Data</option>
+                          <option value="NEWS_REPORT">News Report</option>
+                          <option value="SOCIAL">Social</option>
+                          <option value="OTHER">Other</option>
+                        </select>
+                        {formData.sources.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => removeSource(index)}
+                            className="p-2 text-slate-500 hover:text-brand-red transition-colors shrink-0"
+                            title="Remove Source"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -293,16 +347,19 @@ export default function NewArticleDraftPage() {
             </div>
           </div>
 
-          {/* Image Rights */}
-          <div className="pt-6 border-t border-pitch-800 space-y-4">
-            <h4 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-sans">
-              Featured Image & Rights Metadata
-            </h4>
+          {/* Featured Image & Rights Metadata */}
+          <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 shadow-xl">
+            <div className="flex items-center gap-2 pb-2 border-b border-pitch-800">
+              <Shield className="w-4 h-4 text-brand-green" />
+              <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-sans">
+                Featured Media & Image Rights Clearance
+              </h3>
+            </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                  Featured Image URL
+                  Featured Image URL (Optional)
                 </label>
                 <input
                   type="url"
@@ -310,40 +367,47 @@ export default function NewArticleDraftPage() {
                   value={formData.featuredImageUrl}
                   onChange={handleChange}
                   placeholder="https://images.unsplash.com/..."
-                  className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2 text-slate-100 rounded focus:border-brand-green outline-none font-mono"
+                  className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green outline-none font-mono"
                 />
               </div>
 
-              <div className="space-y-1">
+              <div className="space-y-1.5">
                 <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                  Image Rights Status *
+                  Rights Clearance Status *
                 </label>
                 <select
                   name="imageRightsStatus"
                   value={formData.imageRightsStatus}
                   onChange={handleChange}
-                  className="w-full bg-pitch-950 border border-pitch-750 px-3 py-2 text-slate-100 rounded focus:border-brand-green outline-none font-sans"
+                  className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green outline-none font-sans"
                 >
-                  <option value="OWNED">Owned (Author Original)</option>
-                  <option value="LICENSED">Licensed (Editorial License)</option>
-                  <option value="OFFICIAL_PRESS">Official Press Kit</option>
-                  <option value="PUBLIC_DOMAIN">Public Domain</option>
-                  <option value="PERMISSION_GRANTED">Permission Granted</option>
-                  <option value="UNKNOWN">Unknown (Blocks Review)</option>
+                  <option value="OWNED">Owned (Author Original Photography/Graphic)</option>
+                  <option value="LICENSED">Licensed (Editorial Media License)</option>
+                  <option value="OFFICIAL_PRESS">Official Club Press Kit</option>
+                  <option value="PUBLIC_DOMAIN">Public Domain Media</option>
+                  <option value="PERMISSION_GRANTED">Permission Granted by Rights Holder</option>
+                  <option value="UNKNOWN">Unknown (Blocks Review Submission)</option>
                 </select>
               </div>
             </div>
           </div>
 
-          {/* Submit / Save Bar */}
-          <div className="pt-6 border-t border-pitch-800 flex justify-end gap-3">
+          {/* Action Bar */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <Link
+              href="/contributor"
+              className="text-xs font-mono text-slate-400 hover:text-slate-200 transition-colors"
+            >
+              Cancel and Return to Desk
+            </Link>
+
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center gap-2 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover disabled:opacity-50 transition-colors"
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover disabled:opacity-50 transition-all shadow-lg active:scale-[0.99]"
             >
               <Save className="w-4 h-4" />
-              <span>{loading ? "Creating Draft..." : "Save Initial Draft"}</span>
+              <span>{loading ? "Creating Manuscript..." : "Save Initial Manuscript"}</span>
             </button>
           </div>
         </form>
