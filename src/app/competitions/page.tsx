@@ -1,82 +1,60 @@
 import React from "react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { SectionHeader } from "@/components/layout/SectionHeader";
-import { StandingRow } from "@/types/football";
+import { CompetitionBadge } from "@/components/football/CompetitionBadge";
 import { TeamBadge } from "@/components/football/TeamBadge";
+import { footballService } from "@/lib/football/football.service";
+import Link from "next/link";
 
-const SAMPLE_STANDINGS: StandingRow[] = [
-  {
-    position: 1,
-    team: { id: "t-1", name: "Arsenal", shortName: "Arsenal", tla: "ARS" },
-    played: 28,
-    won: 21,
-    drawn: 4,
-    lost: 3,
-    goalsFor: 70,
-    goalsAgainst: 24,
-    goalDifference: 46,
-    points: 67,
-    form: ["W", "W", "W", "D", "W"],
-  },
-  {
-    position: 2,
-    team: { id: "t-3", name: "Manchester City", shortName: "Man City", tla: "MCI" },
-    played: 28,
-    won: 20,
-    drawn: 6,
-    lost: 2,
-    goalsFor: 68,
-    goalsAgainst: 26,
-    goalDifference: 42,
-    points: 66,
-    form: ["W", "W", "D", "W", "W"],
-  },
-  {
-    position: 3,
-    team: { id: "t-4", name: "Liverpool", shortName: "Liverpool", tla: "LIV" },
-    played: 28,
-    won: 19,
-    drawn: 7,
-    lost: 2,
-    goalsFor: 65,
-    goalsAgainst: 27,
-    goalDifference: 38,
-    points: 64,
-    form: ["W", "D", "W", "W", "L"],
-  },
-  {
-    position: 4,
-    team: { id: "t-2", name: "Chelsea", shortName: "Chelsea", tla: "CHE" },
-    played: 28,
-    won: 15,
-    drawn: 6,
-    lost: 7,
-    goalsFor: 52,
-    goalsAgainst: 34,
-    goalDifference: 18,
-    points: 51,
-    form: ["L", "W", "W", "D", "W"],
-  },
-];
+export const revalidate = 600; // 10 minutes ISR
 
-export default function CompetitionsPage() {
+export default async function CompetitionsPage() {
+  const [competitions, standings] = await Promise.all([
+    footballService.getCompetitions(),
+    footballService.getStandings("PL"),
+  ]);
+
   return (
-    <div className="py-8 space-y-8">
+    <div className="py-8 space-y-10">
       <PageContainer>
+        {/* Competitions Index */}
         <SectionHeader
-          title="League Tables & Standings"
-          subtitle="Real-time domestic leagues, UEFA competitions, and tournament brackets"
-          badgeText="Premier League"
+          title="Major Leagues & Competitions"
+          subtitle="Domestic leagues, UEFA tournaments, and international brackets"
+          badgeText="Tournaments"
+        />
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
+          {competitions.map((comp) => (
+            <Link
+              key={comp.id}
+              href={`/competitions/${comp.slug}`}
+              className="bg-pitch-900 hover:bg-pitch-850 border border-pitch-800 hover:border-pitch-600 p-4 transition-all block space-y-2"
+            >
+              <div className="flex items-center justify-between">
+                <CompetitionBadge name={comp.name} code={comp.code} />
+                <span className="text-[10px] font-mono text-slate-500 uppercase">
+                  {comp.country}
+                </span>
+              </div>
+              <h3 className="text-sm font-bold text-slate-100 font-sans">
+                {comp.name}
+              </h3>
+              <p className="text-[11px] font-mono text-slate-400">
+                Season: {comp.currentSeason}
+              </p>
+            </Link>
+          ))}
+        </div>
+
+        {/* Premier League Table Preview */}
+        <SectionHeader
+          title="Premier League Table 2025/2026"
+          subtitle="Live standings, points, goal difference, and recent form guides"
+          badgeText="Standings"
         />
 
         <div className="bg-pitch-900 border border-pitch-800 overflow-hidden">
-          <div className="p-4 bg-pitch-950 border-b border-pitch-800 flex items-center justify-between">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200">
-              Premier League Table 2025/26
-            </h3>
-            <span className="text-xs font-mono text-slate-400">Matchday 28</span>
-          </div>
-
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead className="bg-pitch-950 text-slate-400 font-mono uppercase tracking-wider border-b border-pitch-800">
@@ -93,13 +71,15 @@ export default function CompetitionsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-pitch-850 font-mono">
-                {SAMPLE_STANDINGS.map((row) => (
+                {standings.map((row) => (
                   <tr key={row.position} className="hover:bg-pitch-850 transition-colors">
                     <td className="py-3 px-3 text-center font-bold text-slate-300">
                       {row.position}
                     </td>
                     <td className="py-3 px-4 font-sans">
-                      <TeamBadge name={row.team.name} tla={row.team.tla} size="sm" />
+                      <Link href={`/teams/${row.team.slug}`} className="hover:text-brand-green">
+                        <TeamBadge name={row.team.name} tla={row.team.tla} size="sm" />
+                      </Link>
                     </td>
                     <td className="py-3 px-3 text-center text-slate-400">{row.played}</td>
                     <td className="py-3 px-3 text-center text-slate-300">{row.won}</td>
@@ -113,7 +93,7 @@ export default function CompetitionsPage() {
                     </td>
                     <td className="py-3 px-4 text-center">
                       <div className="flex items-center justify-center gap-1">
-                        {row.form.map((f, i) => (
+                        {row.form.split("").map((f, i) => (
                           <span
                             key={i}
                             className={`w-4 h-4 rounded text-[9px] font-bold flex items-center justify-center ${

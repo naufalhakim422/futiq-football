@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "test": "tsx --test tests/football.test.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev"
   },
@@ -32,6 +33,7 @@
     "postcss": "^8.4.40",
     "prisma": "^5.17.0",
     "tailwindcss": "^3.4.7",
+    "tsx": "^4.23.12",
     "typescript": "^5.5.4"
   }
 }

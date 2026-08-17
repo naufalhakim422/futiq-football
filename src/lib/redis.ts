@@ -14,14 +14,21 @@ const getRedisUrl = (): string => {
 export const redis =
   globalForRedis.redisClient ??
   new Redis(getRedisUrl(), {
-    maxRetriesPerRequest: 2,
+    maxRetriesPerRequest: 1,
     enableReadyCheck: false,
     retryStrategy(times) {
-      const delay = Math.min(times * 50, 2000);
-      return delay;
+      if (times > 3) return null; // stop retrying if offline
+      return Math.min(times * 50, 500);
     },
     lazyConnect: true,
   });
+
+redis.on("error", (err) => {
+  // Graceful log without unhandled event throw when Redis is offline
+  if (process.env.NODE_ENV === "development") {
+    // quiet in dev/tests when offline
+  }
+});
 
 if (process.env.NODE_ENV !== "production") {
   globalForRedis.redisClient = redis;

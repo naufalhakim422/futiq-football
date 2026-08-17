@@ -5,9 +5,11 @@ import { HeroArticle } from "@/components/article/HeroArticle";
 import { ArticleCard } from "@/components/article/ArticleCard";
 import { MatchCard } from "@/components/football/MatchCard";
 import { ArticleSummary } from "@/types/article";
-import { MatchSummary } from "@/types/football";
+import { footballService } from "@/lib/football/football.service";
 import Link from "next/link";
 import { Flame, ArrowUpRight, Shield, Zap } from "lucide-react";
+
+export const revalidate = 60; // 1 minute ISR
 
 const HERO_STORY: ArticleSummary = {
   id: "art-1",
@@ -68,48 +70,14 @@ const FEATURED_STORIES: ArticleSummary[] = [
   },
 ];
 
-const MATCHES_GRID: MatchSummary[] = [
-  {
-    id: "m-1",
-    competition: { id: "c-1", name: "Premier League", code: "PL", country: "ENG" },
-    homeTeam: { id: "t-1", name: "Arsenal", shortName: "Arsenal", tla: "ARS" },
-    awayTeam: { id: "t-2", name: "Chelsea", shortName: "Chelsea", tla: "CHE" },
-    score: { home: 2, away: 1 },
-    status: "LIVE_2H",
-    minute: 74,
-    matchDate: "Today",
-  },
-  {
-    id: "m-2",
-    competition: { id: "c-1", name: "Premier League", code: "PL", country: "ENG" },
-    homeTeam: { id: "t-3", name: "Man City", shortName: "Man City", tla: "MCI" },
-    awayTeam: { id: "t-4", name: "Liverpool", shortName: "Liverpool", tla: "LIV" },
-    score: { home: 1, away: 1 },
-    status: "HT",
-    minute: 45,
-    matchDate: "Today",
-  },
-  {
-    id: "m-3",
-    competition: { id: "c-2", name: "La Liga", code: "LL", country: "ESP" },
-    homeTeam: { id: "t-5", name: "Real Madrid", shortName: "Real Madrid", tla: "RMA" },
-    awayTeam: { id: "t-6", name: "Barcelona", shortName: "Barcelona", tla: "BAR" },
-    score: { home: 3, away: 2 },
-    status: "FINISHED",
-    matchDate: "FT",
-  },
-  {
-    id: "m-4",
-    competition: { id: "c-3", name: "Champions League", code: "UCL", country: "EUR" },
-    homeTeam: { id: "t-7", name: "Bayern Munich", shortName: "Bayern", tla: "BAY" },
-    awayTeam: { id: "t-8", name: "Paris SG", shortName: "PSG", tla: "PSG" },
-    score: { home: 0, away: 0 },
-    status: "SCHEDULED",
-    matchDate: "20:00",
-  },
-];
+export default async function HomePage() {
+  const [liveMatches, fixtures] = await Promise.all([
+    footballService.getLiveMatches(),
+    footballService.getFixtures({ limit: 4 }),
+  ]);
 
-export default function HomePage() {
+  const displayMatches = liveMatches.length > 0 ? liveMatches : fixtures;
+
   return (
     <div className="space-y-10 py-6">
       {/* Editorial Lead Section */}
@@ -119,7 +87,7 @@ export default function HomePage() {
           <div className="lg:col-span-8 space-y-6">
             <HeroArticle article={HERO_STORY} />
 
-            {/* Sub-featured Horizontal Cards */}
+            {/* Sub-featured Horizontal Card */}
             <div className="grid grid-cols-1 gap-4 pt-2">
               <ArticleCard
                 article={FEATURED_STORIES[0]}
@@ -141,14 +109,14 @@ export default function HomePage() {
                 </div>
                 <Link
                   href="/matches"
-                  className="text-[11px] font-semibold text-brand-green hover:underline uppercase"
+                  className="text-[11px] font-semibold text-brand-green hover:underline uppercase font-mono"
                 >
                   All Matches
                 </Link>
               </div>
 
               <div className="space-y-2.5">
-                {MATCHES_GRID.slice(0, 3).map((match) => (
+                {displayMatches.slice(0, 3).map((match) => (
                   <MatchCard key={match.id} match={match} />
                 ))}
               </div>

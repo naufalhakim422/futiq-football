@@ -1,53 +1,15 @@
 import React from "react";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { SectionHeader } from "@/components/layout/SectionHeader";
-import { ArrowRight, CheckCircle2, AlertCircle } from "lucide-react";
+import { footballService } from "@/lib/football/football.service";
+import { ArrowRight, CheckCircle2, AlertCircle, HelpCircle } from "lucide-react";
+import Link from "next/link";
 
-interface TransferItem {
-  id: string;
-  playerName: string;
-  position: string;
-  fromTeam: string;
-  toTeam: string;
-  fee: string;
-  status: "CONFIRMED" | "RUMOR" | "ADVANCED";
-  date: string;
-}
+export const revalidate = 600; // 10 minutes ISR
 
-const TRANSFERS_DATA: TransferItem[] = [
-  {
-    id: "tr-1",
-    playerName: "Kylian Mbappé",
-    position: "Forward",
-    fromTeam: "Paris Saint-Germain",
-    toTeam: "Real Madrid",
-    fee: "Free Transfer",
-    status: "CONFIRMED",
-    date: "Aug 17, 2026",
-  },
-  {
-    id: "tr-2",
-    playerName: "Joshua Kimmich",
-    position: "Midfielder",
-    fromTeam: "Bayern Munich",
-    toTeam: "Manchester City",
-    fee: "€55.0M",
-    status: "ADVANCED",
-    date: "Aug 17, 2026",
-  },
-  {
-    id: "tr-3",
-    playerName: "Victor Osimhen",
-    position: "Striker",
-    fromTeam: "Napoli",
-    toTeam: "Chelsea",
-    fee: "€95.0M",
-    status: "RUMOR",
-    date: "Aug 16, 2026",
-  },
-];
+export default async function TransfersPage() {
+  const transfers = await footballService.getTransfers();
 
-export default function TransfersPage() {
   return (
     <div className="py-8 space-y-8">
       <PageContainer>
@@ -68,7 +30,7 @@ export default function TransfersPage() {
           </div>
 
           <div className="divide-y divide-pitch-800">
-            {TRANSFERS_DATA.map((item) => (
+            {transfers.map((item) => (
               <div
                 key={item.id}
                 className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 hover:bg-pitch-850 transition-colors"
@@ -79,41 +41,46 @@ export default function TransfersPage() {
                       {item.playerName}
                     </span>
                     <span className="text-xs text-slate-400 font-mono">
-                      ({item.position})
+                      ({item.playerPosition})
                     </span>
                   </div>
 
                   <div className="flex items-center gap-2 text-xs text-slate-300 font-medium">
-                    <span className="text-slate-400">{item.fromTeam}</span>
+                    <span className="text-slate-400">
+                      {item.fromTeam?.name || "Unattached"}
+                    </span>
                     <ArrowRight className="w-3.5 h-3.5 text-brand-green" />
-                    <span className="text-slate-100 font-semibold">{item.toTeam}</span>
+                    <span className="text-slate-100 font-semibold">
+                      {item.toTeam?.name || "Target Club"}
+                    </span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4 self-end sm:self-center">
                   <div className="text-right">
                     <div className="text-sm font-mono font-bold text-slate-100">
-                      {item.fee}
+                      {item.feeDescription || "Undisclosed"}
                     </div>
                     <div className="text-[10px] text-slate-500 font-mono">
-                      {item.date}
+                      {item.announcementDate}
                     </div>
                   </div>
 
-                  {item.status === "CONFIRMED" && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-brand-green/10 text-brand-green border border-brand-green/30 rounded">
+                  {item.status === "COMPLETED" && (
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-brand-green/10 text-brand-green border border-brand-green/30 rounded font-mono">
                       <CheckCircle2 className="w-3 h-3" />
                       <span>Official</span>
                     </span>
                   )}
                   {item.status === "ADVANCED" && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-brand-gold/10 text-brand-gold border border-brand-gold/30 rounded">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-brand-gold/10 text-brand-gold border border-brand-gold/30 rounded font-mono">
                       <AlertCircle className="w-3 h-3" />
                       <span>Advanced</span>
                     </span>
                   )}
                   {item.status === "RUMOR" && (
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-pitch-800 text-slate-400 border border-pitch-700 rounded">
+                    <span className="inline-flex items-center gap-1 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider bg-pitch-800 text-slate-400 border border-pitch-700 rounded font-mono">
+                      <HelpCircle className="w-3 h-3" />
                       <span>Rumor</span>
                     </span>
                   )}

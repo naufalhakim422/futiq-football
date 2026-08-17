@@ -1,5 +1,6 @@
 // Prisma Schema for Football Media Platform
-// Base Sprint 1 Foundation: User Identity & RBAC
+// Sprint 1: User Identity & RBAC
+// Sprint 2: Football Data Engine (Competitions, Seasons, Teams, Stadiums, Managers, Players, Matches, Events, Lineups, Standings, Stats, Transfers)
 
 generator client {
   provider = "prisma-client-js"
@@ -10,6 +11,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ==========================================
+// 1. RBAC & USER IDENTITY ENUMS & MODELS
+// ==========================================
+
 enum RoleType {
   SUPER_ADMIN
   EDITOR_IN_CHIEF
@@ -19,16 +24,16 @@ enum RoleType {
 }
 
 model User {
-  id            String     @id @default(cuid())
-  email         String     @unique
-  passwordHash  String?
-  fullName      String
-  avatarUrl     String?
-  isActive      Boolean    @default(true)
-  isVerified    Boolean    @default(false)
-  roles         UserRole[]
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id           String     @id @default(cuid())
+  email        String     @unique
+  passwordHash String?
+  fullName     String
+  avatarUrl    String?
+  isActive     Boolean    @default(true)
+  isVerified   Boolean    @default(false)
+  roles        UserRole[]
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
 
   @@index([email])
   @@index([isActive])
@@ -49,7 +54,7 @@ model Role {
 
 model Permission {
   id          String           @id @default(cuid())
-  code        String           @unique // e.g., "article:create", "article:publish", "payout:approve"
+  code        String           @unique
   description String
   roles       RolePermission[]
   createdAt   DateTime         @default(now())
@@ -85,4 +90,332 @@ model RolePermission {
   @@index([roleId])
   @@index([permissionId])
   @@map("role_permissions")
+}
+
+// ==========================================
+// 2. FOOTBALL DATA ENGINE ENUMS & MODELS
+// ==========================================
+
+enum CompetitionType {
+  LEAGUE
+  CUP
+  INTERNATIONAL
+}
+
+enum PlayerPosition {
+  GOALKEEPER
+  DEFENDER
+  MIDFIELDER
+  ATTACKER
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE_1H
+  HT
+  LIVE_2H
+  ET
+  PENALTY
+  FINISHED
+  POSTPONED
+  CANCELLED
+}
+
+enum EventType {
+  GOAL
+  ASSIST
+  YELLOW_CARD
+  RED_CARD
+  SUBSTITUTION
+  VAR
+  PENALTY_MISSED
+  OWN_GOAL
+}
+
+enum TransferType {
+  PERMANENT
+  LOAN
+  FREE_AGENT
+}
+
+enum TransferStatus {
+  RUMOR
+  ADVANCED
+  COMPLETED
+}
+
+model Competition {
+  id          String              @id @default(cuid())
+  externalId  String?             @unique
+  slug        String              @unique
+  name        String
+  code        String              @unique // PL, UCL, LL, SA, BL1
+  type        CompetitionType     @default(LEAGUE)
+  country     String
+  logoUrl     String?
+  orderIndex  Int                 @default(0)
+  seasons     CompetitionSeason[]
+  matches     Match[]
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+
+  @@index([code])
+  @@index([slug])
+  @@map("competitions")
+}
+
+model CompetitionSeason {
+  id            String            @id @default(cuid())
+  competitionId String
+  season        String // e.g., "2025/2026"
+  startDate     DateTime?
+  endDate       DateTime?
+  isCurrent     Boolean           @default(false)
+  competition   Competition       @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  standings     Standing[]
+  matches       Match[]
+  playerStats   PlayerStatistic[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@unique([competitionId, season])
+  @@index([competitionId])
+  @@index([isCurrent])
+  @@map("competition_seasons")
+}
+
+model Stadium {
+  id        String   @id @default(cuid())
+  name      String
+  city      String
+  capacity  Int?
+  imageUrl  String?
+  teams     Team[]
+  matches   Match[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+  @@map("stadiums")
+}
+
+model Team {
+  id            String         @id @default(cuid())
+  externalId    String?        @unique
+  slug          String         @unique
+  name          String
+  shortName     String
+  tla           String // 3-letter abbreviation: ARS, MCI, RMA
+  country       String         @default("Global")
+  foundedYear   Int?
+  websiteUrl    String?
+  logoUrl       String?
+  stadiumId     String?
+  stadium       Stadium?       @relation(fields: [stadiumId], references: [id], onDelete: SetNull)
+  manager       Manager?
+  players       Player[]
+  homeMatches   Match[]        @relation("HomeTeamMatches")
+  awayMatches   Match[]        @relation("AwayTeamMatches")
+  standings     Standing[]
+  fromTransfers Transfer[]     @relation("FromTeamTransfers")
+  toTransfers   Transfer[]     @relation("ToTeamTransfers")
+  lineups       MatchLineup[]
+  events        MatchEvent[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([slug])
+  @@index([tla])
+  @@index([stadiumId])
+  @@map("teams")
+}
+
+model Manager {
+  id         String   @id @default(cuid())
+  externalId String?  @unique
+  name       String
+  slug       String   @unique
+  nationality String
+  photoUrl   String?
+  teamId     String?  @unique
+  team       Team?    @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([slug])
+  @@map("managers")
+}
+
+model Player {
+  id            String            @id @default(cuid())
+  externalId    String?           @unique
+  slug          String            @unique
+  name          String
+  firstName     String?
+  lastName      String?
+  position      PlayerPosition
+  shirtNumber   Int?
+  nationality   String
+  dateOfBirth   DateTime?
+  photoUrl      String?
+  teamId        String?
+  team          Team?             @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  statistics    PlayerStatistic[]
+  transfers     Transfer[]
+  events        MatchEvent[]      @relation("PlayerEvents")
+  assistEvents  MatchEvent[]      @relation("AssistPlayerEvents")
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@index([slug])
+  @@index([teamId])
+  @@index([position])
+  @@map("players")
+}
+
+model Match {
+  id            String             @id @default(cuid())
+  externalId    String?            @unique
+  competitionId String
+  seasonId      String?
+  homeTeamId    String
+  awayTeamId    String
+  venueId       String?
+  matchDate     DateTime
+  status        MatchStatus        @default(SCHEDULED)
+  minute        Int?
+  homeScore     Int                @default(0)
+  awayScore     Int                @default(0)
+  htHomeScore   Int?
+  htAwayScore   Int?
+  round         String? // e.g. "Matchday 28", "Quarter-final"
+  referee       String?
+  competition   Competition        @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  season        CompetitionSeason? @relation(fields: [seasonId], references: [id], onDelete: SetNull)
+  homeTeam      Team               @relation("HomeTeamMatches", fields: [homeTeamId], references: [id], onDelete: Cascade)
+  awayTeam      Team               @relation("AwayTeamMatches", fields: [awayTeamId], references: [id], onDelete: Cascade)
+  venue         Stadium?           @relation(fields: [venueId], references: [id], onDelete: SetNull)
+  events        MatchEvent[]
+  lineups       MatchLineup[]
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+
+  @@index([competitionId])
+  @@index([seasonId])
+  @@index([homeTeamId])
+  @@index([awayTeamId])
+  @@index([matchDate])
+  @@index([status])
+  @@map("matches")
+}
+
+model MatchEvent {
+  id             String    @id @default(cuid())
+  matchId        String
+  teamId         String
+  playerId       String?
+  assistPlayerId String?
+  minute         Int
+  extraMinute    Int?
+  type           EventType
+  detail         String? // e.g. "Header", "Penalty", "Tactical sub"
+  match          Match     @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  team           Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  player         Player?   @relation("PlayerEvents", fields: [playerId], references: [id], onDelete: SetNull)
+  assistPlayer   Player?   @relation("AssistPlayerEvents", fields: [assistPlayerId], references: [id], onDelete: SetNull)
+  createdAt      DateTime  @default(now())
+
+  @@index([matchId])
+  @@index([teamId])
+  @@index([playerId])
+  @@map("match_events")
+}
+
+model MatchLineup {
+  id          String   @id @default(cuid())
+  matchId     String
+  teamId      String
+  formation   String // e.g. "4-3-3", "3-4-2-1"
+  startersJson Json    // Array of { playerId, name, number, position, gridPosition }
+  benchJson   Json     // Array of { playerId, name, number, position }
+  match       Match    @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  team        Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@unique([matchId, teamId])
+  @@index([matchId])
+  @@index([teamId])
+  @@map("match_lineups")
+}
+
+model Standing {
+  id             String            @id @default(cuid())
+  seasonId       String
+  teamId         String
+  position       Int
+  played         Int               @default(0)
+  won            Int               @default(0)
+  drawn          Int               @default(0)
+  lost           Int               @default(0)
+  goalsFor       Int               @default(0)
+  goalsAgainst   Int               @default(0)
+  goalDifference Int               @default(0)
+  points         Int               @default(0)
+  form           String            @default("DDDDD") // e.g. "WWDLW"
+  season         CompetitionSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  team           Team              @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+
+  @@unique([seasonId, teamId])
+  @@index([seasonId])
+  @@index([position])
+  @@map("standings")
+}
+
+model PlayerStatistic {
+  id            String            @id @default(cuid())
+  playerId      String
+  seasonId      String
+  appearances   Int               @default(0)
+  goals         Int               @default(0)
+  assists       Int               @default(0)
+  yellowCards   Int               @default(0)
+  redCards      Int               @default(0)
+  minutesPlayed Int               @default(0)
+  averageRating Decimal           @default(7.0) @db.Decimal(3, 1)
+  player        Player            @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  season        CompetitionSeason @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+
+  @@unique([playerId, seasonId])
+  @@index([playerId])
+  @@index([seasonId])
+  @@map("player_statistics")
+}
+
+model Transfer {
+  id               String         @id @default(cuid())
+  playerId         String
+  fromTeamId       String?
+  toTeamId         String?
+  feeEur           Decimal?       @db.Decimal(14, 2)
+  feeDescription   String? // e.g. "€65.0M", "Free Transfer", "Loan"
+  transferType     TransferType   @default(PERMANENT)
+  status           TransferStatus @default(RUMOR)
+  announcementDate DateTime?
+  contractUntil    String?
+  player           Player         @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  fromTeam         Team?          @relation("FromTeamTransfers", fields: [fromTeamId], references: [id], onDelete: SetNull)
+  toTeam           Team?          @relation("ToTeamTransfers", fields: [toTeamId], references: [id], onDelete: SetNull)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @updatedAt
+
+  @@index([playerId])
+  @@index([fromTeamId])
+  @@index([toTeamId])
+  @@index([status])
+  @@index([announcementDate])
+  @@map("transfers")
 }

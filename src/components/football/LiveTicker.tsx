@@ -1,69 +1,63 @@
 "use client";
 
 import React from "react";
-import { MatchSummary } from "@/types/football";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { MatchCardData } from "./MatchCard";
 
-// Baseline sample data for Sprint 1 layout display
-const SAMPLE_TICKER_MATCHES: MatchSummary[] = [
+// Sample ticker matches for immediate hydration / fallback
+const DEFAULT_TICKER_MATCHES: MatchCardData[] = [
   {
-    id: "m-1",
-    competition: { id: "c-1", name: "Premier League", code: "PL", country: "ENG" },
-    homeTeam: { id: "t-1", name: "Arsenal", shortName: "Arsenal", tla: "ARS" },
-    awayTeam: { id: "t-2", name: "Chelsea", shortName: "Chelsea", tla: "CHE" },
-    score: { home: 2, away: 1 },
+    id: "match_ars_che",
+    competition: { name: "Premier League", code: "PL" },
+    homeTeam: { name: "Arsenal FC", tla: "ARS" },
+    awayTeam: { name: "Chelsea FC", tla: "CHE" },
+    homeScore: 2,
+    awayScore: 1,
     status: "LIVE_2H",
-    minute: 74,
+    minute: 76,
     matchDate: "Today",
   },
   {
-    id: "m-2",
-    competition: { id: "c-1", name: "Premier League", code: "PL", country: "ENG" },
-    homeTeam: { id: "t-3", name: "Man City", shortName: "Man City", tla: "MCI" },
-    awayTeam: { id: "t-4", name: "Liverpool", shortName: "Liverpool", tla: "LIV" },
-    score: { home: 1, away: 1 },
+    id: "match_mci_liv",
+    competition: { name: "Premier League", code: "PL" },
+    homeTeam: { name: "Manchester City", tla: "MCI" },
+    awayTeam: { name: "Liverpool FC", tla: "LIV" },
+    homeScore: 1,
+    awayScore: 1,
     status: "HT",
     minute: 45,
     matchDate: "Today",
   },
   {
-    id: "m-3",
-    competition: { id: "c-2", name: "La Liga", code: "LL", country: "ESP" },
-    homeTeam: { id: "t-5", name: "Real Madrid", shortName: "Real Madrid", tla: "RMA" },
-    awayTeam: { id: "t-6", name: "Barcelona", shortName: "Barcelona", tla: "BAR" },
-    score: { home: 3, away: 2 },
+    id: "match_rma_bar",
+    competition: { name: "La Liga", code: "LL" },
+    homeTeam: { name: "Real Madrid", tla: "RMA" },
+    awayTeam: { name: "Barcelona", tla: "BAR" },
+    homeScore: 3,
+    awayScore: 2,
     status: "FINISHED",
     matchDate: "FT",
   },
   {
-    id: "m-4",
-    competition: { id: "c-3", name: "UEFA Champions League", code: "UCL", country: "EUR" },
-    homeTeam: { id: "t-7", name: "Bayern Munich", shortName: "Bayern", tla: "BAY" },
-    awayTeam: { id: "t-8", name: "Paris SG", shortName: "PSG", tla: "PSG" },
-    score: { home: 0, away: 0 },
+    id: "match_ucl_bay_psg",
+    competition: { name: "Champions League", code: "UCL" },
+    homeTeam: { name: "Bayern Munich", tla: "BAY" },
+    awayTeam: { name: "Paris SG", tla: "PSG" },
+    homeScore: 0,
+    awayScore: 0,
     status: "SCHEDULED",
     matchDate: "20:00",
-  },
-  {
-    id: "m-5",
-    competition: { id: "c-4", name: "Serie A", code: "SA", country: "ITA" },
-    homeTeam: { id: "t-9", name: "Inter Milan", shortName: "Inter", tla: "INT" },
-    awayTeam: { id: "t-10", name: "Juventus", shortName: "Juventus", tla: "JUV" },
-    score: { home: 1, away: 0 },
-    status: "LIVE_1H",
-    minute: 31,
-    matchDate: "Today",
   },
 ];
 
 interface LiveTickerProps {
-  matches?: MatchSummary[];
+  matches?: MatchCardData[];
   className?: string;
 }
 
 export function LiveTicker({
-  matches = SAMPLE_TICKER_MATCHES,
+  matches = DEFAULT_TICKER_MATCHES,
   className,
 }: LiveTickerProps) {
   return (
@@ -75,7 +69,7 @@ export function LiveTicker({
     >
       <div className="flex items-stretch">
         {/* Ticker Lead Badge */}
-        <div className="flex items-center gap-2 px-3 py-2 bg-pitch-900 border-r border-pitch-800 shrink-0 font-bold uppercase tracking-wider text-[11px] text-slate-300">
+        <div className="flex items-center gap-2 px-3 py-2 bg-pitch-900 border-r border-pitch-800 shrink-0 font-bold uppercase tracking-wider text-[11px] text-slate-300 font-mono">
           <span className="relative flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-green opacity-75" />
             <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-green" />
@@ -91,14 +85,17 @@ export function LiveTicker({
               m.status === "LIVE_2H" ||
               m.status === "HT";
 
+            const homeScore = m.homeScore ?? m.score?.home ?? 0;
+            const awayScore = m.awayScore ?? m.score?.away ?? 0;
+
             return (
               <Link
                 key={m.id}
                 href={`/matches/${m.id}`}
                 className="flex items-center gap-3 px-3 py-1 hover:bg-pitch-900 transition-colors shrink-0"
               >
-                <span className="text-[10px] font-bold text-slate-400 uppercase">
-                  {m.competition.code}
+                <span className="text-[10px] font-bold text-slate-400 uppercase font-mono">
+                  {m.competition.code || m.competition.name}
                 </span>
 
                 <div className="flex items-center gap-2 font-medium">
@@ -115,7 +112,7 @@ export function LiveTicker({
                   >
                     {m.status === "SCHEDULED"
                       ? "v"
-                      : `${m.score.home}-${m.score.away}`}
+                      : `${homeScore}-${awayScore}`}
                   </span>
                   <span className="font-semibold text-slate-200">
                     {m.awayTeam.tla}

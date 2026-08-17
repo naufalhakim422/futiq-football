@@ -1,11 +1,35 @@
 import React from "react";
-import { MatchSummary } from "@/types/football";
 import { TeamBadge } from "./TeamBadge";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { MatchStatus } from "@/lib/football/types";
+
+export interface MatchCardData {
+  id: string;
+  competition: {
+    name: string;
+    code?: string;
+  };
+  homeTeam: {
+    name: string;
+    tla: string;
+    logoUrl?: string;
+  };
+  awayTeam: {
+    name: string;
+    tla: string;
+    logoUrl?: string;
+  };
+  status: MatchStatus | string;
+  minute?: number;
+  homeScore?: number;
+  awayScore?: number;
+  score?: { home: number; away: number };
+  matchDate: string;
+}
 
 interface MatchCardProps {
-  match: MatchSummary;
+  match: MatchCardData;
   className?: string;
 }
 
@@ -16,6 +40,13 @@ export function MatchCard({ match, className }: MatchCardProps) {
     match.status === "HT";
   const isFinished = match.status === "FINISHED";
 
+  const homeScore = match.homeScore ?? match.score?.home ?? 0;
+  const awayScore = match.awayScore ?? match.score?.away ?? 0;
+
+  const formattedDate = match.matchDate.includes("T")
+    ? new Date(match.matchDate).toLocaleDateString([], { month: "short", day: "numeric" })
+    : match.matchDate;
+
   return (
     <Link
       href={`/matches/${match.id}`}
@@ -25,14 +56,14 @@ export function MatchCard({ match, className }: MatchCardProps) {
       )}
     >
       <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 mb-2.5 pb-2 border-b border-pitch-800">
-        <span className="uppercase tracking-wider">
+        <span className="uppercase tracking-wider font-mono">
           {match.competition.code || match.competition.name}
         </span>
         <div className="flex items-center gap-1.5">
           {isLive && (
             <span className="flex items-center gap-1 text-brand-green font-mono font-bold text-[10px] uppercase bg-brand-green/10 px-1.5 py-0.5 rounded">
               <span className="w-1.5 h-1.5 rounded-full bg-brand-green animate-ping" />
-              <span>{match.minute ? `${match.minute}'` : "LIVE"}</span>
+              <span>{match.status === "HT" ? "HT" : match.minute ? `${match.minute}'` : "LIVE"}</span>
             </span>
           )}
           {isFinished && (
@@ -42,7 +73,7 @@ export function MatchCard({ match, className }: MatchCardProps) {
           )}
           {match.status === "SCHEDULED" && (
             <span className="text-slate-400 font-mono text-[10px]">
-              {match.matchDate}
+              {formattedDate}
             </span>
           )}
         </div>
@@ -61,7 +92,7 @@ export function MatchCard({ match, className }: MatchCardProps) {
               isLive ? "text-brand-green" : "text-slate-200"
             )}
           >
-            {match.status === "SCHEDULED" ? "-" : match.score.home}
+            {match.status === "SCHEDULED" ? "-" : homeScore}
           </span>
         </div>
 
@@ -77,7 +108,7 @@ export function MatchCard({ match, className }: MatchCardProps) {
               isLive ? "text-brand-green" : "text-slate-200"
             )}
           >
-            {match.status === "SCHEDULED" ? "-" : match.score.away}
+            {match.status === "SCHEDULED" ? "-" : awayScore}
           </span>
         </div>
       </div>
