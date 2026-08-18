@@ -173,11 +173,13 @@ describe("Sprint 5 — Contributor Rewards, Wallet & Payout Security Suite", () 
   });
 
   describe("4. Withdrawal Rules & Cooldown Protections", () => {
-    it("should enforce minimum withdrawal threshold (RM 20.00 / 2000 minor)", () => {
-      const MIN_WITHDRAWAL_MINOR = 2000;
-      const invalidAmount = 1500; // RM 15.00
+    it("should enforce minimum withdrawal threshold (RM 85.00 / 8500 minor)", () => {
+      const MIN_WITHDRAWAL_MINOR = 8500;
+      const invalidAmount = 5000; // RM 50.00
+      const validAmount = 8500; // RM 85.00
 
       assert.ok(invalidAmount < MIN_WITHDRAWAL_MINOR);
+      assert.ok(validAmount >= MIN_WITHDRAWAL_MINOR);
     });
 
     it("should enforce 48-hour cooldown protection on newly updated payout bank accounts", () => {

@@ -42,7 +42,7 @@ export class PayoutPolicyService {
         policy = await prisma.payoutPolicy.create({
           data: {
             name: "default_policy",
-            minimumWithdrawalMinor: 2000, // RM 20.00
+            minimumWithdrawalMinor: 8500, // RM 85.00
             maxAutomaticWithdrawalMinor: 50000, // RM 500.00
             maxDailyWithdrawalMinor: 200000, // RM 2,000.00
             maxMonthlyWithdrawalMinor: 1000000, // RM 10,000.00

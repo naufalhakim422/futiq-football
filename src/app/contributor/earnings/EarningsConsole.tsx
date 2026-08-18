@@ -69,8 +69,8 @@ export function EarningsConsole({
     setWithdrawSuccess("");
 
     const amountFloat = parseFloat(withdrawAmount);
-    if (isNaN(amountFloat) || amountFloat < 20) {
-      setWithdrawError("Minimum withdrawal amount is RM 20.00");
+    if (isNaN(amountFloat) || amountFloat < 85) {
+      setWithdrawError("Jumlah penarikan minimal adalah RM 85.00");
       return;
     }
 
@@ -190,7 +190,7 @@ export function EarningsConsole({
               }
               className={cn(
                 "px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5",
-                (wallet?.availableBalanceMinor || 0) >= 2000 &&
+                (wallet?.availableBalanceMinor || 0) >= 8500 &&
                   !wallet?.payoutAccount?.isUnderCooldown &&
                   !wallet?.isWithdrawalBlocked
                   ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm"
@@ -200,7 +200,7 @@ export function EarningsConsole({
               <ArrowDownLeft className="w-3.5 h-3.5" />
               Request Withdrawal
             </button>
-            <span className="text-muted-foreground">Min RM 20.00</span>
+            <span className="text-muted-foreground">Min RM 85.00</span>
           </div>
         </div>
 
@@ -621,17 +621,17 @@ export function EarningsConsole({
                   <input
                     type="number"
                     step="0.01"
-                    min="20"
+                    min="85"
                     max={(wallet?.availableBalanceMinor || 0) / 100}
                     value={withdrawAmount}
                     onChange={(e) => setWithdrawAmount(e.target.value)}
-                    placeholder="20.00"
+                    placeholder="85.00"
                     required
                     className="w-full bg-pitch-border/40 border border-pitch-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-emerald-500"
                   />
                 </div>
                 <span className="text-[11px] text-muted-foreground mt-1 block">
-                  Available: {formatMYR(wallet?.availableBalanceMinor || 0)} (Min: RM 20.00)
+                  Available: {formatMYR(wallet?.availableBalanceMinor || 0)} (Min: RM 85.00)
                 </span>
               </div>
 
