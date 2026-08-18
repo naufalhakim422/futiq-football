@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { calculateReadTime } from "@/lib/security/sanitizer";
+import { ModularArticleEditor } from "@/components/contributor/ModularArticleEditor";
 
 export default function NewArticleDraftPage() {
   const router = useRouter();
@@ -240,23 +241,18 @@ export default function NewArticleDraftPage() {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <div className="flex items-center justify-between">
-                  <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                    Article Body (Rich Text / Markdown) *
-                  </label>
-                  <span className="text-[10px] font-mono text-slate-500">
-                    Supports Markdown headings, bullet lists, and paragraphs
-                  </span>
-                </div>
-                <textarea
-                  name="body"
-                  required
-                  rows={14}
-                  value={formData.body}
-                  onChange={handleChange}
-                  placeholder="Draft your full analytical story here..."
-                  className="w-full bg-pitch-950 border border-pitch-750 p-4 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans leading-relaxed text-xs"
+              {/* Modular Rich Manuscript Studio */}
+              <div className="space-y-2 pt-2">
+                <ModularArticleEditor
+                  initialBody={formData.body}
+                  onChange={(compiledBody) =>
+                    setFormData((prev) => ({ ...prev, body: compiledBody }))
+                  }
+                  title={formData.title}
+                  subtitle={formData.subtitle}
+                  category={formData.category}
+                  featuredImageUrl={formData.featuredImageUrl}
+                  featuredImageCaption={formData.featuredImageCaption}
                 />
               </div>
             </div>

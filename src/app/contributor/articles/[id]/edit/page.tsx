@@ -26,6 +26,7 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { calculateReadTime } from "@/lib/security/sanitizer";
+import { ModularArticleEditor } from "@/components/contributor/ModularArticleEditor";
 
 export default function ArticleEditorPage() {
   const params = useParams();
@@ -481,17 +482,18 @@ export default function ArticleEditorPage() {
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="font-bold text-slate-300 uppercase tracking-wider text-[11px]">
-                  Article Body (Rich Text / Markdown) *
-                </label>
-                <textarea
-                  name="body"
-                  rows={18}
-                  disabled={!isEditable}
-                  value={formData.body}
-                  onChange={handleChange}
-                  className="w-full bg-pitch-950 border border-pitch-750 p-4 text-slate-100 focus:border-brand-green outline-none font-sans leading-relaxed text-xs disabled:opacity-70"
+              {/* Modular Rich Manuscript Studio */}
+              <div className="space-y-2 pt-2">
+                <ModularArticleEditor
+                  initialBody={formData.body}
+                  onChange={(compiledBody) =>
+                    setFormData((prev) => ({ ...prev, body: compiledBody }))
+                  }
+                  title={formData.title}
+                  subtitle={formData.subtitle}
+                  category={formData.category}
+                  featuredImageUrl={formData.featuredImageUrl}
+                  featuredImageCaption={formData.featuredImageCaption}
                 />
               </div>
 
