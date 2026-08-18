@@ -23,6 +23,18 @@ const ROLE_PROFILES: Record<string, { fullName: string; defaultRole: RoleType; a
     allRoles: ["SENIOR_EDITOR", "CONTRIBUTOR"],
     permissions: ["article:read", "article:write", "article:review", "article:publish", "editorial:gate"],
   },
+  "dev.contributor@futiq.com": {
+    fullName: "Naufal (Developer & Contributor)",
+    defaultRole: "CONTRIBUTOR",
+    allRoles: ["CONTRIBUTOR", "SUPER_ADMIN", "SENIOR_EDITOR", "EDITOR_IN_CHIEF"],
+    permissions: ["*"],
+  },
+  "dev@futiq.com": {
+    fullName: "Developer Master",
+    defaultRole: "CONTRIBUTOR",
+    allRoles: ["CONTRIBUTOR", "SUPER_ADMIN", "SENIOR_EDITOR", "EDITOR_IN_CHIEF", "FINANCE"],
+    permissions: ["*"],
+  },
   "contributor@futiq.com": {
     fullName: "Taufik Hidayat (Kontributor)",
     defaultRole: "CONTRIBUTOR",
