@@ -19,15 +19,15 @@ export default async function ContributorEarningsPage() {
   }
 
   let walletSummary: any = {
-    walletId: "mock_wallet_001",
-    availableBalanceMinor: 14500, // RM 145.00
+    walletId: `wallet_${user.id}`,
+    availableBalanceMinor: 0, // RM 0.00
     heldBalanceMinor: 0,
-    lifetimeEarningsMinor: 14500,
+    lifetimeEarningsMinor: 0, // RM 0.00
     lifetimeWithdrawnMinor: 0,
     currency: "MYR",
-    bankAccountMasked: "•••• 8821",
-    payoutProvider: "Direct Bank Transfer (FPX)",
-    isPayoutAccountVerified: true,
+    bankAccountMasked: null,
+    payoutProvider: null,
+    isPayoutAccountVerified: false,
   };
 
   let rewards: any[] = [];
