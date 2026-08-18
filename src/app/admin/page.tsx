@@ -86,15 +86,23 @@ export default async function AdminPortalPage() {
                 </div>
               </div>
 
-              {/* Instant One-Click Login Action */}
-              <div className="pt-2">
+              {/* Login Actions */}
+              <div className="pt-2 space-y-2.5 font-sans">
+                <Link
+                  href="/login?redirect=/admin"
+                  className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-lg transition-all shadow-lg active:scale-[0.99]"
+                >
+                  <KeyRound className="w-4 h-4 text-slate-950" />
+                  <span>Buka Halaman Masuk (Login Resmi)</span>
+                  <ArrowRight className="w-4 h-4 text-slate-950" />
+                </Link>
+
                 <a
                   href="/api/auth/dev-session?role=SUPER_ADMIN&redirect=/admin"
-                  className="w-full inline-flex items-center justify-center gap-2.5 px-6 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover transition-all shadow-lg active:scale-[0.99]"
+                  className="w-full inline-flex items-center justify-center gap-2 px-4 py-2.5 text-[11px] font-bold uppercase tracking-wider text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-lg transition-colors font-mono"
                 >
-                  <Unlock className="w-4 h-4 text-slate-950" />
-                  <span>Aktifkan Sesi & Buka Konsol Super Admin</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <Unlock className="w-3.5 h-3.5 text-slate-400" />
+                  <span>1-Klik Aktivasi Cepat Dev (SUPER_ADMIN)</span>
                 </a>
               </div>
 

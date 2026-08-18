@@ -3,11 +3,17 @@ import Link from "next/link";
 import { LiveTicker } from "@/components/football/LiveTicker";
 import { Navigation } from "./Navigation";
 import { MobileNav } from "./MobileNav";
+import { UserNav } from "./UserNav";
 import { Search, Globe } from "lucide-react";
 import { footballService } from "@/lib/football/football.service";
+import { getCurrentUser } from "@/lib/auth/session";
 
 export async function Header() {
-  const liveMatches = await footballService.getLiveMatches();
+  const [liveMatches, user] = await Promise.all([
+    footballService.getLiveMatches(),
+    getCurrentUser(),
+  ]);
+
   const tickerMatches =
     liveMatches && liveMatches.length > 0
       ? liveMatches
@@ -42,12 +48,12 @@ export async function Header() {
           </Link>
         </div>
 
-        {/* Right Action Icons & Contributor Application CTA */}
+        {/* Right Action Icons, User Session & Contributor Application CTA */}
         <div className="flex items-center gap-3">
           <div className="hidden sm:flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
             <Link
               href="/contributor/apply"
-              className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#c3ff00] bg-pitch-850 hover:bg-pitch-800 border border-[#c3ff00]/30 hover:border-[#c3ff00] flex items-center gap-1.5 transition-colors"
+              className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#c3ff00] bg-pitch-850 hover:bg-pitch-800 border border-[#c3ff00]/30 hover:border-[#c3ff00] flex items-center gap-1.5 transition-colors rounded"
             >
               <Globe className="w-3.5 h-3.5" />
               <span>Write for Us</span>
@@ -61,6 +67,9 @@ export async function Header() {
           >
             <Search className="w-4 h-4" />
           </Link>
+
+          {/* User Session Nav Button & Dropdown */}
+          <UserNav user={user} />
 
           <MobileNav />
         </div>

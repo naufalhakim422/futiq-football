@@ -137,20 +137,20 @@ export default async function ContributorDashboardPage() {
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-pitch-800 space-y-2.5">
+                <div className="pt-4 border-t border-pitch-800 space-y-2.5 font-sans">
+                  <Link
+                    href="/login?redirect=/contributor"
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-lg transition-colors shadow-md active:scale-[0.99]"
+                  >
+                    <span>Masuk ke Akun Penulis (Login)</span>
+                    <ChevronRight className="w-4 h-4" />
+                  </Link>
                   <a
                     href="/api/auth/dev-session?role=CONTRIBUTOR&redirect=/contributor"
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover transition-colors shadow-md active:scale-[0.99]"
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-lg transition-colors font-mono"
                   >
-                    <span>Aktifkan Sesi Penulis (Buka Portal)</span>
-                    <ChevronRight className="w-4 h-4" />
+                    <span>1-Klik Aktivasi Cepat Penulis (Dev)</span>
                   </a>
-                  <Link
-                    href="/contributor/apply"
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-semibold text-slate-300 bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 transition-colors"
-                  >
-                    <span>Formulir Pendaftaran Penulis Baru</span>
-                  </Link>
                 </div>
               </div>
             </div>

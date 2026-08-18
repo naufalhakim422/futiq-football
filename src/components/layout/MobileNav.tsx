@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { Menu, X, Globe, ShieldCheck } from "lucide-react";
+import { Menu, X, Globe, ShieldCheck, User, PenTool } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 
@@ -52,22 +52,41 @@ export function MobileNav() {
               );
             })}
 
-            <div className="pt-4 mt-2 border-t border-pitch-800 flex flex-col gap-2">
+            <div className="pt-4 mt-2 border-t border-pitch-800 flex flex-col gap-2 font-sans">
               <Link
-                href="/contributor/apply"
+                href="/login"
                 onClick={() => setIsOpen(false)}
-                className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-brand-green hover:text-white bg-pitch-900 border border-brand-green/30 flex items-center justify-between"
+                className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-[#c3ff00] bg-pitch-900 border border-[#c3ff00]/40 rounded flex items-center justify-between"
               >
-                <span>Write for Us (Apply)</span>
-                <Globe className="w-3.5 h-3.5 text-brand-green" />
+                <span>Masuk Akun / Login</span>
+                <User className="w-3.5 h-3.5 text-[#c3ff00]" />
               </Link>
+
+              <Link
+                href="/contributor"
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-emerald-300 hover:text-white bg-pitch-900 border border-emerald-800/40 rounded flex items-center justify-between"
+              >
+                <span>Meja Kontributor</span>
+                <PenTool className="w-3.5 h-3.5 text-emerald-400" />
+              </Link>
+
               <Link
                 href="/admin"
                 onClick={() => setIsOpen(false)}
-                className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-white bg-pitch-900 border border-pitch-750 flex items-center justify-between"
+                className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-white bg-pitch-900 border border-pitch-750 rounded flex items-center justify-between"
               >
-                <span>Admin & Editorial</span>
+                <span>Admin & Operasi</span>
                 <ShieldCheck className="w-3.5 h-3.5 text-brand-red" />
+              </Link>
+
+              <Link
+                href="/contributor/apply"
+                onClick={() => setIsOpen(false)}
+                className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-slate-200 bg-pitch-900/60 border border-pitch-800 rounded flex items-center justify-between"
+              >
+                <span>Daftar Jadi Penulis (Apply)</span>
+                <Globe className="w-3.5 h-3.5 text-slate-400" />
               </Link>
             </div>
           </nav>
