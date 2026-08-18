@@ -64,3 +64,35 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to create sponsor." }, { status: 500 });
   }
 }
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    }
+
+    const isAuthorized = user.roles.some((r) =>
+      ["SUPER_ADMIN", "SENIOR_EDITOR", "FINANCE"].includes(r)
+    );
+    if (!isAuthorized) {
+      return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    if (!id) {
+      return NextResponse.json({ error: "Sponsor ID is required." }, { status: 400 });
+    }
+
+    const success = await sponsorService.deleteSponsor(id, user.id);
+    if (!success) {
+      return NextResponse.json({ error: "Sponsor not found." }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, message: `Sponsor ${id} deleted successfully.` });
+  } catch (error: any) {
+    console.error("[Admin Sponsors DELETE Error]:", error);
+    return NextResponse.json({ error: "Failed to delete sponsor." }, { status: 500 });
+  }
+}

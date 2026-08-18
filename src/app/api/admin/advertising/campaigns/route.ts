@@ -132,3 +132,67 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to create campaign." }, { status: 500 });
   }
 }
+
+export async function PUT(req: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    }
+
+    const isAuthorized = user.roles.some((r) =>
+      ["SUPER_ADMIN", "SENIOR_EDITOR", "FINANCE"].includes(r)
+    );
+    if (!isAuthorized) {
+      return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+    }
+
+    const body = await req.json();
+    const { id, ...updates } = body;
+    if (!id) {
+      return NextResponse.json({ error: "Campaign ID is required." }, { status: 400 });
+    }
+
+    const updated = await campaignService.updateCampaign(id, updates, user.id);
+    if (!updated) {
+      return NextResponse.json({ error: "Campaign not found." }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, campaign: updated });
+  } catch (error: any) {
+    console.error("[Admin Campaigns PUT Error]:", error);
+    return NextResponse.json({ error: "Failed to update campaign." }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
+    }
+
+    const isAuthorized = user.roles.some((r) =>
+      ["SUPER_ADMIN", "SENIOR_EDITOR", "FINANCE"].includes(r)
+    );
+    if (!isAuthorized) {
+      return NextResponse.json({ error: "Forbidden." }, { status: 403 });
+    }
+
+    const { searchParams } = new URL(req.url);
+    const id = searchParams.get("id");
+    if (!id) {
+      return NextResponse.json({ error: "Campaign ID is required." }, { status: 400 });
+    }
+
+    const success = await campaignService.deleteCampaign(id, user.id);
+    if (!success) {
+      return NextResponse.json({ error: "Campaign not found." }, { status: 404 });
+    }
+
+    return NextResponse.json({ success: true, message: `Campaign ${id} deleted successfully.` });
+  } catch (error: any) {
+    console.error("[Admin Campaigns DELETE Error]:", error);
+    return NextResponse.json({ error: "Failed to delete campaign." }, { status: 500 });
+  }
+}

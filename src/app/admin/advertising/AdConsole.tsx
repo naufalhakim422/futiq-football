@@ -12,6 +12,10 @@ import {
   Eye,
   MousePointerClick,
   Users,
+  Trash2,
+  Pause,
+  Play,
+  AlertTriangle,
 } from "lucide-react";
 import { AdPlacementPosition } from "@prisma/client";
 import { AdProviderConfig } from "@/lib/ads/ad-provider.interface";
@@ -52,7 +56,14 @@ export function AdConsole({
   const [campaigns, setCampaigns] = useState<AdCampaignRecord[]>(initialCampaigns);
   const [placements] = useState<any[]>(initialPlacements);
   const [popunderPolicy, setPopunderPolicy] = useState<PopunderPolicy | null>(initialPopunderPolicy);
-  const [auditLogs] = useState<AdAuditLogEntry[]>(initialAuditLogs);
+  const [auditLogs, setAuditLogs] = useState<AdAuditLogEntry[]>(initialAuditLogs);
+
+  // Delete Confirmation Modal State
+  const [deleteTarget, setDeleteTarget] = useState<{
+    type: "CAMPAIGN" | "SPONSOR";
+    id: string;
+    name: string;
+  } | null>(null);
 
   // Wizard Modal State
   const [isWizardOpen, setIsWizardOpen] = useState(false);
@@ -164,6 +175,63 @@ export function AdConsole({
       setMessage({ type: "error", text: "Terjadi kesalahan jaringan." });
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleToggleCampaignStatus = async (camp: AdCampaignRecord) => {
+    const nextStatus = camp.status === "ACTIVE" ? "PAUSED" : "ACTIVE";
+    try {
+      const res = await fetch("/api/admin/advertising/campaigns", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: camp.id, status: nextStatus }),
+      });
+      if (res.ok) {
+        setCampaigns((prev) =>
+          prev.map((c) => (c.id === camp.id ? { ...c, status: nextStatus } : c))
+        );
+        setMessage({
+          type: "success",
+          text: `Status kampanye "${camp.campaignName}" diubah menjadi ${nextStatus === "ACTIVE" ? "AKTIF" : "DIJEDA"}.`,
+        });
+      }
+    } catch {
+      setMessage({ type: "error", text: "Gagal mengubah status kampanye." });
+    }
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteTarget) return;
+    setSaving(true);
+    try {
+      if (deleteTarget.type === "CAMPAIGN") {
+        const res = await fetch(`/api/admin/advertising/campaigns?id=${deleteTarget.id}`, {
+          method: "DELETE",
+        });
+        if (res.ok) {
+          setCampaigns((prev) => prev.filter((c) => c.id !== deleteTarget.id));
+          setMessage({
+            type: "success",
+            text: `Kampanye iklan "${deleteTarget.name}" berhasil dihapus dari sistem.`,
+          });
+        }
+      } else if (deleteTarget.type === "SPONSOR") {
+        const res = await fetch(`/api/admin/advertising/sponsors?id=${deleteTarget.id}`, {
+          method: "DELETE",
+        });
+        if (res.ok) {
+          setSponsors((prev) => prev.filter((s) => s.id !== deleteTarget.id));
+          setMessage({
+            type: "success",
+            text: `Sponsor "${deleteTarget.name}" berhasil dihapus.`,
+          });
+        }
+      }
+    } catch {
+      setMessage({ type: "error", text: "Gagal menghapus entitas." });
+    } finally {
+      setSaving(false);
+      setDeleteTarget(null);
     }
   };
 
@@ -355,6 +423,11 @@ export function AdConsole({
                           {camp.type.replace("_", " ")}
                         </span>
                         <span className="text-xs font-bold text-slate-200">{camp.campaignName}</span>
+                        {camp.status === "PAUSED" && (
+                          <span className="px-1.5 py-0.2 text-[9px] bg-amber-950 text-amber-400 border border-amber-800 rounded font-mono">
+                            DIJEDA
+                          </span>
+                        )}
                       </div>
                       <p className="text-[11px] text-slate-400">
                         {camp.sponsorName ? `Sponsor: ${camp.sponsorName} • ` : ""}
@@ -362,7 +435,7 @@ export function AdConsole({
                       </p>
                     </div>
 
-                    <div className="flex items-center gap-4 text-xs font-mono">
+                    <div className="flex items-center gap-3 text-xs font-mono">
                       <div className="text-right">
                         <span className="text-slate-200 font-bold">{camp.impressionsDelivered.toLocaleString()}</span>
                         <span className="text-slate-500 text-[10px] block">impresi</span>
@@ -379,9 +452,25 @@ export function AdConsole({
                         </span>
                         <span className="text-slate-500 text-[10px] block">CTR</span>
                       </div>
-                      <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800 rounded">
-                        P{camp.priority}
-                      </span>
+
+                      {/* Action Buttons: Pause/Resume & Delete */}
+                      <div className="flex items-center gap-1.5 pl-2 border-l border-pitch-800">
+                        <button
+                          title={camp.status === "ACTIVE" ? "Jeda Iklan" : "Aktifkan Iklan"}
+                          onClick={() => handleToggleCampaignStatus(camp)}
+                          className="p-1.5 rounded bg-pitch-900 hover:bg-pitch-850 text-slate-300 hover:text-white border border-pitch-750 transition-colors"
+                        >
+                          {camp.status === "ACTIVE" ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 text-[#c3ff00]" />}
+                        </button>
+
+                        <button
+                          title="Hapus Iklan Ini"
+                          onClick={() => setDeleteTarget({ type: "CAMPAIGN", id: camp.id, name: camp.campaignName })}
+                          className="p-1.5 rounded bg-pitch-900 hover:bg-red-950 text-slate-400 hover:text-red-400 border border-pitch-750 hover:border-red-800 transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -413,7 +502,7 @@ export function AdConsole({
                 <div className="p-2.5 bg-pitch-950 border border-pitch-800 rounded">
                   <span className="font-bold text-slate-100 block mb-0.5">3. Fallback Otomatis</span>
                   <p className="text-slate-400 text-[11px]">
-                    Jika sponsor habis masa tayang, sistem otomatis beralih ke Adsterra atau House Ad tanpa slot kosong.
+                    Jika sponsor habis masa tayang atau dihapus, sistem otomatis beralih ke Adsterra atau House Ad tanpa slot kosong.
                   </p>
                 </div>
 
@@ -504,6 +593,7 @@ export function AdConsole({
                   <th className="p-3">Website</th>
                   <th className="p-3">Status</th>
                   <th className="p-3">Terdaftar</th>
+                  <th className="p-3 text-right">Aksi</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-pitch-800 text-slate-300">
@@ -534,6 +624,15 @@ export function AdConsole({
                     </td>
                     <td className="p-3 text-slate-500 font-mono text-[11px]">
                       {new Date(s.createdAt).toLocaleDateString()}
+                    </td>
+                    <td className="p-3 text-right">
+                      <button
+                        title="Hapus Sponsor Ini"
+                        onClick={() => setDeleteTarget({ type: "SPONSOR", id: s.id, name: s.companyName })}
+                        className="p-1 rounded bg-pitch-950 hover:bg-red-950 text-slate-400 hover:text-red-400 border border-pitch-800 hover:border-red-800 transition-colors inline-flex"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </td>
                   </tr>
                 ))}
@@ -573,12 +672,36 @@ export function AdConsole({
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
-                      {camp.status}
+                    <span
+                      className={cn(
+                        "px-2 py-0.5 text-[10px] font-bold rounded",
+                        camp.status === "ACTIVE"
+                          ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                          : "bg-amber-950 text-amber-400 border border-amber-800"
+                      )}
+                    >
+                      {camp.status === "ACTIVE" ? "AKTIF" : "DIJEDA"}
                     </span>
                     <span className="px-2 py-0.5 text-[10px] font-bold rounded bg-pitch-950 text-slate-300 border border-pitch-800">
                       Prioritas: P{camp.priority}
                     </span>
+
+                    {/* Action buttons in campaign tab */}
+                    <button
+                      title={camp.status === "ACTIVE" ? "Jeda Iklan" : "Aktifkan Iklan"}
+                      onClick={() => handleToggleCampaignStatus(camp)}
+                      className="p-1.5 rounded bg-pitch-950 hover:bg-pitch-850 text-slate-300 hover:text-white border border-pitch-800 transition-colors"
+                    >
+                      {camp.status === "ACTIVE" ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5 text-[#c3ff00]" />}
+                    </button>
+
+                    <button
+                      title="Hapus Iklan Ini"
+                      onClick={() => setDeleteTarget({ type: "CAMPAIGN", id: camp.id, name: camp.campaignName })}
+                      className="p-1.5 rounded bg-pitch-950 hover:bg-red-950 text-slate-400 hover:text-red-400 border border-pitch-800 hover:border-red-800 transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 
@@ -836,8 +959,15 @@ export function AdConsole({
                         : "0.00"}%
                     </td>
                     <td className="p-3 font-sans">
-                      <span className="px-2 py-0.5 text-[9px] font-bold uppercase rounded bg-emerald-950 text-emerald-400 border border-emerald-800">
-                        {camp.status}
+                      <span
+                        className={cn(
+                          "px-2 py-0.5 text-[9px] font-bold uppercase rounded",
+                          camp.status === "ACTIVE"
+                            ? "bg-emerald-950 text-emerald-400 border border-emerald-800"
+                            : "bg-amber-950 text-amber-400 border border-amber-800"
+                        )}
+                      >
+                        {camp.status === "ACTIVE" ? "AKTIF" : "DIJEDA"}
                       </span>
                     </td>
                   </tr>
@@ -878,6 +1008,52 @@ export function AdConsole({
                 </span>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL KONFIRMASI HAPUS */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-pitch-900 border border-red-800 rounded-2xl w-full max-w-md p-6 space-y-5 shadow-2xl text-xs">
+            <div className="flex items-start gap-3.5">
+              <div className="w-10 h-10 rounded-full bg-red-950 border border-red-800 text-red-400 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-sm font-bold text-slate-100">
+                  Konfirmasi Hapus {deleteTarget.type === "CAMPAIGN" ? "Iklan / Kampanye" : "Sponsor"}
+                </h3>
+                <p className="text-slate-400 leading-relaxed">
+                  Apakah Anda yakin ingin menghapus{" "}
+                  <strong className="text-slate-200">&quot;{deleteTarget.name}&quot;</strong>?
+                  {deleteTarget.type === "CAMPAIGN" && (
+                    <span className="block mt-1 text-slate-500">
+                      Iklan ini akan segera diturunkan dari seluruh slot website, dan sistem akan otomatis mengalihkan slot ke provider cadangan (fallback).
+                    </span>
+                  )}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex gap-2.5 pt-2 border-t border-pitch-800">
+              <button
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                className="w-1/2 py-2.5 bg-pitch-800 hover:bg-pitch-750 text-slate-300 font-bold rounded transition-colors"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                disabled={saving}
+                onClick={handleConfirmDelete}
+                className="w-1/2 py-2.5 bg-red-600 hover:bg-red-700 text-white font-bold rounded transition-colors flex items-center justify-center gap-1.5 shadow"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>{saving ? "Menghapus..." : "Ya, Hapus Sekarang"}</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
