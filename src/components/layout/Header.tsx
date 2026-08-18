@@ -4,12 +4,19 @@ import { LiveTicker } from "@/components/football/LiveTicker";
 import { Navigation } from "./Navigation";
 import { MobileNav } from "./MobileNav";
 import { Search, Globe } from "lucide-react";
+import { footballService } from "@/lib/football/football.service";
 
-export function Header() {
+export async function Header() {
+  const liveMatches = await footballService.getLiveMatches();
+  const tickerMatches =
+    liveMatches && liveMatches.length > 0
+      ? liveMatches
+      : await footballService.getFixtures({ limit: 6 });
+
   return (
     <header className="sticky top-0 z-40 w-full bg-pitch-900 border-b border-pitch-800 shadow-md">
       {/* Live Matchday Broadcast Ticker */}
-      <LiveTicker />
+      <LiveTicker matches={tickerMatches as any} />
 
       {/* Primary Editorial Masthead */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
@@ -59,7 +66,7 @@ export function Header() {
         </div>
       </div>
 
-      {/* Main Desktop Navigation */}
+      {/* Global Navigation Bar */}
       <Navigation />
     </header>
   );

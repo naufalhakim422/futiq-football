@@ -371,7 +371,7 @@ export class ApiFootballProvider implements IFootballProvider {
 
   public async getLiveMatches(): Promise<ProviderMatch[]> {
     const raw = await this.executeRequest<any[]>("fixtures", { live: "all" });
-    if (!raw || raw.length === 0) {
+    if (raw === null || raw === undefined) {
       return this.fallbackProvider.getLiveMatches();
     }
 
@@ -396,13 +396,13 @@ export class ApiFootballProvider implements IFootballProvider {
       else if (params.status === MatchStatus.SCHEDULED) apiParams.status = "NS";
     }
 
+    // If no specific league or date is given, default to today's real fixtures
     if (!apiParams.league && !apiParams.date && !apiParams.live) {
-      apiParams.league = 39; // Default Premier League
-      apiParams.season = 2025;
+      apiParams.date = new Date().toISOString().split("T")[0];
     }
 
     const raw = await this.executeRequest<any[]>("fixtures", apiParams);
-    if (!raw || raw.length === 0) {
+    if (raw === null || raw === undefined) {
       return this.fallbackProvider.getFixtures(params);
     }
 

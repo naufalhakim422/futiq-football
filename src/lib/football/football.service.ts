@@ -75,12 +75,14 @@ export class FootballService {
     if (cached) return cached;
 
     try {
-      let liveMatches = await this.provider.getLiveMatches();
-      if (!liveMatches || liveMatches.length === 0) {
-        liveMatches = await this.fallbackProvider.getLiveMatches();
+      const liveMatches = await this.provider.getLiveMatches();
+      if (liveMatches !== null && liveMatches !== undefined) {
+        await setCachedData(cacheKey, liveMatches, FootballService.TTL_LIVE);
+        return liveMatches;
       }
-      await setCachedData(cacheKey, liveMatches, FootballService.TTL_LIVE);
-      return liveMatches;
+      const fallback = await this.fallbackProvider.getLiveMatches();
+      await setCachedData(cacheKey, fallback, FootballService.TTL_LIVE);
+      return fallback;
     } catch (error) {
       console.warn("[FootballService.getLiveMatches Fallback]:", error);
       const fallback = await this.fallbackProvider.getLiveMatches();
@@ -164,12 +166,14 @@ export class FootballService {
     if (cached) return cached;
 
     try {
-      let matches = await this.provider.getFixtures(params);
-      if (!matches || matches.length === 0) {
-        matches = await this.fallbackProvider.getFixtures(params);
+      const matches = await this.provider.getFixtures(params);
+      if (matches !== null && matches !== undefined) {
+        await setCachedData(cacheKey, matches, FootballService.TTL_FIXTURES);
+        return matches;
       }
-      await setCachedData(cacheKey, matches, FootballService.TTL_FIXTURES);
-      return matches;
+      const fallback = await this.fallbackProvider.getFixtures(params);
+      await setCachedData(cacheKey, fallback, FootballService.TTL_FIXTURES);
+      return fallback;
     } catch (error) {
       console.warn("[FootballService.getFixtures Fallback]:", error);
       const fallback = await this.fallbackProvider.getFixtures(params);
