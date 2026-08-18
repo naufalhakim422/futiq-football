@@ -1,15 +1,13 @@
 import React, { Suspense } from "react";
 import { PageContainer } from "@/components/layout/PageContainer";
-import { SectionHeader } from "@/components/layout/SectionHeader";
 import { LoginForm } from "./LoginForm";
 import Link from "next/link";
-import { ArrowLeft, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/session";
-import { redirect } from "next/navigation";
 
 export const metadata = {
-  title: "Masuk Akun & Portal | FUTIQ FOOTBALL",
-  description: "Gerbang autentikasi sesi resmi untuk Admin Platform, Jurnalis Kontributor, dan Editor Berita FUTIQ FOOTBALL.",
+  title: "Masuk ke Akun | FUTIQ FOOTBALL",
+  description: "Gerbang masuk akun resmi untuk pembaca, jurnalis kontributor, dan pengelola FUTIQ FOOTBALL.",
 };
 
 export default async function LoginPage({
@@ -20,53 +18,55 @@ export default async function LoginPage({
   const params = await searchParams;
   const user = await getCurrentUser();
 
-  // If already logged in and no specific redirect, allow navigating or re-authenticating
   return (
-    <div className="py-12 md:py-16">
+    <div className="py-12 md:py-20 flex items-center justify-center min-h-[75vh]">
       <PageContainer>
-        <div className="max-w-2xl mx-auto space-y-8">
-          <div>
+        <div className="max-w-md mx-auto space-y-6">
+          {/* Header Title */}
+          <div className="text-center space-y-2">
             <Link
               href="/"
-              className="inline-flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground mb-4 transition-colors font-mono"
+              className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 mb-2 transition-colors font-mono"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
               Kembali ke Beranda
             </Link>
 
-            <SectionHeader
-              title="Pusat Autentikasi & Masuk Portal"
-              subtitle="Masuk ke sesi terenkripsi untuk mengelola Portal Admin, Meja Kontributor, Review Editor, dan Dompet Penghasilan"
-              badgeText="Security Gate"
-            />
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100 font-sans tracking-tight">
+              Masuk ke FUTIQ FOOTBALL
+            </h1>
+            <p className="text-xs text-slate-400 max-w-sm mx-auto font-sans leading-relaxed">
+              Akses berita eksklusif, analisis taktik, meja jurnalis kontributor, dan dashboard platform.
+            </p>
           </div>
 
+          {/* Active Session Notice if already logged in */}
           {user && (
-            <div className="p-4 bg-pitch-900 border border-[#c3ff00]/40 rounded-xl flex items-center justify-between gap-4 font-sans text-xs">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-[#c3ff00]/20 border border-[#c3ff00] flex items-center justify-center text-[#c3ff00] font-bold font-mono">
+            <div className="p-3.5 bg-pitch-900 border border-[#c3ff00]/40 rounded-xl flex items-center justify-between gap-3 font-sans text-xs">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full bg-[#c3ff00]/20 border border-[#c3ff00] flex items-center justify-center text-[#c3ff00] font-bold font-mono text-xs">
                   {user.fullName.substring(0, 2).toUpperCase()}
                 </div>
                 <div>
-                  <div className="text-slate-100 font-bold">
-                    Sesi Aktif: {user.fullName}
+                  <div className="text-slate-100 font-bold leading-tight">
+                    {user.fullName}
                   </div>
-                  <div className="text-slate-400 text-[11px] font-mono">
-                    Peran: {user.roles.join(", ")}
+                  <div className="text-slate-400 text-[10px] font-mono">
+                    {user.roles.join(", ")}
                   </div>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5">
                 <Link
                   href={user.roles.includes("SUPER_ADMIN") ? "/admin" : "/contributor"}
-                  className="px-3 py-1.5 rounded bg-[#c3ff00] text-slate-950 font-bold uppercase tracking-wider text-[10px] hover:bg-[#b0e600] transition-colors"
+                  className="px-2.5 py-1.5 rounded bg-[#c3ff00] text-slate-950 font-bold uppercase tracking-wider text-[10px] hover:bg-[#b0e600] transition-colors"
                 >
-                  Buka Portal
+                  Buka
                 </Link>
                 <a
                   href="/api/auth/logout"
-                  className="px-3 py-1.5 rounded bg-pitch-800 text-slate-300 font-bold uppercase tracking-wider text-[10px] hover:bg-pitch-700 transition-colors"
+                  className="px-2.5 py-1.5 rounded bg-pitch-800 text-slate-300 font-bold uppercase tracking-wider text-[10px] hover:bg-pitch-700 transition-colors"
                 >
                   Keluar
                 </a>
@@ -74,19 +74,17 @@ export default async function LoginPage({
             </div>
           )}
 
-          <Suspense fallback={<div className="p-8 text-center text-slate-400 font-mono text-xs">Memuat formulir autentikasi...</div>}>
+          {/* Form */}
+          <Suspense fallback={<div className="p-8 text-center text-slate-400 font-mono text-xs">Memuat formulir...</div>}>
             <LoginForm />
           </Suspense>
 
-          {/* Security Assurance Footer */}
-          <div className="pt-6 border-t border-pitch-800 text-center space-y-2">
-            <div className="inline-flex items-center gap-2 text-slate-400 text-xs font-mono">
-              <ShieldCheck className="w-4 h-4 text-[#c3ff00]" />
-              <span>Dilindungi Protokol Enkripsi JWT HS256 & Cookie HTTP-Only</span>
+          {/* Discreet Footer Security Notice */}
+          <div className="text-center pt-2">
+            <div className="inline-flex items-center gap-1.5 text-slate-500 text-[11px] font-mono">
+              <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
+              <span>Koneksi Kriptografis Terenkripsi SSL/TLS & JWT</span>
             </div>
-            <p className="text-[11px] text-slate-500 max-w-md mx-auto">
-              Sesi terisolasi di sisi server. Token otentikasi tidak pernah diekspos ke klien JavaScript pihak ketiga.
-            </p>
           </div>
         </div>
       </PageContainer>

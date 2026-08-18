@@ -3,20 +3,21 @@
 import React, { useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
-  Shield,
   Lock,
   Mail,
-  KeyRound,
   ArrowRight,
-  Sparkles,
   UserCheck,
   CheckCircle2,
   AlertCircle,
+  ChevronDown,
+  Wrench,
+  Shield,
   PenTool,
-  Coins,
   FileCheck,
+  Coins,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
 
 interface QuickRole {
   id: string;
@@ -37,7 +38,7 @@ const QUICK_ROLES: QuickRole[] = [
     email: "admin@futiq.com",
     badgeColor: "bg-[#c3ff00] text-slate-950 font-bold",
     icon: Shield,
-    description: "Akses penuh Portal Admin, Keuangan, Iklan, Telemetri API Sepak Bola & SEO",
+    description: "Akses penuh Portal Admin, Keuangan, Iklan, Telemetri API & SEO",
     defaultRedirect: "/admin",
   },
   {
@@ -47,17 +48,17 @@ const QUICK_ROLES: QuickRole[] = [
     email: "contributor@futiq.com",
     badgeColor: "bg-emerald-500 text-slate-950 font-bold",
     icon: PenTool,
-    description: "Tulis artikel, kirim ke AI Editorial Gate, kelola saldo & penarikan dana",
+    description: "Tulis artikel, evaluasi AI Editorial Gate & kelola saldo",
     defaultRedirect: "/contributor",
   },
   {
     id: "editor",
-    name: "Senior Editor Berita",
+    name: "Senior Editor",
     role: "SENIOR_EDITOR",
     email: "editor@futiq.com",
     badgeColor: "bg-blue-500 text-white font-bold",
     icon: FileCheck,
-    description: "Review manuskrip jurnalis, evaluasi AI gate, dan publikasi berita resmi",
+    description: "Review manuskrip penulis dan publikasi berita",
     defaultRedirect: "/editor",
   },
   {
@@ -67,7 +68,7 @@ const QUICK_ROLES: QuickRole[] = [
     email: "finance@futiq.com",
     badgeColor: "bg-amber-500 text-slate-950 font-bold",
     icon: Coins,
-    description: "Persetujuan pencairan saldo kontributor, rekonsiliasi & ledger keuangan",
+    description: "Persetujuan pencairan saldo & ledger",
     defaultRedirect: "/admin/finance",
   },
 ];
@@ -77,15 +78,17 @@ export function LoginForm() {
   const searchParams = useSearchParams();
   const redirectParam = searchParams.get("redirect");
 
-  const [email, setEmail] = useState("admin@futiq.com");
-  const [password, setPassword] = useState("••••••••");
-  const [selectedRole, setSelectedRole] = useState<string>("SUPER_ADMIN");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [selectedRole, setSelectedRole] = useState<string>("CONTRIBUTOR");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
+  const [showDevRoles, setShowDevRoles] = useState(false);
 
   const handleSelectQuickRole = (r: QuickRole) => {
     setEmail(r.email);
+    setPassword("••••••••");
     setSelectedRole(r.role);
     setError(null);
   };
@@ -101,7 +104,7 @@ export function LoginForm() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          email,
+          email: email.trim(),
           password: password || "demo_secure_pass_2026",
           role: selectedRole,
         }),
@@ -118,14 +121,16 @@ export function LoginForm() {
       // Determine redirect destination
       let target = redirectParam;
       if (!target) {
-        const found = QUICK_ROLES.find((r) => r.role === selectedRole);
-        target = found?.defaultRedirect || "/";
+        if (data.user.roles.includes("SUPER_ADMIN")) target = "/admin";
+        else if (data.user.roles.includes("CONTRIBUTOR")) target = "/contributor";
+        else if (data.user.roles.includes("SENIOR_EDITOR")) target = "/editor";
+        else target = "/";
       }
 
       setTimeout(() => {
         router.push(target!);
         router.refresh();
-      }, 700);
+      }, 600);
     } catch (err: any) {
       setError(err.message || "Terjadi kesalahan pada sesi login");
       setLoading(false);
@@ -133,93 +138,14 @@ export function LoginForm() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* Quick Role Fast-Selection Strip */}
-      <div className="space-y-3">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono flex items-center gap-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-[#c3ff00]" />
-            <span>Pilih Peran Akun Cepat</span>
-          </span>
-          <span className="text-[11px] text-slate-500 font-mono">1-Klik Otomatis</span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          {QUICK_ROLES.map((r) => {
-            const Icon = r.icon;
-            const isSelected = email.toLowerCase() === r.email.toLowerCase();
-
-            return (
-              <button
-                key={r.id}
-                type="button"
-                onClick={() => handleSelectQuickRole(r)}
-                className={cn(
-                  "p-3.5 text-left border rounded-lg transition-all relative flex flex-col justify-between group",
-                  isSelected
-                    ? "bg-pitch-900 border-[#c3ff00] shadow-[0_0_15px_rgba(195,255,0,0.12)]"
-                    : "bg-pitch-950/80 border-pitch-800 hover:border-pitch-700 hover:bg-pitch-900"
-                )}
-              >
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex items-center gap-2">
-                    <div
-                      className={cn(
-                        "w-8 h-8 rounded flex items-center justify-center border",
-                        isSelected
-                          ? "bg-[#c3ff00]/10 border-[#c3ff00] text-[#c3ff00]"
-                          : "bg-pitch-850 border-pitch-750 text-slate-400 group-hover:text-slate-200"
-                      )}
-                    >
-                      <Icon className="w-4 h-4" />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold text-slate-200 font-sans">
-                        {r.name}
-                      </div>
-                      <div className="text-[10px] text-slate-500 font-mono">
-                        {r.email}
-                      </div>
-                    </div>
-                  </div>
-
-                  <span
-                    className={cn(
-                      "text-[9px] px-1.5 py-0.5 rounded font-mono uppercase tracking-wider",
-                      r.badgeColor
-                    )}
-                  >
-                    {r.role}
-                  </span>
-                </div>
-
-                <p className="text-[11px] text-slate-400 font-sans leading-relaxed">
-                  {r.description}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Main Login Form Box */}
-      <form onSubmit={handleSubmit} className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 rounded-xl shadow-2xl space-y-6">
-        <div className="flex items-center gap-3 pb-4 border-b border-pitch-800">
-          <div className="w-10 h-10 rounded bg-[#c3ff00]/10 border border-[#c3ff00]/30 flex items-center justify-center text-[#c3ff00]">
-            <KeyRound className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="text-base font-bold text-slate-100 font-sans">
-              Kredensial Sesi Kriptografis
-            </h3>
-            <p className="text-xs text-slate-400 font-sans">
-              Token JWT aman HTTP-only berdurasi 7 hari akan dipasang ke browser Anda.
-            </p>
-          </div>
-        </div>
-
+    <div className="space-y-6">
+      {/* Clean Primary Login Box */}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 rounded-xl shadow-2xl space-y-5"
+      >
         {error && (
-          <div className="p-3 bg-red-950/60 border border-red-800/80 rounded-lg text-xs text-red-300 flex items-start gap-2.5 font-sans">
+          <div className="p-3.5 bg-red-950/70 border border-red-800/80 rounded-lg text-xs text-red-300 flex items-start gap-2.5 font-sans">
             <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
             <div>
               <span className="font-bold">Gagal Masuk: </span>
@@ -229,7 +155,7 @@ export function LoginForm() {
         )}
 
         {success && (
-          <div className="p-3 bg-emerald-950/60 border border-emerald-800/80 rounded-lg text-xs text-emerald-300 flex items-start gap-2.5 font-sans">
+          <div className="p-3.5 bg-emerald-950/70 border border-emerald-800/80 rounded-lg text-xs text-emerald-300 flex items-start gap-2.5 font-sans">
             <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
             <div>{success}</div>
           </div>
@@ -240,15 +166,15 @@ export function LoginForm() {
           <div className="space-y-1.5">
             <label className="text-slate-300 font-bold uppercase tracking-wider text-[11px] font-mono flex items-center gap-1.5">
               <Mail className="w-3.5 h-3.5 text-[#c3ff00]" />
-              <span>Alamat Email Terdaftar</span>
+              <span>Email</span>
             </label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@futiq.com"
-              className="w-full px-4 py-3 bg-pitch-950 border border-pitch-800 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00] text-slate-100 text-sm rounded outline-none font-mono transition-all"
+              placeholder="nama@email.com"
+              className="w-full px-4 py-3 bg-pitch-950 border border-pitch-800 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00] text-slate-100 text-sm rounded outline-none font-mono transition-all placeholder:text-slate-600"
             />
           </div>
 
@@ -257,9 +183,11 @@ export function LoginForm() {
             <div className="flex items-center justify-between">
               <label className="text-slate-300 font-bold uppercase tracking-wider text-[11px] font-mono flex items-center gap-1.5">
                 <Lock className="w-3.5 h-3.5 text-[#c3ff00]" />
-                <span>Kata Sandi / Passphrase</span>
+                <span>Kata Sandi</span>
               </label>
-              <span className="text-[10px] text-slate-500 font-mono">Enkripsi SHA-256</span>
+              <span className="text-[10px] text-slate-500 hover:text-slate-300 cursor-pointer">
+                Lupa sandi?
+              </span>
             </div>
             <input
               type="password"
@@ -267,7 +195,7 @@ export function LoginForm() {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••••••"
-              className="w-full px-4 py-3 bg-pitch-950 border border-pitch-800 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00] text-slate-100 text-sm rounded outline-none font-mono transition-all"
+              className="w-full px-4 py-3 bg-pitch-950 border border-pitch-800 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00] text-slate-100 text-sm rounded outline-none font-mono transition-all placeholder:text-slate-600"
             />
           </div>
         </div>
@@ -276,27 +204,84 @@ export function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3.5 px-6 rounded bg-[#c3ff00] hover:bg-[#b0e600] disabled:opacity-50 text-slate-950 font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.99]"
+          className="w-full py-3.5 px-6 rounded-lg bg-[#c3ff00] hover:bg-[#b0e600] disabled:opacity-50 text-slate-950 font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.99] mt-2"
         >
           {loading ? (
-            <span>Memvalidasi Sesi Kriptografis...</span>
+            <span>Memverifikasi Akun...</span>
           ) : (
             <>
               <UserCheck className="w-4 h-4 text-slate-950" />
-              <span>Masuk & Aktifkan Sesi {selectedRole}</span>
+              <span>Masuk ke Akun</span>
               <ArrowRight className="w-4 h-4 text-slate-950" />
             </>
           )}
         </button>
 
-        {redirectParam && (
-          <div className="text-center pt-1 border-t border-pitch-800/80">
-            <span className="text-[11px] text-slate-500 font-mono">
-              Tujuan setelah login: <code className="text-slate-300">{redirectParam}</code>
-            </span>
+        {/* Bottom Contributor Link */}
+        <div className="pt-4 border-t border-pitch-800/80 text-center">
+          <p className="text-xs text-slate-400 font-sans">
+            Ingin menulis artikel & analisis sepak bola?{" "}
+            <Link
+              href="/contributor/apply"
+              className="text-[#c3ff00] hover:underline font-semibold font-mono ml-1"
+            >
+              Daftar Jadi Kontributor →
+            </Link>
+          </p>
+        </div>
+      </form>
+
+      {/* Discreet Developer / Testing Quick-Role Toggle (Collapsed by default) */}
+      <div className="pt-2">
+        <button
+          type="button"
+          onClick={() => setShowDevRoles(!showDevRoles)}
+          className="w-full py-2 px-3 text-[11px] font-mono text-slate-500 hover:text-slate-300 flex items-center justify-center gap-1.5 transition-colors border border-dashed border-pitch-800/60 rounded-lg hover:border-pitch-700"
+        >
+          <Wrench className="w-3 h-3 text-slate-500" />
+          <span>{showDevRoles ? "Sembunyikan Akun Demo" : "🔧 Mode Pengujian / Akun Demo Cepat"}</span>
+          <ChevronDown className={cn("w-3 h-3 transition-transform", showDevRoles && "rotate-180")} />
+        </button>
+
+        {showDevRoles && (
+          <div className="mt-3 p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-3 animate-in fade-in duration-200">
+            <div className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold">
+              Pilih Akun Demo 1-Klik:
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              {QUICK_ROLES.map((r) => {
+                const Icon = r.icon;
+                const isSelected = email === r.email;
+
+                return (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => handleSelectQuickRole(r)}
+                    className={cn(
+                      "p-2.5 text-left border rounded-lg transition-all flex items-center justify-between gap-2 text-xs",
+                      isSelected
+                        ? "bg-pitch-900 border-[#c3ff00] text-slate-100"
+                        : "bg-pitch-900/60 border-pitch-800 hover:border-pitch-700 text-slate-400 hover:text-slate-200"
+                    )}
+                  >
+                    <div className="flex items-center gap-2 truncate">
+                      <Icon className="w-3.5 h-3.5 shrink-0 text-[#c3ff00]" />
+                      <div className="truncate">
+                        <div className="font-bold text-[11px] font-sans truncate">{r.name}</div>
+                        <div className="text-[9px] text-slate-500 font-mono truncate">{r.email}</div>
+                      </div>
+                    </div>
+                    <span className={cn("text-[8px] px-1 py-0.5 rounded font-mono uppercase tracking-wider shrink-0", r.badgeColor)}>
+                      {r.role}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
-      </form>
+      </div>
     </div>
   );
 }
