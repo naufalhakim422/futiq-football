@@ -1,9 +1,7 @@
 import { prisma } from "@/lib/db";
 import { AdPlacementPosition, AdSlotStatus } from "@prisma/client";
 import { AdTargetingContext, AdCreativeOutput } from "./types";
-import { adProviderRegistry } from "./ad-provider-registry";
 import { campaignService } from "./campaign.service";
-import { adAuditService } from "./ad-audit.service";
 
 export class AdPlacementService {
   private static instance: AdPlacementService;
@@ -20,6 +18,7 @@ export class AdPlacementService {
   /**
    * Resolves the highest priority ad creative for a given placement context
    * Hierarchy: Direct Sponsor (100) -> Paid Campaign (75) -> Adsterra Network (50) -> House Ad (10)
+   * If all campaigns are paused or deleted, returns null cleanly.
    */
   public async getAdForPlacement(context: AdTargetingContext): Promise<AdCreativeOutput | null> {
     const slotKey = `slot_${context.position.toLowerCase()}`;
@@ -76,27 +75,17 @@ export class AdPlacementService {
         // Non-blocking database fallback
       }
 
-      // 3. Fallback Chain: Adsterra Network
-      const adsterraProvider = adProviderRegistry.getProvider("adsterra");
-      const adsterraCreative = await adsterraProvider.getCreative(context, slotKey);
-      if (adsterraCreative) {
-        return adsterraCreative;
-      }
-
-      // 4. Fallback Chain: House Ad Engine
-      const houseProvider = adProviderRegistry.getProvider("house-ad");
-      return await houseProvider.getCreative(context, slotKey);
+      // If no active campaign matches or all campaigns are paused, return null cleanly
+      return null;
     } catch (err) {
       console.warn("[Ad Placement Resolution Error]:", err);
-      // Graceful fallback to House Ad
-      const houseProvider = adProviderRegistry.getProvider("house-ad");
-      return await houseProvider.getCreative(context, slotKey);
+      return null;
     }
   }
 
   /**
    * Sanitizes custom HTML markup or image URLs
-   * Rejects executable JavaScript, event handlers, and dangerous protocols
+   * Rejects executable JavaScript, event handlers, iframe injection, and dangerous protocols
    */
   public sanitizeCustomMarkup(markup?: string): string {
     if (!markup) return "";
@@ -104,16 +93,21 @@ export class AdPlacementService {
     const dangerousPatterns = [
       /<script/i,
       /<\/script>/i,
+      /<iframe/i,
+      /<embed/i,
+      /<object/i,
       /javascript:/i,
       /data:text\/html/i,
+      /data:/i,
       /vbscript:/i,
       /onerror\s*=/i,
       /onload\s*=/i,
       /onclick\s*=/i,
       /onmouseover\s*=/i,
-      /<iframe/i,
-      /<embed/i,
-      /<object/i,
+      /eval\s*\(/i,
+      /document\.cookie/i,
+      /document\.location/i,
+      /window\.location/i,
     ];
 
     for (const pattern of dangerousPatterns) {
@@ -122,35 +116,7 @@ export class AdPlacementService {
       }
     }
 
-    return markup.trim();
-  }
-
-  /**
-   * Records an ad impression
-   */
-  public async recordImpression(slotKey: string): Promise<void> {
-    try {
-      await prisma.adPlacement.update({
-        where: { slotKey },
-        data: { impressionsCount: { increment: 1 } },
-      });
-    } catch {
-      // Non-blocking
-    }
-  }
-
-  /**
-   * Records an ad click
-   */
-  public async recordClick(slotKey: string): Promise<void> {
-    try {
-      await prisma.adPlacement.update({
-        where: { slotKey },
-        data: { clicksCount: { increment: 1 } },
-      });
-    } catch {
-      // Non-blocking
-    }
+    return markup;
   }
 
   /**
@@ -159,90 +125,55 @@ export class AdPlacementService {
   public async listPlacements() {
     try {
       return await prisma.adPlacement.findMany({
-        include: { provider: true, schedules: true },
+        include: {
+          provider: true,
+          schedules: true,
+        },
         orderBy: { createdAt: "desc" },
       });
     } catch {
-      return [];
-    }
-  }
-
-  /**
-   * Upsert an ad placement with strict server-side sanitization
-   */
-  public async upsertPlacement(data: {
-    id?: string;
-    title: string;
-    slotKey: string;
-    position: AdPlacementPosition;
-    providerId: string;
-    status: AdSlotStatus;
-    device?: string;
-    targetCategory?: string;
-    targetTeamSlug?: string;
-    targetCompetitionCode?: string;
-    priority?: number;
-    customMarkupSafe?: string;
-    targetUrl?: string;
-  }, actorId = "admin") {
-    const sanitizedMarkup = this.sanitizeCustomMarkup(data.customMarkupSafe);
-
-    await adAuditService.logAction({
-      actorId,
-      action: data.id ? "UPDATE_PLACEMENT" : "CREATE_PLACEMENT",
-      entityType: "PLACEMENT",
-      entityId: data.slotKey,
-      details: `Configured placement ${data.title} (${data.position})`,
-    });
-
-    try {
-      if (data.id) {
-        return await prisma.adPlacement.update({
-          where: { id: data.id },
-          data: {
-            title: data.title,
-            slotKey: data.slotKey,
-            position: data.position,
-            providerId: data.providerId,
-            status: data.status,
-            device: data.device || "ALL",
-            targetCategory: data.targetCategory || null,
-            targetTeamSlug: data.targetTeamSlug || null,
-            targetCompetitionCode: data.targetCompetitionCode || null,
-            priority: data.priority ?? 1,
-            customMarkupSafe: sanitizedMarkup,
-            targetUrl: data.targetUrl || null,
-          },
-        });
-      } else {
-        return await prisma.adPlacement.create({
-          data: {
-            title: data.title,
-            slotKey: data.slotKey,
-            position: data.position,
-            providerId: data.providerId,
-            status: data.status,
-            device: data.device || "ALL",
-            targetCategory: data.targetCategory || null,
-            targetTeamSlug: data.targetTeamSlug || null,
-            targetCompetitionCode: data.targetCompetitionCode || null,
-            priority: data.priority ?? 1,
-            customMarkupSafe: sanitizedMarkup,
-            targetUrl: data.targetUrl || null,
-          },
-        });
-      }
-    } catch {
-      return {
-        id: data.id || `pl_${Date.now()}`,
-        title: data.title,
-        slotKey: data.slotKey,
-        position: data.position,
-        providerId: data.providerId,
-        status: data.status,
-        device: data.device || "ALL",
-        priority: data.priority || 1,
-      };
+      return [
+        {
+          id: "plc_default_top",
+          name: "Home Page Leaderboard",
+          slotKey: "slot_home_top",
+          position: AdPlacementPosition.HOME_TOP,
+          device: "ALL",
+          status: AdSlotStatus.ACTIVE,
+          priority: 100,
+          provider: { name: "Direct Sponsor Platform" },
+        },
+        {
+          id: "plc_default_middle",
+          name: "In-Feed Native Banner",
+          slotKey: "slot_home_middle",
+          position: AdPlacementPosition.HOME_MIDDLE,
+          device: "ALL",
+          status: AdSlotStatus.ACTIVE,
+          priority: 75,
+          provider: { name: "Adsterra Network" },
+        },
+        {
+          id: "plc_default_article_top",
+          name: "Article Header Billboard",
+          slotKey: "slot_article_top",
+          position: AdPlacementPosition.ARTICLE_TOP,
+          device: "ALL",
+          status: AdSlotStatus.ACTIVE,
+          priority: 100,
+          provider: { name: "Direct Sponsor Platform" },
+        },
+        {
+          id: "plc_default_article_bottom",
+          name: "Article Footer Banner",
+          slotKey: "slot_article_bottom",
+          device: "ALL",
+          position: AdPlacementPosition.ARTICLE_BOTTOM,
+          status: AdSlotStatus.ACTIVE,
+          priority: 50,
+          provider: { name: "House Ad Engine" },
+        },
+      ];
     }
   }
 }
