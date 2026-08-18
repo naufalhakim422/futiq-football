@@ -15,6 +15,7 @@ export interface CreateApplicationInput {
   fullName: string;
   displayName: string;
   email: string;
+  password?: string;
   country: string;
   preferredLanguage?: string;
   footballInterests: string;

@@ -7,6 +7,8 @@ const applicationSchema = z.object({
   fullName: z.string().min(2, "Full name must be at least 2 characters"),
   displayName: z.string().min(2, "Display name must be at least 2 characters"),
   email: z.string().email("Valid email address is required"),
+  password: z.string().min(6, "Password must be at least 6 characters").optional(),
+  confirmPassword: z.string().optional(),
   country: z.string().min(2, "Country is required"),
   preferredLanguage: z.string().default("en"),
   footballInterests: z.string().min(3, "Football interests/leagues of expertise required"),
