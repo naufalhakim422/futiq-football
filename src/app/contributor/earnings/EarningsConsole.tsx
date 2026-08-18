@@ -580,42 +580,42 @@ export function EarningsConsole({
 
       {/* WITHDRAWAL MODAL */}
       {showWithdrawModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-pitch-surface border border-pitch-border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-foreground text-base">Request Withdrawal</h3>
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-pitch-900 border border-pitch-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-pitch-800">
+              <h3 className="font-bold text-slate-100 text-base font-sans">Permohonan Penarikan Dana</h3>
               <button
                 onClick={() => setShowWithdrawModal(false)}
-                className="text-muted-foreground hover:text-foreground text-sm"
+                className="text-slate-400 hover:text-white text-sm p-1 rounded hover:bg-pitch-800"
               >
                 ✕
               </button>
             </div>
 
-            <p className="text-xs text-muted-foreground">
-              Withdraw funds directly to your verified bank account (
-              {wallet?.payoutAccount?.bankName} • {wallet?.payoutAccount?.accountNumberMasked}).
+            <p className="text-xs text-slate-400 font-sans leading-relaxed">
+              Tarik saldo royalti langsung ke rekening bank terdaftar Anda (
+              <span className="text-slate-200 font-semibold">{wallet?.payoutAccount?.bankName} • {wallet?.payoutAccount?.accountNumberMasked}</span>).
             </p>
 
             {withdrawError && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-xs text-red-400">
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-xs text-red-400 font-mono">
                 {withdrawError}
               </div>
             )}
 
             {withdrawSuccess && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-xs text-emerald-400">
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-xs text-emerald-400 font-mono">
                 {withdrawSuccess}
               </div>
             )}
 
-            <form onSubmit={handleWithdraw} className="space-y-4">
+            <form onSubmit={handleWithdraw} className="space-y-4 font-sans">
               <div>
-                <label className="text-xs font-semibold text-muted-foreground block mb-1.5">
-                  Amount (MYR)
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
+                  Jumlah Penarikan (MYR) *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-2.5 text-xs font-bold text-muted-foreground">
+                  <span className="absolute left-3.5 top-2.5 text-xs font-bold text-slate-400 font-mono">
                     RM
                   </span>
                   <input
@@ -627,11 +627,11 @@ export function EarningsConsole({
                     onChange={(e) => setWithdrawAmount(e.target.value)}
                     placeholder="85.00"
                     required
-                    className="w-full bg-pitch-border/40 border border-pitch-border rounded-lg pl-10 pr-4 py-2 text-sm text-foreground focus:outline-none focus:border-emerald-500"
+                    className="w-full bg-pitch-950 border border-pitch-750 rounded-lg pl-11 pr-4 py-2.5 text-sm text-slate-100 font-mono focus:outline-none focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 transition-all placeholder:text-slate-600"
                   />
                 </div>
-                <span className="text-[11px] text-muted-foreground mt-1 block">
-                  Available: {formatMYR(wallet?.availableBalanceMinor || 0)} (Min: RM 85.00)
+                <span className="text-[11px] font-mono text-slate-400 mt-1.5 block">
+                  Saldo Tersedia: <strong className="text-slate-200">{formatMYR(wallet?.availableBalanceMinor || 0)}</strong> (Minimal: <strong className="text-[#c3ff00]">RM 85.00</strong>)
                 </span>
               </div>
 
@@ -639,17 +639,17 @@ export function EarningsConsole({
                 <button
                   type="button"
                   onClick={() => setShowWithdrawModal(false)}
-                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-pitch-border/60 hover:bg-pitch-border text-muted-foreground"
+                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-pitch-850 hover:bg-pitch-800 text-slate-300 border border-pitch-750 transition-colors"
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingWithdraw}
-                  className="px-5 py-2 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition-colors flex items-center gap-1.5"
+                  className="px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-[#c3ff00] hover:bg-[#b0e600] text-slate-950 transition-colors flex items-center gap-1.5 shadow-md disabled:opacity-50"
                 >
                   {isSubmittingWithdraw && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                  Submit Request
+                  <span>Ajukan Penarikan</span>
                 </button>
               </div>
             </form>
@@ -659,77 +659,77 @@ export function EarningsConsole({
 
       {/* BANK ACCOUNT MODAL */}
       {showAccountModal && (
-        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-pitch-surface border border-pitch-border rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-bold text-foreground text-base">Configure Payout Bank Account</h3>
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-pitch-900 border border-pitch-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between pb-2 border-b border-pitch-800">
+              <h3 className="font-bold text-slate-100 text-base font-sans">Konfigurasi Rekening Bank Pembayaran</h3>
               <button
                 onClick={() => setShowAccountModal(false)}
-                className="text-muted-foreground hover:text-foreground text-sm"
+                className="text-slate-400 hover:text-white text-sm p-1 rounded hover:bg-pitch-800"
               >
                 ✕
               </button>
             </div>
 
-            <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-xs text-amber-300 flex items-start gap-2">
-              <ShieldCheck className="w-4 h-4 shrink-0 mt-0.5" />
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-xs text-amber-300 flex items-start gap-2 font-sans">
+              <ShieldCheck className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
               <span>
-                Security Notice: Updating bank details applies a mandatory 48-hour security cooldown on new withdrawals.
+                Pemberitahuan Keamanan: Mengubah data rekening bank menerapkan masa jeda (*cooldown*) keamanan wajib 48 jam untuk penarikan baru.
               </span>
             </div>
 
             {accountError && (
-              <div className="bg-red-500/10 border border-red-500/20 rounded-lg p-3 text-xs text-red-400">
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-xs text-red-400 font-mono">
                 {accountError}
               </div>
             )}
 
             {accountSuccess && (
-              <div className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg p-3 text-xs text-emerald-400">
+              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-xs text-emerald-400 font-mono">
                 {accountSuccess}
               </div>
             )}
 
-            <form onSubmit={handleUpdateAccount} className="space-y-3.5">
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground block mb-1">
-                  Bank Name
+            <form onSubmit={handleUpdateAccount} className="space-y-4 font-sans">
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 block">
+                  Nama Bank *
                 </label>
                 <input
                   type="text"
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
-                  placeholder="e.g. Maybank, CIMB, Public Bank, HSBC"
+                  placeholder="Contoh: Maybank, CIMB, BCA, Mandiri, BRI"
                   required
-                  className="w-full bg-pitch-border/40 border border-pitch-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-pitch-950 border border-pitch-750 rounded-lg px-3.5 py-2.5 text-xs text-slate-100 font-sans focus:outline-none focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 transition-all placeholder:text-slate-500"
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground block mb-1">
-                  Account Number
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 block">
+                  Nomor Rekening Bank *
                 </label>
                 <input
                   type="text"
                   value={accountNumber}
                   onChange={(e) => setAccountNumber(e.target.value)}
-                  placeholder="Enter full account number"
+                  placeholder="Masukkan nomor rekening lengkap"
                   required
-                  className="w-full bg-pitch-border/40 border border-pitch-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-pitch-950 border border-pitch-750 rounded-lg px-3.5 py-2.5 text-xs text-slate-100 font-mono focus:outline-none focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 transition-all placeholder:text-slate-500"
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-semibold text-muted-foreground block mb-1">
-                  Account Holder Name
+              <div className="space-y-1.5">
+                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 block">
+                  Nama Pemilik Rekening *
                 </label>
                 <input
                   type="text"
                   value={accountHolderName}
                   onChange={(e) => setAccountHolderName(e.target.value)}
-                  placeholder="Full name as per bank records"
+                  placeholder="Nama lengkap sesuai buku tabungan"
                   required
-                  className="w-full bg-pitch-border/40 border border-pitch-border rounded-lg px-3 py-2 text-xs text-foreground focus:outline-none focus:border-emerald-500"
+                  className="w-full bg-pitch-950 border border-pitch-750 rounded-lg px-3.5 py-2.5 text-xs text-slate-100 font-sans focus:outline-none focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 transition-all placeholder:text-slate-500"
                 />
               </div>
 
@@ -737,17 +737,17 @@ export function EarningsConsole({
                 <button
                   type="button"
                   onClick={() => setShowAccountModal(false)}
-                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-pitch-border/60 hover:bg-pitch-border text-muted-foreground"
+                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-pitch-850 hover:bg-pitch-800 text-slate-300 border border-pitch-750 transition-colors"
                 >
-                  Cancel
+                  Batal
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingAccount}
-                  className="px-5 py-2 text-xs font-semibold rounded-lg bg-pitch-gold text-black font-bold hover:bg-yellow-400 transition-colors flex items-center gap-1.5"
+                  className="px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-[#c3ff00] hover:bg-[#b0e600] text-slate-950 transition-colors flex items-center gap-1.5 shadow-md disabled:opacity-50"
                 >
                   {isSubmittingAccount && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                  Save Bank Account
+                  <span>Simpan Rekening Bank</span>
                 </button>
               </div>
             </form>
