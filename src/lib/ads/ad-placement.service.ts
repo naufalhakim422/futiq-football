@@ -84,6 +84,82 @@ export class AdPlacementService {
   }
 
   /**
+   * Records an ad impression event
+   */
+  public async recordImpression(slotKeyOrId: string): Promise<void> {
+    try {
+      await campaignService.recordImpression(slotKeyOrId);
+    } catch (err) {
+      // Non-blocking telemetry
+    }
+  }
+
+  /**
+   * Records an ad click event
+   */
+  public async recordClick(slotKeyOrId: string): Promise<void> {
+    try {
+      await campaignService.recordClick(slotKeyOrId);
+    } catch (err) {
+      // Non-blocking telemetry
+    }
+  }
+
+  /**
+   * Upserts or updates an ad placement in database or memory
+   */
+  public async upsertPlacement(data: {
+    id?: string;
+    title: string;
+    slotKey: string;
+    position: AdPlacementPosition;
+    device?: string;
+    status?: AdSlotStatus;
+    priority?: number;
+    targetUrl?: string;
+    customMarkupSafe?: string;
+    providerId?: string;
+    targetCategory?: string;
+    targetTeamSlug?: string;
+    targetCompetitionCode?: string;
+  }) {
+    const sanitizedMarkup = this.sanitizeCustomMarkup(data.customMarkupSafe);
+
+    try {
+      return await prisma.adPlacement.upsert({
+        where: { slotKey: data.slotKey },
+        create: {
+          title: data.title,
+          slotKey: data.slotKey,
+          position: data.position,
+          device: (data.device as any) || "ALL",
+          status: data.status || AdSlotStatus.ACTIVE,
+          priority: data.priority ?? 50,
+          targetUrl: data.targetUrl,
+          customMarkupSafe: sanitizedMarkup || undefined,
+          providerId: data.providerId || "sponsor-direct",
+        },
+        update: {
+          title: data.title,
+          position: data.position,
+          device: (data.device as any) || "ALL",
+          status: data.status,
+          priority: data.priority,
+          targetUrl: data.targetUrl,
+          customMarkupSafe: sanitizedMarkup || undefined,
+          providerId: data.providerId,
+        },
+      });
+    } catch {
+      return {
+        id: `plc_${data.slotKey}`,
+        ...data,
+        customMarkupSafe: sanitizedMarkup,
+      };
+    }
+  }
+
+  /**
    * Sanitizes custom HTML markup or image URLs
    * Rejects executable JavaScript, event handlers, iframe injection, and dangerous protocols
    */

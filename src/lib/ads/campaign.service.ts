@@ -282,6 +282,24 @@ export class CampaignService {
     return true;
   }
 
+  public async recordImpression(creativeIdOrSlotKey: string): Promise<void> {
+    Array.from(CampaignService.mockCampaigns.values()).forEach((camp: AdCampaignRecord) => {
+      const hasCreative = camp.creatives?.some((c) => c.id === creativeIdOrSlotKey || c.campaignId === camp.id);
+      if (hasCreative || camp.id === creativeIdOrSlotKey) {
+        camp.impressionsDelivered = (camp.impressionsDelivered || 0) + 1;
+      }
+    });
+  }
+
+  public async recordClick(creativeIdOrSlotKey: string): Promise<void> {
+    Array.from(CampaignService.mockCampaigns.values()).forEach((camp: AdCampaignRecord) => {
+      const hasCreative = camp.creatives?.some((c) => c.id === creativeIdOrSlotKey || c.campaignId === camp.id);
+      if (hasCreative || camp.id === creativeIdOrSlotKey) {
+        camp.clicksDelivered = (camp.clicksDelivered || 0) + 1;
+      }
+    });
+  }
+
   /**
    * Resolves the best matching campaign & creative for a given targeting context with priority order
    */

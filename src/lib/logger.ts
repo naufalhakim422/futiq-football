@@ -27,6 +27,10 @@ const REDACTED_KEYS = new Set([
   "ssn",
   "authorization",
   "cookie",
+  "x-apisports-key",
+  "xapisportskey",
+  "football_api_key",
+  "apisportskey",
 ]);
 
 export class Logger {

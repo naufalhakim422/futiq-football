@@ -1,11 +1,14 @@
 import { IFootballProvider } from "./provider.interface";
 import { MockFootballProvider } from "./providers/mock.provider";
+import { ApiFootballProvider } from "./providers/api-football.provider";
 import { footballService } from "./football.service";
+import { footballQuotaGuard, QuotaTelemetry } from "./quota-guard.service";
 
 export interface SyncStatus {
   lastSyncAt: string | null;
   status: "IDLE" | "SYNCING" | "SUCCESS" | "FAILED";
   providerName: string;
+  isConfigured: boolean;
   recordsSynced: {
     competitions: number;
     teams: number;
@@ -15,15 +18,27 @@ export interface SyncStatus {
     transfers: number;
   };
   lastError: string | null;
+  quota: QuotaTelemetry;
 }
 
 export class FootballSyncService {
   private static instance: FootballSyncService;
   private provider: IFootballProvider;
-  private currentStatus: SyncStatus = {
+  private currentStatus: {
+    lastSyncAt: string | null;
+    status: "IDLE" | "SYNCING" | "SUCCESS" | "FAILED";
+    recordsSynced: {
+      competitions: number;
+      teams: number;
+      players: number;
+      matches: number;
+      standings: number;
+      transfers: number;
+    };
+    lastError: string | null;
+  } = {
     lastSyncAt: null,
     status: "IDLE",
-    providerName: "MockFootballProvider",
     recordsSynced: {
       competitions: 0,
       teams: 0,
@@ -36,8 +51,13 @@ export class FootballSyncService {
   };
 
   private constructor(provider?: IFootballProvider) {
-    this.provider = provider || new MockFootballProvider();
-    this.currentStatus.providerName = this.provider.name;
+    if (provider) {
+      this.provider = provider;
+    } else if (process.env.FOOTBALL_API_KEY && process.env.FOOTBALL_API_KEY.trim().length > 0) {
+      this.provider = new ApiFootballProvider(process.env.FOOTBALL_API_KEY, process.env.FOOTBALL_API_BASE_URL);
+    } else {
+      this.provider = new MockFootballProvider();
+    }
   }
 
   public static getInstance(provider?: IFootballProvider): FootballSyncService {
@@ -47,8 +67,26 @@ export class FootballSyncService {
     return FootballSyncService.instance;
   }
 
+  public setProvider(provider: IFootballProvider) {
+    this.provider = provider;
+  }
+
   public getStatus(): SyncStatus {
-    return { ...this.currentStatus };
+    const quota = footballQuotaGuard.getQuotaTelemetry();
+    const isConfigured =
+      this.provider instanceof ApiFootballProvider
+        ? (this.provider as ApiFootballProvider).isConfigured()
+        : false;
+
+    return {
+      lastSyncAt: this.currentStatus.lastSyncAt,
+      status: this.currentStatus.status,
+      providerName: this.provider.name === "ApiFootballProvider" ? "API-Football (v3)" : this.provider.name,
+      isConfigured,
+      recordsSynced: { ...this.currentStatus.recordsSynced },
+      lastError: this.currentStatus.lastError,
+      quota,
+    };
   }
 
   /**
@@ -56,7 +94,14 @@ export class FootballSyncService {
    */
   public async syncAll(): Promise<SyncStatus> {
     if (this.currentStatus.status === "SYNCING") {
-      return this.currentStatus;
+      return this.getStatus();
+    }
+
+    // Check quota guard before running background sync
+    const quotaCheck = footballQuotaGuard.canMakeRequest({ isBackgroundSync: true });
+    if (!quotaCheck.allowed && this.provider instanceof ApiFootballProvider) {
+      this.currentStatus.lastError = quotaCheck.reason || "Quota guard blocked background sync";
+      return this.getStatus();
     }
 
     this.currentStatus.status = "SYNCING";
@@ -98,20 +143,6 @@ export class FootballSyncService {
       this.currentStatus.lastError = error?.message || "Unknown synchronization error";
       console.error("[FootballSyncService.syncAll Failed]:", error);
       return this.getStatus();
-    }
-  }
-
-  /**
-   * Fast sync cycle for in-play live scores (called on frequent intervals)
-   */
-  public async syncLiveScores(): Promise<number> {
-    try {
-      const liveMatches = await this.provider.getLiveMatches();
-      await footballService.flushCache("football:matches:live");
-      return liveMatches.length;
-    } catch (error) {
-      console.error("[FootballSyncService.syncLiveScores Error]:", error);
-      return 0;
     }
   }
 }

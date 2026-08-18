@@ -8,6 +8,8 @@ const envSchema = z.object({
   AUTH_SECRET: z.string().min(16, "AUTH_SECRET must be at least 16 characters"),
   FOOTBALL_DATA_PROVIDER: z.string().default("mock"),
   FOOTBALL_DATA_API_KEY: z.string().optional(),
+  FOOTBALL_API_BASE_URL: z.string().url().default("https://v3.football.api-sports.io"),
+  FOOTBALL_API_KEY: z.string().optional(),
   AI_API_KEY: z.string().optional(),
   AI_API_ENDPOINT: z.string().optional(),
   KYC_WEBHOOK_SECRET: z.string().optional().default("mock-kyc-secret-key-123456"),

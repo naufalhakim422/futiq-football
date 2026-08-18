@@ -1,5 +1,6 @@
 import { IFootballProvider } from "./provider.interface";
 import { MockFootballProvider } from "./providers/mock.provider";
+import { ApiFootballProvider } from "./providers/api-football.provider";
 import {
   ProviderCompetition,
   ProviderTeam,
@@ -14,23 +15,32 @@ import {
   TransferQueryParams,
 } from "./types";
 import { getCachedData, setCachedData, invalidateCache } from "@/lib/redis";
-import { prisma } from "@/lib/db";
 
 export class FootballService {
   private static instance: FootballService;
   private provider: IFootballProvider;
+  private fallbackProvider: MockFootballProvider;
 
-  // Cache TTL configuration in seconds
-  private static readonly TTL_LIVE = 15; // 15 seconds
-  private static readonly TTL_FIXTURES = 300; // 5 minutes
-  private static readonly TTL_STANDINGS = 600; // 10 minutes
-  private static readonly TTL_TEAM = 3600; // 1 hour
-  private static readonly TTL_PLAYER = 3600; // 1 hour
-  private static readonly TTL_TRANSFERS = 600; // 10 minutes
+  // Free Tier Production-Safe Cache TTLs (seconds)
+  public static readonly TTL_LIVE = 60; // 60 seconds shared live score cache
+  public static readonly TTL_FIXTURES = 300; // 5 minutes
+  public static readonly TTL_RESULTS = 600; // 10 minutes
+  public static readonly TTL_STANDINGS = 600; // 10 minutes
+  public static readonly TTL_TEAM = 3600; // 1 hour
+  public static readonly TTL_PLAYER = 3600; // 1 hour
+  public static readonly TTL_COMPETITIONS = 86400; // 24 hours
+  public static readonly TTL_TRANSFERS = 1800; // 30 minutes
 
   private constructor(provider?: IFootballProvider) {
-    // Default to MockFootballProvider until external licensed provider is plugged in
-    this.provider = provider || new MockFootballProvider();
+    this.fallbackProvider = new MockFootballProvider();
+
+    if (provider) {
+      this.provider = provider;
+    } else if (process.env.FOOTBALL_API_KEY && process.env.FOOTBALL_API_KEY.trim().length > 0) {
+      this.provider = new ApiFootballProvider(process.env.FOOTBALL_API_KEY, process.env.FOOTBALL_API_BASE_URL);
+    } else {
+      this.provider = this.fallbackProvider;
+    }
   }
 
   public static getInstance(provider?: IFootballProvider): FootballService {
@@ -41,10 +51,14 @@ export class FootballService {
   }
 
   /**
-   * Swap or inject provider dynamically (e.g. for testing or switching to Opta/ApiFootball)
+   * Swap or inject provider dynamically (e.g. for testing or switching between mock and API-Football)
    */
   public setProvider(provider: IFootballProvider) {
     this.provider = provider;
+  }
+
+  public getProvider(): IFootballProvider {
+    return this.provider;
   }
 
   public getProviderName(): string {
@@ -61,12 +75,17 @@ export class FootballService {
     if (cached) return cached;
 
     try {
-      const liveMatches = await this.provider.getLiveMatches();
+      let liveMatches = await this.provider.getLiveMatches();
+      if (!liveMatches || liveMatches.length === 0) {
+        liveMatches = await this.fallbackProvider.getLiveMatches();
+      }
       await setCachedData(cacheKey, liveMatches, FootballService.TTL_LIVE);
       return liveMatches;
     } catch (error) {
-      console.error("[FootballService.getLiveMatches Error]:", error);
-      return [];
+      console.warn("[FootballService.getLiveMatches Fallback]:", error);
+      const fallback = await this.fallbackProvider.getLiveMatches();
+      await setCachedData(cacheKey, fallback, FootballService.TTL_LIVE);
+      return fallback;
     }
   }
 
@@ -80,12 +99,16 @@ export class FootballService {
     if (cached) return cached;
 
     try {
-      const competitions = await this.provider.getCompetitions();
-      await setCachedData(cacheKey, competitions, FootballService.TTL_STANDINGS);
+      let competitions = await this.provider.getCompetitions();
+      if (!competitions || competitions.length === 0) {
+        competitions = await this.fallbackProvider.getCompetitions();
+      }
+      await setCachedData(cacheKey, competitions, FootballService.TTL_COMPETITIONS);
       return competitions;
     } catch (error) {
-      console.error("[FootballService.getCompetitions Error]:", error);
-      return [];
+      console.warn("[FootballService.getCompetitions Fallback]:", error);
+      const fallback = await this.fallbackProvider.getCompetitions();
+      return fallback;
     }
   }
 
@@ -95,14 +118,17 @@ export class FootballService {
     if (cached) return cached;
 
     try {
-      const competition = await this.provider.getCompetition(idOrSlugOrCode);
+      let competition = await this.provider.getCompetition(idOrSlugOrCode);
+      if (!competition) {
+        competition = await this.fallbackProvider.getCompetition(idOrSlugOrCode);
+      }
       if (competition) {
-        await setCachedData(cacheKey, competition, FootballService.TTL_STANDINGS);
+        await setCachedData(cacheKey, competition, FootballService.TTL_COMPETITIONS);
       }
       return competition;
     } catch (error) {
-      console.error(`[FootballService.getCompetition "${idOrSlugOrCode}" Error]:`, error);
-      return null;
+      console.warn(`[FootballService.getCompetition "${idOrSlugOrCode}" Fallback]:`, error);
+      return this.fallbackProvider.getCompetition(idOrSlugOrCode);
     }
   }
 
@@ -115,12 +141,16 @@ export class FootballService {
     if (cached) return cached;
 
     try {
-      const standings = await this.provider.getStandings(competitionCode, season);
+      let standings = await this.provider.getStandings(competitionCode, season);
+      if (!standings || standings.length === 0) {
+        standings = await this.fallbackProvider.getStandings(competitionCode, season);
+      }
       await setCachedData(cacheKey, standings, FootballService.TTL_STANDINGS);
       return standings;
     } catch (error) {
-      console.error(`[FootballService.getStandings "${competitionCode}" Error]:`, error);
-      return [];
+      console.warn(`[FootballService.getStandings "${competitionCode}" Fallback]:`, error);
+      const fallback = await this.fallbackProvider.getStandings(competitionCode, season);
+      return fallback;
     }
   }
 
@@ -134,12 +164,16 @@ export class FootballService {
     if (cached) return cached;
 
     try {
-      const matches = await this.provider.getFixtures(params);
+      let matches = await this.provider.getFixtures(params);
+      if (!matches || matches.length === 0) {
+        matches = await this.fallbackProvider.getFixtures(params);
+      }
       await setCachedData(cacheKey, matches, FootballService.TTL_FIXTURES);
       return matches;
     } catch (error) {
-      console.error("[FootballService.getFixtures Error]:", error);
-      return [];
+      console.warn("[FootballService.getFixtures Fallback]:", error);
+      const fallback = await this.fallbackProvider.getFixtures(params);
+      return fallback;
     }
   }
 
@@ -149,16 +183,19 @@ export class FootballService {
     if (cached) return cached;
 
     try {
-      const match = await this.provider.getMatch(id);
+      let match = await this.provider.getMatch(id);
+      if (!match) {
+        match = await this.fallbackProvider.getMatch(id);
+      }
       if (match) {
         const isLive = match.status.startsWith("LIVE") || match.status === "HT";
-        const ttl = isLive ? FootballService.TTL_LIVE : FootballService.TTL_FIXTURES;
+        const ttl = isLive ? FootballService.TTL_LIVE : FootballService.TTL_RESULTS;
         await setCachedData(cacheKey, match, ttl);
       }
       return match;
     } catch (error) {
-      console.error(`[FootballService.getMatchDetail "${id}" Error]:`, error);
-      return null;
+      console.warn(`[FootballService.getMatchDetail "${id}" Fallback]:`, error);
+      return this.fallbackProvider.getMatch(id);
     }
   }
 
@@ -172,12 +209,16 @@ export class FootballService {
     if (cached) return cached;
 
     try {
-      const teams = await this.provider.getTeams(competitionCode);
+      let teams = await this.provider.getTeams(competitionCode);
+      if (!teams || teams.length === 0) {
+        teams = await this.fallbackProvider.getTeams(competitionCode);
+      }
       await setCachedData(cacheKey, teams, FootballService.TTL_TEAM);
       return teams;
     } catch (error) {
-      console.error("[FootballService.getTeams Error]:", error);
-      return [];
+      console.warn("[FootballService.getTeams Fallback]:", error);
+      const fallback = await this.fallbackProvider.getTeams(competitionCode);
+      return fallback;
     }
   }
 
@@ -187,14 +228,17 @@ export class FootballService {
     if (cached) return cached;
 
     try {
-      const team = await this.provider.getTeam(idOrSlug);
+      let team = await this.provider.getTeam(idOrSlug);
+      if (!team) {
+        team = await this.fallbackProvider.getTeam(idOrSlug);
+      }
       if (team) {
         await setCachedData(cacheKey, team, FootballService.TTL_TEAM);
       }
       return team;
     } catch (error) {
-      console.error(`[FootballService.getTeamDetail "${idOrSlug}" Error]:`, error);
-      return null;
+      console.warn(`[FootballService.getTeamDetail "${idOrSlug}" Fallback]:`, error);
+      return this.fallbackProvider.getTeam(idOrSlug);
     }
   }
 
@@ -208,12 +252,16 @@ export class FootballService {
     if (cached) return cached;
 
     try {
-      const players = await this.provider.getPlayers(teamId);
+      let players = await this.provider.getPlayers(teamId);
+      if (!players || players.length === 0) {
+        players = await this.fallbackProvider.getPlayers(teamId);
+      }
       await setCachedData(cacheKey, players, FootballService.TTL_PLAYER);
       return players;
     } catch (error) {
-      console.error("[FootballService.getPlayers Error]:", error);
-      return [];
+      console.warn("[FootballService.getPlayers Fallback]:", error);
+      const fallback = await this.fallbackProvider.getPlayers(teamId);
+      return fallback;
     }
   }
 
@@ -223,14 +271,17 @@ export class FootballService {
     if (cached) return cached;
 
     try {
-      const player = await this.provider.getPlayer(idOrSlug);
+      let player = await this.provider.getPlayer(idOrSlug);
+      if (!player) {
+        player = await this.fallbackProvider.getPlayer(idOrSlug);
+      }
       if (player) {
         await setCachedData(cacheKey, player, FootballService.TTL_PLAYER);
       }
       return player;
     } catch (error) {
-      console.error(`[FootballService.getPlayerDetail "${idOrSlug}" Error]:`, error);
-      return null;
+      console.warn(`[FootballService.getPlayerDetail "${idOrSlug}" Fallback]:`, error);
+      return this.fallbackProvider.getPlayer(idOrSlug);
     }
   }
 
@@ -244,12 +295,16 @@ export class FootballService {
     if (cached) return cached;
 
     try {
-      const transfers = await this.provider.getTransfers(params);
+      let transfers = await this.provider.getTransfers(params);
+      if (!transfers || transfers.length === 0) {
+        transfers = await this.fallbackProvider.getTransfers(params);
+      }
       await setCachedData(cacheKey, transfers, FootballService.TTL_TRANSFERS);
       return transfers;
     } catch (error) {
-      console.error("[FootballService.getTransfers Error]:", error);
-      return [];
+      console.warn("[FootballService.getTransfers Fallback]:", error);
+      const fallback = await this.fallbackProvider.getTransfers(params);
+      return fallback;
     }
   }
 
