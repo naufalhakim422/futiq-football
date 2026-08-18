@@ -45,7 +45,7 @@ export class ApiFootballProvider implements IFootballProvider {
   private fallbackProvider: MockFootballProvider;
 
   constructor(apiKey?: string, baseUrl?: string) {
-    this.apiKey = apiKey || process.env.FOOTBALL_API_KEY || "";
+    this.apiKey = apiKey !== undefined ? apiKey : (process.env.FOOTBALL_API_KEY || "");
     this.baseUrl = baseUrl || process.env.FOOTBALL_API_BASE_URL || "https://v3.football.api-sports.io";
     this.fallbackProvider = new MockFootballProvider();
   }
@@ -531,17 +531,20 @@ export class ApiFootballProvider implements IFootballProvider {
   // ==========================================
 
   private mapMatchRecord(item: any): ProviderMatch {
-    const leagueCode = CODE_BY_LEAGUE_ID[item.league?.id] || "PL";
-    const leagueConfig = LEAGUE_ID_MAP[leagueCode];
+    const knownCode = CODE_BY_LEAGUE_ID[item.league?.id];
+    const leagueName = item.league?.name || "Football";
+    const leagueCode = knownCode || (item.league?.name?.length <= 4 ? item.league?.name : item.league?.name?.substring(0, 3).toUpperCase()) || "INT";
+    const leagueSlug = (knownCode && LEAGUE_ID_MAP[knownCode]?.slug) || item.league?.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "football";
 
     return {
       id: `match_${item.fixture?.id}`,
       externalId: String(item.fixture?.id),
       competition: {
         id: `comp_${item.league?.id}`,
-        name: item.league?.name || "Premier League",
+        name: leagueName,
         code: leagueCode,
-        slug: leagueConfig?.slug || "premier-league",
+        slug: leagueSlug,
+        logoUrl: item.league?.logo,
       },
       season: String(item.league?.season || "2025/2026"),
       round: item.league?.round || "Regular Season",

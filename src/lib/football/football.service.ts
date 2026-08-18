@@ -46,6 +46,8 @@ export class FootballService {
   public static getInstance(provider?: IFootballProvider): FootballService {
     if (!FootballService.instance) {
       FootballService.instance = new FootballService(provider);
+    } else if (provider) {
+      FootballService.instance.setProvider(provider);
     }
     return FootballService.instance;
   }

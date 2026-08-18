@@ -94,8 +94,8 @@ export function LiveTicker({
                 href={`/matches/${m.id}`}
                 className="flex items-center gap-3 px-3 py-1 hover:bg-pitch-900 transition-colors shrink-0"
               >
-                <span className="text-[10px] font-bold text-slate-400 uppercase font-mono">
-                  {m.competition.code || m.competition.name}
+                <span className="text-[10px] font-bold text-slate-400 uppercase font-mono max-w-[130px] truncate" title={m.competition.name}>
+                  {m.competition.name || m.competition.code}
                 </span>
 
                 <div className="flex items-center gap-2 font-medium">

@@ -56,8 +56,8 @@ export function MatchCard({ match, className }: MatchCardProps) {
       )}
     >
       <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400 mb-2.5 pb-2 border-b border-pitch-800">
-        <span className="uppercase tracking-wider font-mono">
-          {match.competition.code || match.competition.name}
+        <span className="uppercase tracking-wider font-mono font-bold text-slate-300 truncate max-w-[200px]" title={match.competition.name}>
+          {match.competition.name || match.competition.code}
         </span>
         <div className="flex items-center gap-1.5">
           {isLive && (
