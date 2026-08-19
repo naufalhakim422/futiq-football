@@ -37,15 +37,7 @@ export function UserNav({ user }: UserNavProps) {
   }, []);
 
   if (!user) {
-    return (
-      <Link
-        href="/login"
-        className="px-3.5 py-1.5 rounded bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 hover:border-[#c3ff00]/60 text-slate-200 hover:text-[#c3ff00] text-xs font-bold uppercase tracking-wider font-mono flex items-center gap-1.5 transition-all shadow-sm"
-      >
-        <User className="w-3.5 h-3.5 text-[#c3ff00]" />
-        <span>Masuk</span>
-      </Link>
-    );
+    return null;
   }
 
   const isAdmin = user.roles.some((r) =>
