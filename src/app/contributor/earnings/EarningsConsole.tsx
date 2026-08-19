@@ -16,8 +16,16 @@ import {
   ChevronRight,
   RefreshCw,
   Lock,
+  Globe2,
+  Sparkles,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import {
+  SupportedCurrency,
+  SUPPORTED_CURRENCIES,
+  formatMoney,
+  formatDualCurrency,
+} from "@/lib/currency/currency";
 
 interface EarningsConsoleProps {
   initialWallet: any;
@@ -37,6 +45,9 @@ export function EarningsConsole({
   const [withdrawals, setWithdrawals] = useState(initialWithdrawals);
   const [ledger, setLedger] = useState(initialLedger);
 
+  // Multi-Currency Selection State (Default: USD)
+  const [activeCurrency, setActiveCurrency] = useState<SupportedCurrency>("USD");
+
   const [activeTab, setActiveTab] = useState<"rewards" | "ledger" | "withdrawals">("rewards");
 
   // Modal States
@@ -44,12 +55,13 @@ export function EarningsConsole({
   const [showAccountModal, setShowAccountModal] = useState(false);
 
   // Form States
-  const [withdrawAmount, setWithdrawAmount] = useState("");
+  const [withdrawAmountUSD, setWithdrawAmountUSD] = useState("");
   const [isSubmittingWithdraw, setIsSubmittingWithdraw] = useState(false);
   const [withdrawError, setWithdrawError] = useState("");
   const [withdrawSuccess, setWithdrawSuccess] = useState("");
 
-  const [bankName, setBankName] = useState(wallet?.payoutAccount?.bankName || "");
+  const [payoutMethod, setPayoutMethod] = useState("BANK_ID");
+  const [bankName, setBankName] = useState(wallet?.payoutAccount?.bankName || "BCA");
   const [accountNumber, setAccountNumber] = useState("");
   const [accountHolderName, setAccountHolderName] = useState(
     wallet?.payoutAccount?.accountHolderName || ""
@@ -58,19 +70,18 @@ export function EarningsConsole({
   const [accountError, setAccountError] = useState("");
   const [accountSuccess, setAccountSuccess] = useState("");
 
-  // Helpers
-  const formatMYR = (minor: number) => {
-    return `RM ${(minor / 100).toLocaleString("en-MY", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-  };
+  // Format Helper using active currency
+  const formatVal = (minorUSD: number) => formatMoney(minorUSD, activeCurrency);
+  const formatDual = (minorUSD: number) => formatDualCurrency(minorUSD, activeCurrency);
 
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
     setWithdrawError("");
     setWithdrawSuccess("");
 
-    const amountFloat = parseFloat(withdrawAmount);
-    if (isNaN(amountFloat) || amountFloat < 85) {
-      setWithdrawError("Minimum withdrawal amount is RM 85.00");
+    const amountFloat = parseFloat(withdrawAmountUSD);
+    if (isNaN(amountFloat) || amountFloat < 10) {
+      setWithdrawError("Minimum withdrawal amount is $10.00 USD (≈ Rp 160.000 / RM 45.00)");
       return;
     }
 
@@ -94,7 +105,6 @@ export function EarningsConsole({
       }
 
       setWithdrawSuccess("Withdrawal request submitted successfully.");
-      // Refresh wallet & withdrawals
       const [walletRes, withRes, ledgRes] = await Promise.all([
         fetch("/api/contributor/wallet").then((r) => r.json()),
         fetch("/api/contributor/withdrawals").then((r) => r.json()),
@@ -107,7 +117,7 @@ export function EarningsConsole({
 
       setTimeout(() => {
         setShowWithdrawModal(false);
-        setWithdrawAmount("");
+        setWithdrawAmountUSD("");
         setWithdrawSuccess("");
       }, 1500);
     } catch (err: any) {
@@ -123,7 +133,7 @@ export function EarningsConsole({
     setAccountSuccess("");
 
     if (!bankName || !accountNumber || !accountHolderName) {
-      setAccountError("All bank account fields are required.");
+      setAccountError("All payment destination fields are required.");
       return;
     }
 
@@ -144,7 +154,7 @@ export function EarningsConsole({
         throw new Error(data.error || "Failed to update payout account");
       }
 
-      setAccountSuccess("Payout account updated. A 48-hour security cooldown is now in effect.");
+      setAccountSuccess("Payout destination updated. A 48-hour security cooldown is now in effect.");
 
       const walletRes = await fetch("/api/contributor/wallet").then((r) => r.json());
       if (walletRes.wallet) setWallet(walletRes.wallet);
@@ -162,129 +172,194 @@ export function EarningsConsole({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 font-sans">
+      {/* Revenue-Share Banner & Multi-Currency Switcher */}
+      <div className="bg-pitch-900 border border-pitch-800 p-5 rounded-2xl shadow-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center font-bold">
+            <Sparkles className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-500">
+                70% CONTRIBUTOR REVENUE SHARE MODEL
+              </span>
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+            </div>
+            <h2 className="text-base font-extrabold text-slate-100">
+              Writer Rewards & Financial Settlement Center
+            </h2>
+          </div>
+        </div>
+
+        {/* Currency Switcher */}
+        <div className="flex items-center gap-1.5 bg-pitch-850 p-1.5 rounded-xl border border-pitch-750 font-mono text-xs self-start md:self-auto">
+          <Globe2 className="w-4 h-4 text-slate-400 ml-1.5 mr-1 shrink-0" />
+          {(Object.keys(SUPPORTED_CURRENCIES) as SupportedCurrency[]).map((curCode) => (
+            <button
+              key={curCode}
+              onClick={() => setActiveCurrency(curCode)}
+              className={cn(
+                "px-2.5 py-1 rounded-lg font-bold transition-all",
+                activeCurrency === curCode
+                  ? "bg-emerald-500 text-white shadow-sm"
+                  : "text-slate-400 hover:text-slate-200"
+              )}
+            >
+              {curCode} ({SUPPORTED_CURRENCIES[curCode].symbol})
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Top Metrics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Available Balance */}
-        <div className="bg-pitch-surface/90 border border-pitch-border rounded-xl p-5 relative overflow-hidden backdrop-blur-md">
+        <div className="bg-pitch-900 border border-pitch-800 rounded-2xl p-5 relative overflow-hidden shadow-xl space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+            <span className="text-xs uppercase tracking-wider font-bold text-slate-400 font-mono">
               Available Balance
             </span>
-            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 text-emerald-500 flex items-center justify-center">
               <Wallet className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3">
-            <span className="text-2xl lg:text-3xl font-extrabold text-foreground tracking-tight">
-              {formatMYR(wallet?.availableBalanceMinor || 0)}
-            </span>
+          <div>
+            <div className="text-2xl lg:text-3xl font-extrabold text-slate-100 tracking-tight font-sans">
+              {formatVal(wallet?.availableBalanceMinor || 0)}
+            </div>
+            {activeCurrency !== "USD" && (
+              <div className="text-xs text-slate-400 font-mono mt-0.5">
+                ≈ {formatMoney(wallet?.availableBalanceMinor || 0, "USD", true)}
+              </div>
+            )}
           </div>
-          <div className="mt-4 flex items-center justify-between text-xs">
+          <div className="pt-2 flex items-center justify-between text-xs border-t border-pitch-800">
             <button
               onClick={() => setShowWithdrawModal(true)}
               disabled={
-                (wallet?.availableBalanceMinor || 0) < 2000 ||
+                (wallet?.availableBalanceMinor || 0) < 1000 ||
                 wallet?.payoutAccount?.isUnderCooldown ||
                 wallet?.isWithdrawalBlocked
               }
               className={cn(
-                "px-3 py-1.5 rounded-lg font-medium transition-colors flex items-center gap-1.5",
-                (wallet?.availableBalanceMinor || 0) >= 8500 &&
+                "px-3 py-1.5 rounded-lg font-bold transition-colors flex items-center gap-1.5 uppercase text-[11px] tracking-wider",
+                (wallet?.availableBalanceMinor || 0) >= 1000 &&
                   !wallet?.payoutAccount?.isUnderCooldown &&
                   !wallet?.isWithdrawalBlocked
-                  ? "bg-emerald-600 hover:bg-emerald-500 text-white shadow-sm"
-                  : "bg-pitch-border/50 text-muted-foreground cursor-not-allowed"
+                  ? "bg-emerald-500 hover:bg-emerald-600 text-white shadow-sm"
+                  : "bg-pitch-800 text-slate-400 cursor-not-allowed"
               )}
             >
               <ArrowDownLeft className="w-3.5 h-3.5" />
               Request Withdrawal
             </button>
-            <span className="text-muted-foreground">Min RM 85.00</span>
+            <span className="text-[10px] font-mono text-slate-400">Min $10.00</span>
           </div>
         </div>
 
         {/* Held in Withdrawal */}
-        <div className="bg-pitch-surface/90 border border-pitch-border rounded-xl p-5 relative overflow-hidden backdrop-blur-md">
+        <div className="bg-pitch-900 border border-pitch-800 rounded-2xl p-5 relative overflow-hidden shadow-xl space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+            <span className="text-xs uppercase tracking-wider font-bold text-slate-400 font-mono">
               Held in Withdrawal
             </span>
-            <div className="w-8 h-8 rounded-lg bg-amber-500/10 text-amber-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center">
               <Clock className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3">
-            <span className="text-2xl lg:text-3xl font-extrabold text-foreground tracking-tight">
-              {formatMYR(wallet?.heldBalanceMinor || 0)}
-            </span>
+          <div>
+            <div className="text-2xl lg:text-3xl font-extrabold text-amber-500 tracking-tight font-sans">
+              {formatVal(wallet?.heldBalanceMinor || 0)}
+            </div>
+            {activeCurrency !== "USD" && (
+              <div className="text-xs text-slate-400 font-mono mt-0.5">
+                ≈ {formatMoney(wallet?.heldBalanceMinor || 0, "USD", true)}
+              </div>
+            )}
           </div>
-          <p className="mt-4 text-xs text-muted-foreground">Pending finance approval or payout processing</p>
+          <p className="pt-2 text-[11px] text-slate-400 border-t border-pitch-800">
+            Pending bi-weekly settlement (5th & 20th)
+          </p>
         </div>
 
         {/* Lifetime Earnings */}
-        <div className="bg-pitch-surface/90 border border-pitch-border rounded-xl p-5 relative overflow-hidden backdrop-blur-md">
+        <div className="bg-pitch-900 border border-pitch-800 rounded-2xl p-5 relative overflow-hidden shadow-xl space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+            <span className="text-xs uppercase tracking-wider font-bold text-slate-400 font-mono">
               Lifetime Earnings
             </span>
-            <div className="w-8 h-8 rounded-lg bg-blue-500/10 text-blue-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center">
               <TrendingUp className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3">
-            <span className="text-2xl lg:text-3xl font-extrabold text-foreground tracking-tight">
-              {formatMYR(wallet?.lifetimeEarningsMinor || 0)}
-            </span>
+          <div>
+            <div className="text-2xl lg:text-3xl font-extrabold text-slate-100 tracking-tight font-sans">
+              {formatVal(wallet?.lifetimeEarningsMinor || 0)}
+            </div>
+            {activeCurrency !== "USD" && (
+              <div className="text-xs text-slate-400 font-mono mt-0.5">
+                ≈ {formatMoney(wallet?.lifetimeEarningsMinor || 0, "USD", true)}
+              </div>
+            )}
           </div>
-          <p className="mt-4 text-xs text-muted-foreground">Cumulative article rewards & bonuses earned</p>
+          <p className="pt-2 text-[11px] text-slate-400 border-t border-pitch-800">
+            Cumulative 70% reader revenue & bonuses
+          </p>
         </div>
 
         {/* Lifetime Withdrawn */}
-        <div className="bg-pitch-surface/90 border border-pitch-border rounded-xl p-5 relative overflow-hidden backdrop-blur-md">
+        <div className="bg-pitch-900 border border-pitch-800 rounded-2xl p-5 relative overflow-hidden shadow-xl space-y-3">
           <div className="flex items-center justify-between">
-            <span className="text-xs uppercase tracking-wider font-semibold text-muted-foreground">
+            <span className="text-xs uppercase tracking-wider font-bold text-slate-400 font-mono">
               Total Disbursed
             </span>
-            <div className="w-8 h-8 rounded-lg bg-purple-500/10 text-purple-400 flex items-center justify-center">
+            <div className="w-9 h-9 rounded-xl bg-purple-500/10 text-purple-500 flex items-center justify-center">
               <ArrowUpRight className="w-4 h-4" />
             </div>
           </div>
-          <div className="mt-3">
-            <span className="text-2xl lg:text-3xl font-extrabold text-foreground tracking-tight">
-              {formatMYR(wallet?.lifetimeWithdrawnMinor || 0)}
-            </span>
+          <div>
+            <div className="text-2xl lg:text-3xl font-extrabold text-slate-100 tracking-tight font-sans">
+              {formatVal(wallet?.lifetimeWithdrawnMinor || 0)}
+            </div>
+            {activeCurrency !== "USD" && (
+              <div className="text-xs text-slate-400 font-mono mt-0.5">
+                ≈ {formatMoney(wallet?.lifetimeWithdrawnMinor || 0, "USD", true)}
+              </div>
+            )}
           </div>
-          <p className="mt-4 text-xs text-muted-foreground">Successfully paid out to your bank account</p>
+          <p className="pt-2 text-[11px] text-slate-400 border-t border-pitch-800">
+            Successfully paid out to your bank account
+          </p>
         </div>
       </div>
 
       {/* Payout Account Status Banner */}
-      <div className="bg-pitch-surface border border-pitch-border rounded-xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div className="bg-pitch-900 border border-pitch-800 rounded-2xl p-5 sm:p-6 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
         <div className="flex items-start gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-pitch-border/60 flex items-center justify-center text-pitch-gold shrink-0 mt-0.5">
+          <div className="w-11 h-11 rounded-xl bg-pitch-850 border border-pitch-750 flex items-center justify-center text-emerald-500 shrink-0 mt-0.5">
             <Building className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
-              Bank Payout Account
+            <h3 className="font-bold text-slate-100 text-sm flex items-center gap-2 font-sans">
+              Payout Destination (Bank / E-Wallet / PayPal)
               {wallet?.payoutAccount?.isConfigured ? (
-                <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-emerald-500/10 text-emerald-400 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 px-2 py-0.5 rounded-full">
                   <CheckCircle className="w-3 h-3" /> Configured
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-amber-500/10 text-amber-400 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase bg-amber-500/15 text-amber-500 border border-amber-500/30 px-2 py-0.5 rounded-full">
                   <AlertTriangle className="w-3 h-3" /> Not Configured
                 </span>
               )}
             </h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-slate-400 mt-1 font-sans">
               {wallet?.payoutAccount?.isConfigured
                 ? `${wallet.payoutAccount.bankName} • ${wallet.payoutAccount.accountNumberMasked} (${wallet.payoutAccount.accountHolderName})`
-                : "Add your bank account details to enable withdrawals."}
+                : "Add your local bank (BCA, Mandiri, BRI), E-Wallet (GoPay, DANA), or PayPal account to receive funds."}
             </p>
             {wallet?.payoutAccount?.isUnderCooldown && (
-              <p className="text-[11px] text-amber-400 mt-1 flex items-center gap-1">
+              <p className="text-[11px] text-amber-500 mt-1 font-mono flex items-center gap-1">
                 <Lock className="w-3 h-3" /> Security Cooldown active until{" "}
                 {new Date(wallet.payoutAccount.cooldownUntil).toLocaleString()}
               </p>
@@ -294,60 +369,21 @@ export function EarningsConsole({
 
         <button
           onClick={() => setShowAccountModal(true)}
-          className="px-4 py-2 text-xs font-semibold rounded-lg bg-pitch-border/70 hover:bg-pitch-border text-foreground transition-colors"
+          className="px-4 py-2 text-xs font-bold uppercase tracking-wider rounded-xl bg-pitch-850 hover:bg-pitch-800 text-slate-200 border border-pitch-750 transition-colors shadow-sm"
         >
-          {wallet?.payoutAccount?.isConfigured ? "Update Bank Account" : "Configure Bank Account"}
-        </button>
-      </div>
-
-      {/* KYC Compliance Status Banner */}
-      <div className="bg-pitch-surface border border-pitch-border rounded-xl p-5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <div className="flex items-start gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-pitch-border/60 flex items-center justify-center text-brand-green shrink-0 mt-0.5">
-            <ShieldCheck className="w-5 h-5" />
-          </div>
-          <div>
-            <h3 className="font-semibold text-foreground text-sm flex items-center gap-2">
-              Identity Verification (KYC Compliance)
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium bg-blue-500/10 text-blue-400 px-2 py-0.5 rounded-full border border-blue-500/20">
-                Independent Compliance Layer
-              </span>
-            </h3>
-            <p className="text-xs text-muted-foreground mt-1">
-              Required for automated payouts and financial compliance. Documents are securely processed by an accredited KYC provider.
-            </p>
-          </div>
-        </div>
-
-        <button
-          onClick={async () => {
-            try {
-              const res = await fetch("/api/contributor/kyc/initiate", { method: "POST" });
-              const data = await res.json();
-              if (data.session?.hostedVerificationUrl) {
-                window.open(data.session.hostedVerificationUrl, "_blank");
-              } else {
-                alert("Verification initiated. Please complete the verification session.");
-              }
-            } catch {
-              alert("Failed to initiate verification session.");
-            }
-          }}
-          className="px-4 py-2 bg-pitch-gold text-slate-950 font-bold text-xs rounded-lg hover:bg-yellow-400 transition-colors shrink-0"
-        >
-          Verify Identity Now →
+          {wallet?.payoutAccount?.isConfigured ? "Update Destination" : "Configure Destination"}
         </button>
       </div>
 
       {/* Navigation Tabs */}
-      <div className="flex border-b border-pitch-border gap-6">
+      <div className="flex border-b border-pitch-800 gap-6">
         <button
           onClick={() => setActiveTab("rewards")}
           className={cn(
-            "pb-3 text-sm font-semibold transition-colors border-b-2 -mb-px flex items-center gap-2",
+            "pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors border-b-2 -mb-px flex items-center gap-2",
             activeTab === "rewards"
-              ? "border-emerald-500 text-emerald-400"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border-emerald-500 text-emerald-500"
+              : "border-transparent text-slate-400 hover:text-slate-200"
           )}
         >
           <FileText className="w-4 h-4" />
@@ -356,10 +392,10 @@ export function EarningsConsole({
         <button
           onClick={() => setActiveTab("ledger")}
           className={cn(
-            "pb-3 text-sm font-semibold transition-colors border-b-2 -mb-px flex items-center gap-2",
+            "pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors border-b-2 -mb-px flex items-center gap-2",
             activeTab === "ledger"
-              ? "border-emerald-500 text-emerald-400"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border-emerald-500 text-emerald-500"
+              : "border-transparent text-slate-400 hover:text-slate-200"
           )}
         >
           <TrendingUp className="w-4 h-4" />
@@ -368,10 +404,10 @@ export function EarningsConsole({
         <button
           onClick={() => setActiveTab("withdrawals")}
           className={cn(
-            "pb-3 text-sm font-semibold transition-colors border-b-2 -mb-px flex items-center gap-2",
+            "pb-3 text-xs sm:text-sm font-bold uppercase tracking-wider transition-colors border-b-2 -mb-px flex items-center gap-2",
             activeTab === "withdrawals"
-              ? "border-emerald-500 text-emerald-400"
-              : "border-transparent text-muted-foreground hover:text-foreground"
+              ? "border-emerald-500 text-emerald-500"
+              : "border-transparent text-slate-400 hover:text-slate-200"
           )}
         >
           <Clock className="w-4 h-4" />
@@ -383,61 +419,41 @@ export function EarningsConsole({
       {activeTab === "rewards" && (
         <div className="space-y-4">
           {rewards.length === 0 ? (
-            <div className="bg-pitch-surface/60 border border-pitch-border rounded-xl p-8 text-center text-muted-foreground text-sm">
-              No rewards finalized yet. Once your submitted articles are approved and published, rewards will appear here.
+            <div className="bg-pitch-900 border border-pitch-800 rounded-2xl p-10 text-center text-slate-400 text-xs shadow-xl">
+              No rewards finalized yet. Once your submitted articles are approved and generate qualified reader views, rewards will appear here.
             </div>
           ) : (
             <div className="grid grid-cols-1 gap-3">
               {rewards.map((rew) => (
                 <div
                   key={rew.id}
-                  className="bg-pitch-surface/90 border border-pitch-border rounded-xl p-5 hover:border-pitch-gold/40 transition-colors"
+                  className="bg-pitch-900 border border-pitch-800 rounded-2xl p-5 shadow-xl hover:border-emerald-500/40 transition-colors"
                 >
                   <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
                     <div>
                       <div className="flex items-center gap-2">
-                        <span className="text-xs font-semibold text-pitch-gold uppercase tracking-wider">
-                          {rew.article?.category || "Article"}
+                        <span className="text-xs font-mono font-bold text-emerald-500 uppercase tracking-wider">
+                          {rew.article?.category || "ARTICLE"}
                         </span>
-                        <span className="text-[11px] text-muted-foreground">
+                        <span className="text-[11px] text-slate-400 font-mono">
                           • {new Date(rew.createdAt).toLocaleDateString()}
                         </span>
-                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-500/15 text-emerald-500 border border-emerald-500/30">
                           {rew.status}
                         </span>
                       </div>
-                      <h4 className="text-sm md:text-base font-bold text-foreground mt-1">
+                      <h4 className="text-sm md:text-base font-bold text-slate-100 mt-1 font-sans">
                         {rew.article?.title || "Untitled Article"}
                       </h4>
                     </div>
 
                     <div className="text-right">
-                      <span className="text-xl font-extrabold text-emerald-400">
-                        {formatMYR(rew.totalRewardMinor)}
+                      <span className="text-xl font-extrabold text-emerald-500">
+                        {formatVal(rew.totalRewardMinor)}
                       </span>
-                      <p className="text-[11px] text-muted-foreground">
-                        {rew.qualifiedViewsCount} Qualified Views
+                      <p className="text-[11px] font-mono text-slate-400">
+                        {rew.qualifiedViewsCount} Qualified Views (70% Share)
                       </p>
-                    </div>
-                  </div>
-
-                  {/* Reward Breakdown Chips */}
-                  <div className="mt-4 pt-3 border-t border-pitch-border/60 grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
-                    <div className="bg-pitch-border/30 rounded-lg p-2">
-                      <span className="text-muted-foreground text-[11px] block">Base Reward</span>
-                      <span className="font-semibold text-foreground">{formatMYR(rew.baseRewardMinor)}</span>
-                    </div>
-                    <div className="bg-pitch-border/30 rounded-lg p-2">
-                      <span className="text-muted-foreground text-[11px] block">Qualified Views</span>
-                      <span className="font-semibold text-foreground">{formatMYR(rew.viewBonusMinor)}</span>
-                    </div>
-                    <div className="bg-pitch-border/30 rounded-lg p-2">
-                      <span className="text-muted-foreground text-[11px] block">Quality Bonus</span>
-                      <span className="font-semibold text-foreground">{formatMYR(rew.qualityBonusMinor)}</span>
-                    </div>
-                    <div className="bg-pitch-border/30 rounded-lg p-2">
-                      <span className="text-muted-foreground text-[11px] block">Breaking News</span>
-                      <span className="font-semibold text-foreground">{formatMYR(rew.breakingBonusMinor)}</span>
                     </div>
                   </div>
                 </div>
@@ -451,13 +467,13 @@ export function EarningsConsole({
       {activeTab === "ledger" && (
         <div className="space-y-4">
           {ledger.length === 0 ? (
-            <div className="bg-pitch-surface/60 border border-pitch-border rounded-xl p-8 text-center text-muted-foreground text-sm">
+            <div className="bg-pitch-900 border border-pitch-800 rounded-2xl p-10 text-center text-slate-400 text-xs shadow-xl">
               No wallet ledger transactions recorded yet.
             </div>
           ) : (
-            <div className="overflow-x-auto border border-pitch-border rounded-xl bg-pitch-surface">
+            <div className="overflow-x-auto border border-pitch-800 rounded-2xl bg-pitch-900 shadow-xl">
               <table className="w-full text-left text-xs">
-                <thead className="bg-pitch-border/40 text-muted-foreground uppercase text-[10px] tracking-wider border-b border-pitch-border">
+                <thead className="bg-pitch-850 text-slate-400 uppercase text-[10px] font-mono font-bold tracking-wider border-b border-pitch-800">
                   <tr>
                     <th className="p-3.5">Date</th>
                     <th className="p-3.5">Type</th>
@@ -466,15 +482,15 @@ export function EarningsConsole({
                     <th className="p-3.5 text-right">Balance After</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-pitch-border/60">
+                <tbody className="divide-y divide-pitch-800 font-mono">
                   {ledger.map((entry) => {
                     const isCredit =
                       entry.type === "CREDIT" ||
                       entry.type === "ADJUSTMENT" ||
                       entry.type === "WITHDRAWAL_RELEASE";
                     return (
-                      <tr key={entry.id} className="hover:bg-pitch-border/20 transition-colors">
-                        <td className="p-3.5 whitespace-nowrap text-muted-foreground">
+                      <tr key={entry.id} className="hover:bg-pitch-850/50 transition-colors">
+                        <td className="p-3.5 whitespace-nowrap text-slate-400">
                           {new Date(entry.createdAt).toLocaleString()}
                         </td>
                         <td className="p-3.5 whitespace-nowrap">
@@ -482,31 +498,31 @@ export function EarningsConsole({
                             className={cn(
                               "px-2 py-0.5 rounded text-[10px] font-bold",
                               entry.type === "CREDIT"
-                                ? "bg-emerald-500/10 text-emerald-400"
+                                ? "bg-emerald-500/15 text-emerald-500"
                                 : entry.type === "WITHDRAWAL_HOLD"
-                                ? "bg-amber-500/10 text-amber-400"
+                                ? "bg-amber-500/15 text-amber-500"
                                 : entry.type === "PAYOUT"
-                                ? "bg-purple-500/10 text-purple-400"
-                                : "bg-blue-500/10 text-blue-400"
+                                ? "bg-purple-500/15 text-purple-500"
+                                : "bg-blue-500/15 text-blue-500"
                             )}
                           >
                             {entry.type}
                           </span>
                         </td>
-                        <td className="p-3.5 font-medium text-foreground max-w-xs truncate">
+                        <td className="p-3.5 font-medium text-slate-200 max-w-xs truncate font-sans">
                           {entry.reason}
                         </td>
                         <td
                           className={cn(
                             "p-3.5 text-right font-bold whitespace-nowrap",
-                            isCredit ? "text-emerald-400" : "text-amber-400"
+                            isCredit ? "text-emerald-500" : "text-amber-500"
                           )}
                         >
                           {isCredit ? "+" : "-"}
-                          {formatMYR(entry.amountMinor)}
+                          {formatVal(entry.amountMinor)}
                         </td>
-                        <td className="p-3.5 text-right font-semibold text-muted-foreground whitespace-nowrap">
-                          {formatMYR(entry.balanceAfterMinor)}
+                        <td className="p-3.5 text-right font-semibold text-slate-400 whitespace-nowrap">
+                          {formatVal(entry.balanceAfterMinor)}
                         </td>
                       </tr>
                     );
@@ -522,7 +538,7 @@ export function EarningsConsole({
       {activeTab === "withdrawals" && (
         <div className="space-y-4">
           {withdrawals.length === 0 ? (
-            <div className="bg-pitch-surface/60 border border-pitch-border rounded-xl p-8 text-center text-muted-foreground text-sm">
+            <div className="bg-pitch-900 border border-pitch-800 rounded-2xl p-10 text-center text-slate-400 text-xs shadow-xl">
               No withdrawal requests recorded yet.
             </div>
           ) : (
@@ -530,43 +546,40 @@ export function EarningsConsole({
               {withdrawals.map((w) => (
                 <div
                   key={w.id}
-                  className="bg-pitch-surface border border-pitch-border rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+                  className="bg-pitch-900 border border-pitch-800 rounded-2xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-xl"
                 >
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-foreground">
+                      <span className="text-xs font-bold text-slate-100">
                         {w.bankName} • {w.accountNumberMasked}
                       </span>
                       <span
                         className={cn(
-                          "px-2 py-0.5 rounded-full text-[10px] font-bold border",
+                          "px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold border",
                           w.status === "PAID"
-                            ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                            ? "bg-emerald-500/15 text-emerald-500 border-emerald-500/30"
                             : w.status === "APPROVED" || w.status === "PROCESSING"
-                            ? "bg-blue-500/10 text-blue-400 border-blue-500/20"
+                            ? "bg-blue-500/15 text-blue-500 border-blue-500/30"
                             : w.status === "REJECTED"
-                            ? "bg-red-500/10 text-red-400 border-red-500/20"
-                            : "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                            ? "bg-red-500/15 text-red-500 border-red-500/30"
+                            : "bg-amber-500/15 text-amber-500 border-amber-500/30"
                         )}
                       >
                         {w.status}
                       </span>
                     </div>
-                    <p className="text-[11px] text-muted-foreground mt-1">
+                    <p className="text-[11px] text-slate-400 mt-1 font-mono">
                       Account: {w.accountHolderName} • Requested:{" "}
                       {new Date(w.createdAt).toLocaleString()}
                     </p>
-                    {w.rejectionReason && (
-                      <p className="text-xs text-red-400 mt-1">Reason: {w.rejectionReason}</p>
-                    )}
                   </div>
 
                   <div className="text-right">
-                    <span className="text-lg font-extrabold text-foreground">
-                      {formatMYR(w.amountMinor)}
+                    <span className="text-lg font-extrabold text-slate-100">
+                      {formatVal(w.amountMinor)}
                     </span>
                     {w.payout?.paidAt && (
-                      <p className="text-[11px] text-emerald-400">
+                      <p className="text-[11px] text-emerald-500 font-mono">
                         Disbursed on {new Date(w.payout.paidAt).toLocaleDateString()}
                       </p>
                     )}
@@ -583,7 +596,7 @@ export function EarningsConsole({
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-pitch-900 border border-pitch-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-pitch-800">
-              <h3 className="font-bold text-slate-100 text-base font-sans">Permohonan Penarikan Dana</h3>
+              <h3 className="font-bold text-slate-100 text-base font-sans">Request Earnings Withdrawal</h3>
               <button
                 onClick={() => setShowWithdrawModal(false)}
                 className="text-slate-400 hover:text-white text-sm p-1 rounded hover:bg-pitch-800"
@@ -593,63 +606,60 @@ export function EarningsConsole({
             </div>
 
             <p className="text-xs text-slate-400 font-sans leading-relaxed">
-              Tarik saldo royalti langsung ke rekening bank terdaftar Anda (
-              <span className="text-slate-200 font-semibold">{wallet?.payoutAccount?.bankName} • {wallet?.payoutAccount?.accountNumberMasked}</span>).
+              Withdraw available editorial rewards directly to your registered destination (
+              <span className="text-slate-200 font-bold">{wallet?.payoutAccount?.bankName} • {wallet?.payoutAccount?.accountNumberMasked}</span>).
             </p>
 
             {withdrawError && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-xs text-red-400 font-mono">
+              <div className="p-3 bg-red-500/15 border border-red-500/30 text-red-500 rounded-xl text-xs font-medium">
                 {withdrawError}
               </div>
             )}
 
             {withdrawSuccess && (
-              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-xs text-emerald-400 font-mono">
+              <div className="p-3 bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 rounded-xl text-xs font-medium">
                 {withdrawSuccess}
               </div>
             )}
 
-            <form onSubmit={handleWithdraw} className="space-y-4 font-sans">
+            <form onSubmit={handleWithdraw} className="space-y-4">
               <div>
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 block mb-1.5">
-                  Jumlah Penarikan (MYR) *
+                <label className="text-xs font-bold text-slate-300 block mb-1">
+                  Withdrawal Amount (in USD $)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-xs font-bold text-slate-400 font-mono">
-                    RM
-                  </span>
+                  <span className="absolute left-3 top-2.5 text-slate-400 font-bold">$</span>
                   <input
                     type="number"
                     step="0.01"
-                    min="85"
-                    max={(wallet?.availableBalanceMinor || 0) / 100}
-                    value={withdrawAmount}
-                    onChange={(e) => setWithdrawAmount(e.target.value)}
-                    placeholder="85.00"
+                    min="10"
+                    placeholder="10.00"
+                    value={withdrawAmountUSD}
+                    onChange={(e) => setWithdrawAmountUSD(e.target.value)}
+                    className="w-full bg-pitch-950 border border-pitch-800 rounded-xl pl-8 pr-4 py-2.5 text-sm font-bold text-slate-100 focus:outline-none focus:border-emerald-500"
                     required
-                    className="w-full bg-pitch-950 border border-pitch-750 rounded-lg pl-11 pr-4 py-2.5 text-sm text-slate-100 font-mono focus:outline-none focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 transition-all placeholder:text-slate-600"
                   />
                 </div>
-                <span className="text-[11px] font-mono text-slate-400 mt-1.5 block">
-                  Saldo Tersedia: <strong className="text-slate-200">{formatMYR(wallet?.availableBalanceMinor || 0)}</strong> (Minimal: <strong className="text-[#c3ff00]">RM 85.00</strong>)
-                </span>
+                <div className="flex items-center justify-between mt-1 text-[11px] text-slate-400 font-mono">
+                  <span>Min: $10.00 USD (≈ Rp 160.000 / RM 45.00)</span>
+                  <span>Available: {formatMoney(wallet?.availableBalanceMinor || 0, "USD", true)}</span>
+                </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-2">
+              <div className="pt-2 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowWithdrawModal(false)}
-                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-pitch-850 hover:bg-pitch-800 text-slate-300 border border-pitch-750 transition-colors"
+                  className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-200"
                 >
-                  Batal
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingWithdraw}
-                  className="px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-[#c3ff00] hover:bg-[#b0e600] text-slate-950 transition-colors flex items-center gap-1.5 shadow-md disabled:opacity-50"
+                  className="px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors shadow-md"
                 >
-                  {isSubmittingWithdraw && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                  <span>Ajukan Penarikan</span>
+                  {isSubmittingWithdraw ? "Processing..." : "Submit Withdrawal"}
                 </button>
               </div>
             </form>
@@ -657,12 +667,12 @@ export function EarningsConsole({
         </div>
       )}
 
-      {/* BANK ACCOUNT MODAL */}
+      {/* ACCOUNT MODAL */}
       {showAccountModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-pitch-900 border border-pitch-800 rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-2 border-b border-pitch-800">
-              <h3 className="font-bold text-slate-100 text-base font-sans">Konfigurasi Rekening Bank Pembayaran</h3>
+              <h3 className="font-bold text-slate-100 text-base font-sans">Configure Payout Destination</h3>
               <button
                 onClick={() => setShowAccountModal(false)}
                 className="text-slate-400 hover:text-white text-sm p-1 rounded hover:bg-pitch-800"
@@ -671,83 +681,79 @@ export function EarningsConsole({
               </button>
             </div>
 
-            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 text-xs text-amber-300 flex items-start gap-2 font-sans">
-              <ShieldCheck className="w-4 h-4 shrink-0 mt-0.5 text-amber-400" />
-              <span>
-                Pemberitahuan Keamanan: Mengubah data rekening bank menerapkan masa jeda (*cooldown*) keamanan wajib 48 jam untuk penarikan baru.
-              </span>
-            </div>
+            <p className="text-xs text-slate-400 font-sans leading-relaxed">
+              Select your payment method (Bank Transfer, E-Wallet, or PayPal). Changing your payout destination triggers a 48-hour security cooldown.
+            </p>
 
             {accountError && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-xs text-red-400 font-mono">
+              <div className="p-3 bg-red-500/15 border border-red-500/30 text-red-500 rounded-xl text-xs font-medium">
                 {accountError}
               </div>
             )}
 
             {accountSuccess && (
-              <div className="bg-emerald-500/10 border border-emerald-500/30 rounded-lg p-3 text-xs text-emerald-400 font-mono">
+              <div className="p-3 bg-emerald-500/15 border border-emerald-500/30 text-emerald-500 rounded-xl text-xs font-medium">
                 {accountSuccess}
               </div>
             )}
 
-            <form onSubmit={handleUpdateAccount} className="space-y-4 font-sans">
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 block">
-                  Nama Bank *
+            <form onSubmit={handleUpdateAccount} className="space-y-3.5 text-xs">
+              <div>
+                <label className="font-bold text-slate-300 block mb-1">
+                  Payment Method / Institution Name
                 </label>
                 <input
                   type="text"
+                  placeholder="e.g. BCA, Mandiri, GoPay, DANA, Maybank, or PayPal"
                   value={bankName}
                   onChange={(e) => setBankName(e.target.value)}
-                  placeholder="Contoh: Maybank, CIMB, BCA, Mandiri, BRI"
+                  className="w-full bg-pitch-950 border border-pitch-800 rounded-xl px-3.5 py-2.5 text-slate-100 font-sans focus:outline-none focus:border-emerald-500"
                   required
-                  className="w-full bg-pitch-950 border border-pitch-750 rounded-lg px-3.5 py-2.5 text-xs text-slate-100 font-sans focus:outline-none focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 transition-all placeholder:text-slate-500"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 block">
-                  Nomor Rekening Bank *
+              <div>
+                <label className="font-bold text-slate-300 block mb-1">
+                  Account Number / E-Wallet Phone / PayPal Email
                 </label>
                 <input
                   type="text"
+                  placeholder="e.g. 1234567890 or 08123456789 or user@email.com"
                   value={accountNumber}
                   onChange={(e) => setAccountNumber(e.target.value)}
-                  placeholder="Masukkan nomor rekening lengkap"
+                  className="w-full bg-pitch-950 border border-pitch-800 rounded-xl px-3.5 py-2.5 text-slate-100 font-mono focus:outline-none focus:border-emerald-500"
                   required
-                  className="w-full bg-pitch-950 border border-pitch-750 rounded-lg px-3.5 py-2.5 text-xs text-slate-100 font-mono focus:outline-none focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 transition-all placeholder:text-slate-500"
                 />
               </div>
 
-              <div className="space-y-1.5">
-                <label className="text-[11px] font-mono font-bold uppercase tracking-wider text-slate-300 block">
-                  Nama Pemilik Rekening *
+              <div>
+                <label className="font-bold text-slate-300 block mb-1">
+                  Account Holder Full Legal Name
                 </label>
                 <input
                   type="text"
+                  placeholder="Matches your identity documents exactly"
                   value={accountHolderName}
                   onChange={(e) => setAccountHolderName(e.target.value)}
-                  placeholder="Nama lengkap sesuai buku tabungan"
+                  className="w-full bg-pitch-950 border border-pitch-800 rounded-xl px-3.5 py-2.5 text-slate-100 font-sans focus:outline-none focus:border-emerald-500"
                   required
-                  className="w-full bg-pitch-950 border border-pitch-750 rounded-lg px-3.5 py-2.5 text-xs text-slate-100 font-sans focus:outline-none focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 transition-all placeholder:text-slate-500"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-2">
+              <div className="pt-2 flex items-center justify-end gap-2">
                 <button
                   type="button"
                   onClick={() => setShowAccountModal(false)}
-                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-pitch-850 hover:bg-pitch-800 text-slate-300 border border-pitch-750 transition-colors"
+                  className="px-4 py-2 font-bold text-slate-400 hover:text-slate-200"
                 >
-                  Batal
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingAccount}
-                  className="px-5 py-2 text-xs font-bold uppercase tracking-wider rounded-lg bg-[#c3ff00] hover:bg-[#b0e600] text-slate-950 transition-colors flex items-center gap-1.5 shadow-md disabled:opacity-50"
+                  className="px-5 py-2.5 font-bold uppercase tracking-wider text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors shadow-md"
                 >
-                  {isSubmittingAccount && <RefreshCw className="w-3.5 h-3.5 animate-spin" />}
-                  <span>Simpan Rekening Bank</span>
+                  {isSubmittingAccount ? "Saving..." : "Save Destination"}
                 </button>
               </div>
             </form>
