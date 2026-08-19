@@ -8,6 +8,17 @@ import { MatchCardData } from "./MatchCard";
 // Sample ticker matches for immediate hydration / fallback
 const DEFAULT_TICKER_MATCHES: MatchCardData[] = [
   {
+    id: "match_fnb_lyo",
+    competition: { name: "Champions League", code: "UCL" },
+    homeTeam: { name: "Fenerbahçe", tla: "FNB" },
+    awayTeam: { name: "Lyon", tla: "OL" },
+    homeScore: 1,
+    awayScore: 1,
+    status: "LIVE_2H",
+    minute: 78,
+    matchDate: "Today",
+  },
+  {
     id: "match_ina_aus",
     competition: { name: "World Cup Qualifiers", code: "WCQ" },
     homeTeam: { name: "Indonesia", tla: "INA" },
