@@ -22,6 +22,16 @@ export async function POST(
       );
     }
 
+    // Direct simulation approval handler
+    if (id.startsWith("with_sim_")) {
+      simulationStore.approveWithdrawal(id);
+      return NextResponse.json({
+        success: true,
+        message: "Simulation: Withdrawal approved and queued for disbursement.",
+        withdrawal: { id, status: "APPROVED" },
+      });
+    }
+
     const ip = req.headers.get("x-forwarded-for")?.split(",")[0].trim() || "127.0.0.1";
     const userAgent = req.headers.get("user-agent") || "";
 
@@ -39,8 +49,8 @@ export async function POST(
         withdrawal: result.withdrawal,
         payout: result.payout,
       });
-    } catch (dbErr) {
-      // Simulation Approval
+    } catch (dbErr: any) {
+      // Simulation Approval Fallback
       simulationStore.approveWithdrawal(id);
       return NextResponse.json({
         success: true,
