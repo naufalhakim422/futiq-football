@@ -23,7 +23,7 @@ interface TacticalPitchLineupProps {
 
 import { getPlayerFacePhoto } from "@/lib/football/player-face.helper";
 
-// Robust Player Avatar component with real player face photos
+// Robust Player Avatar component with official photo and clean jersey fallback
 function PlayerAvatar({
   photoUrl,
   name,
@@ -40,22 +40,50 @@ function PlayerAvatar({
   team?: "home" | "away";
 }) {
   const [imgError, setImgError] = useState(false);
-  const resolvedPhoto = (!photoUrl || imgError) ? getPlayerFacePhoto(name, number, playerId) : photoUrl;
+  const isGk = position?.toUpperCase() === "GK";
+  const isHome = team === "home";
+
+  // Check verified photo if photoUrl is missing or errored
+  const activePhoto = (!imgError && photoUrl) ? photoUrl : getPlayerFacePhoto(name, number, playerId);
+
+  if (activePhoto && !imgError) {
+    return (
+      <div className="w-full h-full relative overflow-hidden bg-pitch-950 flex items-center justify-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={activePhoto}
+          alt={name}
+          className="w-full h-full object-cover select-none group-hover:scale-110 transition-transform duration-200"
+          onError={() => setImgError(true)}
+        />
+        {/* Number mini-tag */}
+        <div className="absolute bottom-0 right-0 bg-black/90 text-white font-mono font-bold text-[8px] px-1 rounded-tl shadow">
+          #{number}
+        </div>
+      </div>
+    );
+  }
+
+  // Official 3D Jersey Avatar with shirt number and position
+  const gradientColor = isGk
+    ? "from-amber-400 via-amber-500 to-amber-600 text-slate-950 border-amber-300"
+    : isHome
+    ? "from-[#c3ff00] via-[#a6db00] to-[#88b800] text-slate-950 border-[#d8ff4d]"
+    : "from-[#00d4ff] via-[#00a6e6] to-[#0077b3] text-slate-950 border-[#80e5ff]";
 
   return (
-    <div className="w-full h-full relative overflow-hidden bg-pitch-950 flex items-center justify-center">
-      {/* Real Player Face Headshot */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={resolvedPhoto}
-        alt={name}
-        className="w-full h-full object-cover select-none group-hover:scale-110 transition-transform duration-200"
-        onError={() => setImgError(true)}
-      />
-      {/* Number mini-tag */}
-      <div className="absolute bottom-0 right-0 bg-black/90 text-white font-mono font-bold text-[8px] px-1 rounded-tl shadow">
-        #{number}
-      </div>
+    <div
+      className={cn(
+        "w-full h-full bg-gradient-to-b flex flex-col items-center justify-center border shadow-inner select-none relative",
+        gradientColor
+      )}
+    >
+      <span className="font-mono font-black text-xs sm:text-sm leading-none drop-shadow-sm">
+        {number}
+      </span>
+      <span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-tighter font-extrabold leading-none mt-0.5 opacity-90">
+        {position || (isGk ? "GK" : "MF")}
+      </span>
     </div>
   );
 }

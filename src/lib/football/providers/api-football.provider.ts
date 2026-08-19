@@ -436,8 +436,11 @@ export class ApiFootballProvider implements IFootballProvider {
         const homeEvents = events.filter((e: any) => e.teamId === `team_${item.teams?.home?.id}`);
         const awayEvents = events.filter((e: any) => e.teamId === `team_${item.teams?.away?.id}`);
 
+        const homeRawLineup = item.lineups?.find((l: any) => l.team?.id === item.teams?.home?.id) || item.lineups?.[0];
+        const awayRawLineup = item.lineups?.find((l: any) => l.team?.id === item.teams?.away?.id) || item.lineups?.[1];
+
         const homeLineup = this.buildTeamLineup(
-          item.lineups?.[0],
+          homeRawLineup,
           baseMatch.homeTeam.name,
           `team_${item.teams?.home?.id}`,
           homeEvents,
@@ -446,7 +449,7 @@ export class ApiFootballProvider implements IFootballProvider {
         );
 
         const awayLineup = this.buildTeamLineup(
-          item.lineups?.[1],
+          awayRawLineup,
           baseMatch.awayTeam.name,
           `team_${item.teams?.away?.id}`,
           awayEvents,
@@ -522,14 +525,21 @@ export class ApiFootballProvider implements IFootballProvider {
     if (rawLineup?.startXI && rawLineup.startXI.length > 0) {
       return {
         teamId,
+        teamName,
         formation,
+        manager: {
+          name: rawLineup.coach?.name || `Pelatih ${teamName}`,
+          photoUrl: rawLineup.coach?.photo || undefined,
+        },
         starters: rawLineup.startXI.map((x: any, idx: number) => {
           const hasScored = events.some((e: any) => e.type === EventType.GOAL && e.playerId === `ply_${x.player?.id}`);
           const hasCard = events.some((e: any) => (e.type === EventType.YELLOW_CARD || e.type === EventType.RED_CARD) && e.playerId === `ply_${x.player?.id}`);
           
-          let ratingNum = x.player?.rating ? parseFloat(x.player.rating) : (7.0 + (score > 1 ? 0.4 : 0));
+          let ratingNum = x.player?.rating ? parseFloat(x.player.rating) : (7.2 + (score > 1 ? 0.4 : 0));
           if (hasScored) ratingNum += 1.3;
           if (hasCard) ratingNum -= 0.5;
+
+          const photoUrl = x.player?.id ? `/api/football/player-image?id=${x.player.id}` : undefined;
 
           return {
             playerId: `ply_${x.player?.id}`,
@@ -537,7 +547,7 @@ export class ApiFootballProvider implements IFootballProvider {
             position: x.player?.pos || (idx === 0 ? "GK" : idx < 5 ? "DF" : idx < 8 ? "MF" : "FW"),
             number: x.player?.number || idx + 1,
             gridPosition: x.player?.grid,
-            photoUrl: x.player?.id ? `/api/football/player-image?id=${x.player.id}` : undefined,
+            photoUrl,
             rating: parseFloat(Math.min(9.8, Math.max(6.0, ratingNum)).toFixed(1)),
             isCaptain: idx === 0 || idx === 3,
             goals: hasScored ? 1 : 0,
@@ -545,7 +555,7 @@ export class ApiFootballProvider implements IFootballProvider {
         }),
         bench: (rawLineup.substitutes || []).map((x: any, idx: number) => ({
           playerId: `ply_${x.player?.id}`,
-          name: x.player?.name,
+          name: x.player?.name || `Cadangan ${idx + 1}`,
           position: x.player?.pos || "SUB",
           number: x.player?.number || idx + 12,
           photoUrl: x.player?.id ? `/api/football/player-image?id=${x.player.id}` : undefined,

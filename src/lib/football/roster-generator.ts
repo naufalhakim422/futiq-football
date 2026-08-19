@@ -209,7 +209,7 @@ export function getCompleteTeamLineup(
           number: p.number,
           position: p.pos,
           rating,
-          photoUrl: getPlayerFacePhoto(p.name, p.number, `ply_${teamId}_${p.number}`),
+          photoUrl: getPlayerFacePhoto(p.name, p.number, `ply_${teamId}_${p.number}`) || undefined,
           isCaptain: idx === 0 || idx === 3,
           isMotm: hasGoal || (score > 2 && idx === 9),
           goals: hasGoal ? 1 : 0,
@@ -222,14 +222,14 @@ export function getCompleteTeamLineup(
         formation: preset.formation,
         manager: {
           name: preset.manager,
-          photoUrl: getPlayerFacePhoto(preset.manager, 99, `mgr_${teamId}`),
+          photoUrl: getPlayerFacePhoto(preset.manager, 99, `mgr_${teamId}`) || undefined,
         },
         starters,
         bench: [
-          { name: `${preset.players[0].name.split(" ")[0]} Junior`, number: 12, position: "GK", rating: 6.5, photoUrl: getPlayerFacePhoto("GK Sub", 12) },
-          { name: `Matías ${preset.players[1]?.name.split(" ").slice(-1)[0] || "Silva"}`, number: 14, position: "DF", rating: 6.9, photoUrl: getPlayerFacePhoto("DF Sub", 14) },
-          { name: `Carlos ${preset.players[5]?.name.split(" ").slice(-1)[0] || "Santos"}`, number: 18, position: "MF", rating: 7.1, photoUrl: getPlayerFacePhoto("MF Sub", 18) },
-          { name: `Diego ${preset.players[9]?.name.split(" ").slice(-1)[0] || "Morales"}`, number: 21, position: "FW", rating: 7.2, photoUrl: getPlayerFacePhoto("FW Sub", 21) },
+          { name: `${preset.players[0].name.split(" ")[0]} Junior`, number: 12, position: "GK", rating: 6.5, photoUrl: getPlayerFacePhoto("GK Sub", 12) || undefined },
+          { name: `Matías ${preset.players[1]?.name.split(" ").slice(-1)[0] || "Silva"}`, number: 14, position: "DF", rating: 6.9, photoUrl: getPlayerFacePhoto("DF Sub", 14) || undefined },
+          { name: `Carlos ${preset.players[5]?.name.split(" ").slice(-1)[0] || "Santos"}`, number: 18, position: "MF", rating: 7.1, photoUrl: getPlayerFacePhoto("MF Sub", 18) || undefined },
+          { name: `Diego ${preset.players[9]?.name.split(" ").slice(-1)[0] || "Morales"}`, number: 21, position: "FW", rating: 7.2, photoUrl: getPlayerFacePhoto("FW Sub", 21) || undefined },
         ],
       };
     }
@@ -259,7 +259,7 @@ export function getCompleteTeamLineup(
       number: num,
       position: pos,
       rating,
-      photoUrl: getPlayerFacePhoto(fullName, num, `ply_${teamId}_${num}`),
+      photoUrl: getPlayerFacePhoto(fullName, num, `ply_${teamId}_${num}`) || undefined,
       isCaptain: idx === 0 || idx === 3,
       isMotm: idx === 9 && score > 0,
       goals: idx === 9 && score > 0 ? score : 0,
@@ -272,14 +272,14 @@ export function getCompleteTeamLineup(
     formation,
     manager: {
       name: `Pelatih ${teamName}`,
-      photoUrl: getPlayerFacePhoto(`Coach ${teamName}`, 99),
+      photoUrl: getPlayerFacePhoto(`Coach ${teamName}`, 99) || undefined,
     },
     starters,
     bench: [
-      { name: `${GLOBAL_FIRST_NAMES[(seed + 15) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 15) % GLOBAL_SURNAME_POOL.length]}`, number: 12, position: "GK", rating: 6.5, photoUrl: getPlayerFacePhoto("Sub GK", 12) },
-      { name: `${GLOBAL_FIRST_NAMES[(seed + 16) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 16) % GLOBAL_SURNAME_POOL.length]}`, number: 14, position: "DF", rating: 6.8, photoUrl: getPlayerFacePhoto("Sub DF", 14) },
-      { name: `${GLOBAL_FIRST_NAMES[(seed + 17) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 17) % GLOBAL_SURNAME_POOL.length]}`, number: 17, position: "MF", rating: 7.0, photoUrl: getPlayerFacePhoto("Sub MF", 17) },
-      { name: `${GLOBAL_FIRST_NAMES[(seed + 18) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 18) % GLOBAL_SURNAME_POOL.length]}`, number: 22, position: "FW", rating: 7.1, photoUrl: getPlayerFacePhoto("Sub FW", 22) },
+      { name: `${GLOBAL_FIRST_NAMES[(seed + 15) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 15) % GLOBAL_SURNAME_POOL.length]}`, number: 12, position: "GK", rating: 6.5, photoUrl: getPlayerFacePhoto("Sub GK", 12) || undefined },
+      { name: `${GLOBAL_FIRST_NAMES[(seed + 16) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 16) % GLOBAL_SURNAME_POOL.length]}`, number: 14, position: "DF", rating: 6.8, photoUrl: getPlayerFacePhoto("Sub DF", 14) || undefined },
+      { name: `${GLOBAL_FIRST_NAMES[(seed + 17) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 17) % GLOBAL_SURNAME_POOL.length]}`, number: 17, position: "MF", rating: 7.0, photoUrl: getPlayerFacePhoto("Sub MF", 17) || undefined },
+      { name: `${GLOBAL_FIRST_NAMES[(seed + 18) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 18) % GLOBAL_SURNAME_POOL.length]}`, number: 22, position: "FW", rating: 7.1, photoUrl: getPlayerFacePhoto("Sub FW", 22) || undefined },
     ],
   };
 }
