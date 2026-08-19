@@ -58,13 +58,13 @@ export default function ContributorApplyPage() {
     setError(null);
 
     if (formData.password && formData.password.length < 6) {
-      setError("Kata sandi minimal 6 karakter.");
+      setError("Password must be at least 6 characters.");
       setLoading(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Konfirmasi kata sandi tidak cocok dengan kata sandi.");
+      setError("Password confirmation does not match password.");
       setLoading(false);
       return;
     }
@@ -108,22 +108,22 @@ export default function ContributorApplyPage() {
             </div>
 
             <p className="text-xs text-slate-400 leading-relaxed max-w-md mx-auto">
-              Pendaftaran Anda telah berhasil dicatat ke Meja Redaksi FUTIQ FOOTBALL.
-              Setelah pendaftaran disetujui (ACC), Anda dapat langsung masuk ke <strong>Meja Kontributor</strong> menggunakan email dan kata sandi yang baru saja Anda buat.
+              Your application has been successfully submitted to the FUTIQ FOOTBALL Editorial Desk.
+              Once your accreditation is approved, you can log in directly to the <strong>Contributor Desk</strong> using the credentials you just created.
             </p>
 
             <div className="p-4 bg-pitch-950 border border-pitch-800 text-left text-xs font-mono space-y-1.5 text-slate-400">
               <div className="flex justify-between">
-                <span className="text-slate-500">Nama Pendaftar:</span>
+                <span className="text-slate-500">Applicant Name:</span>
                 <span className="text-slate-200 font-semibold">{formData.fullName}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Email Akun:</span>
+                <span className="text-slate-500">Account Email:</span>
                 <span className="text-brand-green font-semibold">{formData.email}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-500">Status Sesi:</span>
-                <span className="text-amber-400 font-semibold">Menunggu Persetujuan Redaksi</span>
+                <span className="text-slate-500">Docket Status:</span>
+                <span className="text-amber-400 font-semibold">Awaiting Editorial Approval</span>
               </div>
             </div>
 
@@ -132,14 +132,14 @@ export default function ContributorApplyPage() {
                 href="/login"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-lg transition-colors shadow-lg"
               >
-                <span>Halaman Masuk (Login)</span>
+                <span>Sign In Page</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link
                 href="/"
                 className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2.5 text-xs font-semibold text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-lg transition-colors"
               >
-                <span>Kembali ke Beranda</span>
+                <span>Back to Home</span>
               </Link>
             </div>
           </div>
@@ -249,7 +249,7 @@ export default function ContributorApplyPage() {
                     required
                     value={formData.country}
                     onChange={handleChange}
-                    placeholder="e.g. Indonesia"
+                    placeholder="e.g. United Kingdom"
                     className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans transition-all"
                   />
                 </div>
@@ -260,17 +260,17 @@ export default function ContributorApplyPage() {
                 <div className="flex items-center gap-2 text-slate-200">
                   <Lock className="w-4 h-4 text-brand-green" />
                   <span className="font-bold font-mono text-[11px] uppercase tracking-wider">
-                    Kata Sandi Akun Kontributor (Untuk Login)
+                    Contributor Account Password (For Future Login)
                   </span>
                 </div>
                 <p className="text-[10px] text-slate-400 font-sans leading-relaxed">
-                  Buat kata sandi akun Anda. Kata sandi ini akan Anda gunakan untuk masuk ke Meja Kontributor setelah pendaftaran disetujui tim redaksi.
+                  Create your account password. You will use this password to sign in to the Contributor Desk once your accreditation is approved.
                 </p>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
                   <div className="space-y-1.5">
                     <label className="font-bold text-slate-300 uppercase tracking-wider text-[10px] font-mono">
-                      Kata Sandi Baru *
+                      New Password *
                     </label>
                     <input
                       type="password"
@@ -278,14 +278,14 @@ export default function ContributorApplyPage() {
                       required
                       value={formData.password}
                       onChange={handleChange}
-                      placeholder="Minimal 6 karakter"
+                      placeholder="Minimum 6 characters"
                       className="w-full bg-pitch-900 border border-pitch-750 px-3.5 py-2 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-mono transition-all"
                     />
                   </div>
 
                   <div className="space-y-1.5">
                     <label className="font-bold text-slate-300 uppercase tracking-wider text-[10px] font-mono">
-                      Konfirmasi Kata Sandi *
+                      Confirm Password *
                     </label>
                     <input
                       type="password"
@@ -293,7 +293,7 @@ export default function ContributorApplyPage() {
                       required
                       value={formData.confirmPassword}
                       onChange={handleChange}
-                      placeholder="Ulangi kata sandi"
+                      placeholder="Repeat password"
                       className="w-full bg-pitch-900 border border-pitch-750 px-3.5 py-2 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-mono transition-all"
                     />
                   </div>

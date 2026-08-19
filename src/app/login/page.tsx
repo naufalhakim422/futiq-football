@@ -6,8 +6,8 @@ import { ArrowLeft, ShieldCheck } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth/session";
 
 export const metadata = {
-  title: "Masuk ke Akun | FUTIQ FOOTBALL",
-  description: "Gerbang masuk akun resmi untuk pembaca, jurnalis kontributor, dan pengelola FUTIQ FOOTBALL.",
+  title: "Sign In | FUTIQ FOOTBALL",
+  description: "Official portal login for readers, contributors, and platform administrators.",
 };
 
 export default async function LoginPage({
@@ -29,14 +29,14 @@ export default async function LoginPage({
               className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-slate-200 mb-2 transition-colors font-mono"
             >
               <ArrowLeft className="w-3.5 h-3.5" />
-              Kembali ke Beranda
+              Back to Home
             </Link>
 
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-100 font-sans tracking-tight">
-              Masuk ke FUTIQ FOOTBALL
+              Sign in to FUTIQ FOOTBALL
             </h1>
             <p className="text-xs text-slate-400 max-w-sm mx-auto font-sans leading-relaxed">
-              Akses berita eksklusif, analisis taktik, meja jurnalis kontributor, dan dashboard platform.
+              Access exclusive news, tactical insights, contributor workspaces, and platform controls.
             </p>
           </div>
 
@@ -62,20 +62,20 @@ export default async function LoginPage({
                   href={user.roles.includes("SUPER_ADMIN") ? "/admin" : "/contributor"}
                   className="px-2.5 py-1.5 rounded bg-[#c3ff00] text-slate-950 font-bold uppercase tracking-wider text-[10px] hover:bg-[#b0e600] transition-colors"
                 >
-                  Buka
+                  Open
                 </Link>
                 <a
                   href="/api/auth/logout"
                   className="px-2.5 py-1.5 rounded bg-pitch-800 text-slate-300 font-bold uppercase tracking-wider text-[10px] hover:bg-pitch-700 transition-colors"
                 >
-                  Keluar
+                  Sign Out
                 </a>
               </div>
             </div>
           )}
 
           {/* Form */}
-          <Suspense fallback={<div className="p-8 text-center text-slate-400 font-mono text-xs">Memuat formulir...</div>}>
+          <Suspense fallback={<div className="p-8 text-center text-slate-400 font-mono text-xs">Loading form...</div>}>
             <LoginForm />
           </Suspense>
 
@@ -83,7 +83,7 @@ export default async function LoginPage({
           <div className="text-center pt-2">
             <div className="inline-flex items-center gap-1.5 text-slate-500 text-[11px] font-mono">
               <ShieldCheck className="w-3.5 h-3.5 text-slate-500" />
-              <span>Koneksi Kriptografis Terenkripsi SSL/TLS & JWT</span>
+              <span>Encrypted SSL/TLS & JWT Cryptographic Session</span>
             </div>
           </div>
         </div>

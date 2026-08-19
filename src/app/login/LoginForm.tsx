@@ -38,7 +38,7 @@ const QUICK_ROLES: QuickRole[] = [
     email: "admin@futiq.com",
     badgeColor: "bg-[#c3ff00] text-slate-950 font-bold",
     icon: Shield,
-    description: "Akses penuh Portal Admin, Keuangan, Iklan, Telemetri API & SEO",
+    description: "Full access to Admin Portal, Finance, Ads, API Telemetry & SEO",
     defaultRedirect: "/admin",
   },
   {
@@ -48,17 +48,17 @@ const QUICK_ROLES: QuickRole[] = [
     email: "dev.contributor@futiq.com",
     badgeColor: "bg-cyan-400 text-slate-950 font-bold",
     icon: PenTool,
-    description: "Akses Pengembang Khusus Meja Kontributor, Draft Artikel & AI Gate",
+    description: "Developer access to Contributor Workspace, Article Drafting & AI Gate",
     defaultRedirect: "/contributor",
   },
   {
     id: "contributor",
-    name: "Jurnalis Kontributor (Standard)",
+    name: "Staff Contributor (Standard)",
     role: "CONTRIBUTOR",
     email: "contributor@futiq.com",
     badgeColor: "bg-emerald-500 text-slate-950 font-bold",
     icon: PenTool,
-    description: "Tulis artikel, evaluasi AI Editorial Gate & kelola saldo",
+    description: "Write articles, evaluate AI Editorial Gate & manage wallet earnings",
     defaultRedirect: "/contributor",
   },
   {
@@ -68,17 +68,17 @@ const QUICK_ROLES: QuickRole[] = [
     email: "editor@futiq.com",
     badgeColor: "bg-blue-500 text-white font-bold",
     icon: FileCheck,
-    description: "Review manuskrip penulis dan publikasi berita",
+    description: "Review writer manuscripts and publish editorial news",
     defaultRedirect: "/editor",
   },
   {
     id: "finance",
-    name: "Manajer Keuangan",
+    name: "Finance Manager",
     role: "FINANCE",
     email: "finance@futiq.com",
     badgeColor: "bg-amber-500 text-slate-950 font-bold",
     icon: Coins,
-    description: "Persetujuan pencairan saldo & ledger",
+    description: "Approve withdrawal payouts & manage financial ledger",
     defaultRedirect: "/admin/finance",
   },
 ];
@@ -123,10 +123,10 @@ export function LoginForm() {
       const data = await res.json();
 
       if (!res.ok || !data.success) {
-        throw new Error(data.error || "Gagal melakukan autentikasi");
+        throw new Error(data.error || "Authentication failed");
       }
 
-      setSuccess(`Selamat datang kembali, ${data.user.fullName}! Mengalihkan...`);
+      setSuccess(`Welcome back, ${data.user.fullName}! Redirecting...`);
 
       // Determine redirect destination
       let target = redirectParam;
@@ -142,7 +142,7 @@ export function LoginForm() {
         router.refresh();
       }, 600);
     } catch (err: any) {
-      setError(err.message || "Terjadi kesalahan pada sesi login");
+      setError(err.message || "An error occurred during authentication");
       setLoading(false);
     }
   };
@@ -158,7 +158,7 @@ export function LoginForm() {
           <div className="p-3.5 bg-red-950/70 border border-red-800/80 rounded-lg text-xs text-red-300 flex items-start gap-2.5 font-sans">
             <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
             <div>
-              <span className="font-bold">Gagal Masuk: </span>
+              <span className="font-bold">Sign In Failed: </span>
               {error}
             </div>
           </div>
@@ -183,7 +183,7 @@ export function LoginForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="nama@email.com"
+              placeholder="name@example.com"
               className="w-full px-4 py-3 bg-pitch-950 border border-pitch-800 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00] text-slate-100 text-sm rounded outline-none font-mono transition-all placeholder:text-slate-600"
             />
           </div>
@@ -193,10 +193,10 @@ export function LoginForm() {
             <div className="flex items-center justify-between">
               <label className="text-slate-300 font-bold uppercase tracking-wider text-[11px] font-mono flex items-center gap-1.5">
                 <Lock className="w-3.5 h-3.5 text-[#c3ff00]" />
-                <span>Kata Sandi</span>
+                <span>Password</span>
               </label>
               <span className="text-[10px] text-slate-500 hover:text-slate-300 cursor-pointer">
-                Lupa sandi?
+                Forgot password?
               </span>
             </div>
             <input
@@ -217,11 +217,11 @@ export function LoginForm() {
           className="w-full py-3.5 px-6 rounded-lg bg-[#c3ff00] hover:bg-[#b0e600] disabled:opacity-50 text-slate-950 font-bold uppercase tracking-wider text-xs flex items-center justify-center gap-2 transition-all shadow-lg active:scale-[0.99] mt-2"
         >
           {loading ? (
-            <span>Memverifikasi Akun...</span>
+            <span>Authenticating Account...</span>
           ) : (
             <>
               <UserCheck className="w-4 h-4 text-slate-950" />
-              <span>Masuk ke Akun</span>
+              <span>Sign In</span>
               <ArrowRight className="w-4 h-4 text-slate-950" />
             </>
           )}
@@ -230,12 +230,12 @@ export function LoginForm() {
         {/* Bottom Contributor Link */}
         <div className="pt-4 border-t border-pitch-800/80 text-center">
           <p className="text-xs text-slate-400 font-sans">
-            Ingin menulis artikel & analisis sepak bola?{" "}
+            Want to write football articles & tactical analysis?{" "}
             <Link
               href="/contributor/apply"
               className="text-[#c3ff00] hover:underline font-semibold font-mono ml-1"
             >
-              Daftar Jadi Kontributor →
+              Apply as Contributor →
             </Link>
           </p>
         </div>
@@ -249,14 +249,14 @@ export function LoginForm() {
           className="w-full py-2 px-3 text-[11px] font-mono text-slate-500 hover:text-slate-300 flex items-center justify-center gap-1.5 transition-colors border border-dashed border-pitch-800/60 rounded-lg hover:border-pitch-700"
         >
           <Wrench className="w-3 h-3 text-slate-500" />
-          <span>{showDevRoles ? "Sembunyikan Akun Demo" : "🔧 Mode Pengujian / Akun Demo Cepat"}</span>
+          <span>{showDevRoles ? "Hide Demo Accounts" : "🔧 Fast Demo Accounts / Testing Switcher"}</span>
           <ChevronDown className={cn("w-3 h-3 transition-transform", showDevRoles && "rotate-180")} />
         </button>
 
         {showDevRoles && (
           <div className="mt-3 p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-3 animate-in fade-in duration-200">
             <div className="text-[10px] uppercase font-mono tracking-wider text-slate-400 font-bold">
-              Pilih Akun Demo 1-Klik:
+              Select 1-Click Demo Profile:
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {QUICK_ROLES.map((r) => {

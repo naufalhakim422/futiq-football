@@ -70,7 +70,7 @@ export function EarningsConsole({
 
     const amountFloat = parseFloat(withdrawAmount);
     if (isNaN(amountFloat) || amountFloat < 85) {
-      setWithdrawError("Jumlah penarikan minimal adalah RM 85.00");
+      setWithdrawError("Minimum withdrawal amount is RM 85.00");
       return;
     }
 

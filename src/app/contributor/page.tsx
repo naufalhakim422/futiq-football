@@ -142,14 +142,14 @@ export default async function ContributorDashboardPage() {
                     href="/login?redirect=/contributor"
                     className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-lg transition-colors shadow-md active:scale-[0.99]"
                   >
-                    <span>Masuk ke Akun Penulis (Login)</span>
+                    <span>Accredited Writer Login</span>
                     <ChevronRight className="w-4 h-4" />
                   </Link>
                   <a
                     href="/api/auth/dev-session?role=CONTRIBUTOR&redirect=/contributor"
                     className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-lg transition-colors font-mono"
                   >
-                    <span>1-Klik Aktivasi Cepat Penulis (Dev)</span>
+                    <span>1-Click Fast Dev Contributor Access</span>
                   </a>
                 </div>
               </div>
@@ -220,7 +220,7 @@ export default async function ContributorDashboardPage() {
                 href="/api/auth/dev-session?action=logout&redirect=/contributor"
                 className="px-3 py-2 text-xs font-semibold text-slate-300 bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 flex items-center gap-1.5 transition-colors"
               >
-                <span>Keluar</span>
+                <span>Sign Out</span>
               </a>
               <Link
                 href="/contributor/earnings"
