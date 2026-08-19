@@ -48,22 +48,12 @@ export async function Header() {
           </Link>
         </div>
 
-        {/* Right Action Icons, User Session & Contributor Application CTA */}
-        <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
-            <Link
-              href="/contributor/apply"
-              className="px-3 py-1.5 text-[11px] font-bold text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-lg flex items-center gap-1.5 transition-all shadow-sm active:scale-95 font-sans"
-            >
-              <PenTool className="w-3.5 h-3.5" />
-              <span>Tulis Berita</span>
-            </Link>
-          </div>
-
+        {/* Right Action Icons & User Session */}
+        <div className="flex items-center gap-2.5">
           <Link
             href="/search"
             aria-label="Search football content"
-            className="p-2 text-slate-400 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded transition-colors"
+            className="p-2 text-slate-400 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 hover:border-[#c3ff00]/40 rounded-lg transition-all"
           >
             <Search className="w-4 h-4" />
           </Link>
