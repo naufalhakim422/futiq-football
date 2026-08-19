@@ -7,7 +7,7 @@ export const dynamic = "force-dynamic";
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
   const role = (searchParams.get("role") || "SUPER_ADMIN") as RoleType;
-  const redirectTo = searchParams.get("redirect") || "/admin";
+  const redirectTo = searchParams.get("redirect") || "/contributor";
 
   if (searchParams.get("action") === "logout") {
     const response = NextResponse.redirect(new URL(redirectTo, request.url));
@@ -15,12 +15,16 @@ export async function GET(request: NextRequest) {
     return response;
   }
 
-  // Create active session payload
+  const isContributor = role === "CONTRIBUTOR";
+
+  // Active session payload for Naufal (Developer & Contributor)
   const sessionUser = {
-    id: "admin_master_001",
-    email: "superadmin@footballmedia.internal",
-    fullName: "Chief Administrator",
-    roles: [role, "EDITOR_IN_CHIEF", "CONTRIBUTOR"] as RoleType[],
+    id: isContributor ? "usr_dev_contributor_futiq_com" : "admin_master_001",
+    email: isContributor ? "dev.contributor@futiq.com" : "superadmin@futiq.com",
+    fullName: isContributor ? "Naufal (Developer & Contributor)" : "Chief Administrator",
+    roles: isContributor
+      ? (["CONTRIBUTOR", "SUPER_ADMIN", "SENIOR_EDITOR", "EDITOR_IN_CHIEF"] as RoleType[])
+      : ([role, "EDITOR_IN_CHIEF", "CONTRIBUTOR"] as RoleType[]),
     permissions: ["*"],
   };
 
@@ -44,13 +48,16 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
-    const role = (body.role || "SUPER_ADMIN") as RoleType;
+    const role = (body.role || "CONTRIBUTOR") as RoleType;
+    const isContributor = role === "CONTRIBUTOR";
 
     const sessionUser = {
-      id: "admin_master_001",
-      email: "superadmin@footballmedia.internal",
-      fullName: "Chief Administrator",
-      roles: [role, "EDITOR_IN_CHIEF", "CONTRIBUTOR"] as RoleType[],
+      id: isContributor ? "usr_dev_contributor_futiq_com" : "admin_master_001",
+      email: isContributor ? "dev.contributor@futiq.com" : "superadmin@futiq.com",
+      fullName: isContributor ? "Naufal (Developer & Contributor)" : "Chief Administrator",
+      roles: isContributor
+        ? (["CONTRIBUTOR", "SUPER_ADMIN", "SENIOR_EDITOR", "EDITOR_IN_CHIEF"] as RoleType[])
+        : ([role, "EDITOR_IN_CHIEF", "CONTRIBUTOR"] as RoleType[]),
       permissions: ["*"],
     };
 
@@ -59,7 +66,7 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({
       success: true,
-      message: `Authenticated as ${role}`,
+      message: `Authenticated as ${sessionUser.fullName}`,
       user: sessionUser,
     });
 
