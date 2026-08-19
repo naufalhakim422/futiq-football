@@ -8,6 +8,38 @@ import { MatchCardData } from "./MatchCard";
 // Sample ticker matches for immediate hydration / fallback
 const DEFAULT_TICKER_MATCHES: MatchCardData[] = [
   {
+    id: "match_ina_aus",
+    competition: { name: "World Cup Qualifiers", code: "WCQ" },
+    homeTeam: { name: "Indonesia", tla: "INA" },
+    awayTeam: { name: "Australia", tla: "AUS" },
+    homeScore: 2,
+    awayScore: 1,
+    status: "LIVE_2H",
+    minute: 82,
+    matchDate: "Today",
+  },
+  {
+    id: "match_eng_fra",
+    competition: { name: "UEFA Nations League", code: "UNL" },
+    homeTeam: { name: "England", tla: "ENG" },
+    awayTeam: { name: "France", tla: "FRA" },
+    homeScore: 2,
+    awayScore: 2,
+    status: "LIVE_2H",
+    minute: 71,
+    matchDate: "Today",
+  },
+  {
+    id: "match_arg_bra",
+    competition: { name: "CONMEBOL Qualifiers", code: "WCQ" },
+    homeTeam: { name: "Argentina", tla: "ARG" },
+    awayTeam: { name: "Brazil", tla: "BRA" },
+    homeScore: 2,
+    awayScore: 0,
+    status: "FINISHED",
+    matchDate: "FT",
+  },
+  {
     id: "match_ars_che",
     competition: { name: "Premier League", code: "PL" },
     homeTeam: { name: "Arsenal FC", tla: "ARS" },
@@ -19,17 +51,6 @@ const DEFAULT_TICKER_MATCHES: MatchCardData[] = [
     matchDate: "Today",
   },
   {
-    id: "match_mci_liv",
-    competition: { name: "Premier League", code: "PL" },
-    homeTeam: { name: "Manchester City", tla: "MCI" },
-    awayTeam: { name: "Liverpool FC", tla: "LIV" },
-    homeScore: 1,
-    awayScore: 1,
-    status: "HT",
-    minute: 45,
-    matchDate: "Today",
-  },
-  {
     id: "match_rma_bar",
     competition: { name: "La Liga", code: "LL" },
     homeTeam: { name: "Real Madrid", tla: "RMA" },
@@ -38,16 +59,6 @@ const DEFAULT_TICKER_MATCHES: MatchCardData[] = [
     awayScore: 2,
     status: "FINISHED",
     matchDate: "FT",
-  },
-  {
-    id: "match_ucl_bay_psg",
-    competition: { name: "Champions League", code: "UCL" },
-    homeTeam: { name: "Bayern Munich", tla: "BAY" },
-    awayTeam: { name: "Paris SG", tla: "PSG" },
-    homeScore: 0,
-    awayScore: 0,
-    status: "SCHEDULED",
-    matchDate: "20:00",
   },
 ];
 

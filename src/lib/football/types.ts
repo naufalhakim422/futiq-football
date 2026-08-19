@@ -124,6 +124,13 @@ export interface LineupPlayer {
   number: number;
   position: string;
   gridPosition?: string; // e.g. "1:1", "2:3"
+  rating?: number | string; // e.g. 8.8
+  isCaptain?: boolean;
+  isMotm?: boolean;
+  goals?: number;
+  assists?: number;
+  yellowCards?: number;
+  redCards?: number;
 }
 
 export interface ProviderMatchLineup {
@@ -189,6 +196,12 @@ export interface ProviderMatchDetail extends ProviderMatch {
     cornersAway: number;
     foulsHome: number;
     foulsAway: number;
+    xgHome?: number;
+    xgAway?: number;
+    passesHome?: number;
+    passesAway?: number;
+    passAccuracyHome?: number;
+    passAccuracyAway?: number;
   };
 }
 
