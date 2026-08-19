@@ -99,14 +99,28 @@ export function LiveTicker({
             const homeScore = m.homeScore ?? m.score?.home ?? 0;
             const awayScore = m.awayScore ?? m.score?.away ?? 0;
 
+            const compRaw = m.competition.name || m.competition.code || "";
+            let compBadge = compRaw;
+            const lower = compRaw.toLowerCase();
+            if (lower.includes("world cup")) compBadge = "WCQ 2026";
+            else if (lower.includes("nations league")) compBadge = "UEFA NL";
+            else if (lower.includes("asean")) compBadge = "AFF CUP";
+            else if (lower.includes("champions")) compBadge = "UCL";
+            else if (lower.includes("premier league")) compBadge = "EPL";
+            else if (lower.includes("la liga")) compBadge = "LA LIGA";
+            else if (lower.includes("serie a")) compBadge = "SERIE A";
+            else if (lower.includes("iii liga")) compBadge = "POLAND D3";
+            else if (lower.includes("super league")) compBadge = "SUPER LEAGUE";
+            else if (lower.includes("cup")) compBadge = "CUP";
+
             return (
               <Link
                 key={m.id}
                 href={`/matches/${m.id}`}
-                className="flex items-center gap-3 px-3 py-1 hover:bg-pitch-900 transition-colors shrink-0"
+                className="flex items-center gap-3 px-3.5 py-1.5 hover:bg-pitch-900 transition-colors shrink-0"
               >
-                <span className="text-[10px] font-bold text-slate-400 uppercase font-mono max-w-[130px] truncate" title={m.competition.name}>
-                  {m.competition.name || m.competition.code}
+                <span className="text-[10px] font-bold text-[#c3ff00] uppercase font-mono max-w-[130px] truncate" title={m.competition.name}>
+                  {compBadge}
                 </span>
 
                 <div className="flex items-center gap-2 font-medium">
