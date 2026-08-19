@@ -216,6 +216,30 @@ export default async function AdminFootballPage() {
             </div>
           </div>
 
+          {/* Live Telemetry 2.0 Action Strip */}
+          <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#c3ff00]/10 border border-[#c3ff00]/30 flex items-center justify-center">
+                <Activity className="w-5 h-5 text-[#c3ff00]" />
+              </div>
+              <div>
+                <h4 className="text-xs font-bold font-mono text-slate-200 uppercase">
+                  Live Match Center & Telemetri Real-Time 2.0
+                </h4>
+                <p className="text-[11px] text-slate-400">
+                  Inspeksi background worker sinkronisasi 15s, SSE stream, matrix fixture live, dan status distributed locks Redis.
+                </p>
+              </div>
+            </div>
+
+            <Link
+              href="/admin/football/live-telemetry"
+              className="px-4 py-2 bg-[#c3ff00] hover:bg-[#b0e600] text-slate-950 rounded-lg text-xs font-mono font-bold transition-colors whitespace-nowrap shadow"
+            >
+              Buka Live Telemetry 2.0 &rarr;
+            </Link>
+          </div>
+
           {/* Sync Diagnostics & Status Banner */}
           <div className="p-4 bg-pitch-950 border border-pitch-800 text-xs font-mono rounded-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3">

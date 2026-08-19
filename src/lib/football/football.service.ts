@@ -72,23 +72,38 @@ export class FootballService {
   // ==========================================
 
   public async getLiveMatches(): Promise<ProviderMatch[]> {
-    const cacheKey = "football:matches:live";
-    const cached = await getCachedData<ProviderMatch[]>(cacheKey);
-    if (cached) return cached;
-
     try {
-      const liveMatches = await this.provider.getLiveMatches();
-      if (liveMatches !== null && liveMatches !== undefined) {
-        await setCachedData(cacheKey, liveMatches, FootballService.TTL_LIVE);
-        return liveMatches;
-      }
-      const fallback = await this.fallbackProvider.getLiveMatches();
-      await setCachedData(cacheKey, fallback, FootballService.TTL_LIVE);
-      return fallback;
+      const { liveMatchEngine } = await import("./live-engine/live-match.engine");
+      const liveList = await liveMatchEngine.getLiveMatchesList();
+      return liveList.map((m) => ({
+        id: m.fixtureId,
+        externalId: m.externalId,
+        competition: m.competition,
+        season: m.season,
+        round: m.round,
+        group: m.group,
+        stage: m.stage,
+        isKnockout: m.isKnockout,
+        homeTeam: m.homeTeam,
+        awayTeam: m.awayTeam,
+        venue: m.venue,
+        matchDate: m.matchDate,
+        status: m.status,
+        minute: m.minute,
+        homeScore: m.score.home.current,
+        awayScore: m.score.away.current,
+        htHomeScore: m.score.home.halftime,
+        htAwayScore: m.score.away.halftime,
+        etHomeScore: m.score.home.extraTime,
+        etAwayScore: m.score.away.extraTime,
+        penaltyHomeScore: m.score.home.penalty,
+        penaltyAwayScore: m.score.away.penalty,
+        decidedByPenalty: m.score.home.penalty !== undefined,
+        referee: m.referee,
+      }));
     } catch (error) {
       console.warn("[FootballService.getLiveMatches Fallback]:", error);
       const fallback = await this.fallbackProvider.getLiveMatches();
-      await setCachedData(cacheKey, fallback, FootballService.TTL_LIVE);
       return fallback;
     }
   }
@@ -184,21 +199,44 @@ export class FootballService {
   }
 
   public async getMatchDetail(id: string): Promise<ProviderMatchDetail | null> {
-    const cacheKey = `football:match:${id}`;
-    const cached = await getCachedData<ProviderMatchDetail>(cacheKey);
-    if (cached) return cached;
-
     try {
-      let match = await this.provider.getMatch(id);
-      if (!match) {
-        match = await this.fallbackProvider.getMatch(id);
-      }
-      if (match) {
-        const isLive = match.status.startsWith("LIVE") || match.status === "HT";
-        const ttl = isLive ? FootballService.TTL_LIVE : FootballService.TTL_RESULTS;
-        await setCachedData(cacheKey, match, ttl);
-      }
-      return match;
+      const { liveMatchEngine } = await import("./live-engine/live-match.engine");
+      const live = await liveMatchEngine.getLiveMatch(id);
+      if (!live) return null;
+
+      return {
+        id: live.fixtureId,
+        externalId: live.externalId,
+        competition: live.competition,
+        season: live.season,
+        round: live.round,
+        group: live.group,
+        stage: live.stage,
+        isKnockout: live.isKnockout,
+        homeTeam: live.homeTeam,
+        awayTeam: live.awayTeam,
+        venue: live.venue,
+        matchDate: live.matchDate,
+        status: live.status,
+        minute: live.minute,
+        homeScore: live.score.home.current,
+        awayScore: live.score.away.current,
+        htHomeScore: live.score.home.halftime,
+        htAwayScore: live.score.away.halftime,
+        etHomeScore: live.score.home.extraTime,
+        etAwayScore: live.score.away.extraTime,
+        penaltyHomeScore: live.score.home.penalty,
+        penaltyAwayScore: live.score.away.penalty,
+        decidedByPenalty: live.score.home.penalty !== undefined,
+        referee: live.referee,
+        events: live.events,
+        lineups: live.lineups,
+        stats: live.statistics,
+        h2h: live.h2h,
+        standing: live.standing,
+        homeForm: live.homeForm,
+        awayForm: live.awayForm,
+      };
     } catch (error) {
       console.warn(`[FootballService.getMatchDetail "${id}" Fallback]:`, error);
       return this.fallbackProvider.getMatch(id);

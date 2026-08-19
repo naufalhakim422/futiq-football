@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint src --ext .ts,.tsx",
-    "test": "tsx --test tests/football.test.ts tests/football-match-center-2.test.ts tests/api-football-free-plan.test.ts tests/auth-session-portal.test.ts tests/contributor-platform.test.ts tests/ai-editorial-gate.test.ts tests/rewards-payout.test.ts tests/automatic-payout-ads-analytics.test.ts tests/growth-seo-distribution.test.ts tests/production-security-audit.test.ts tests/advertising-engine.test.ts",
+    "test": "tsx --test tests/football.test.ts tests/live-match-engine-2.test.ts tests/football-match-center-2.test.ts tests/api-football-free-plan.test.ts tests/auth-session-portal.test.ts tests/contributor-platform.test.ts tests/ai-editorial-gate.test.ts tests/rewards-payout.test.ts tests/automatic-payout-ads-analytics.test.ts tests/growth-seo-distribution.test.ts tests/production-security-audit.test.ts tests/advertising-engine.test.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev"
   },

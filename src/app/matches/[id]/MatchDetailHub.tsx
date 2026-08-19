@@ -8,6 +8,7 @@ import { MatchStatsComparison } from "@/components/football/MatchStatsComparison
 import { MatchH2H } from "@/components/football/MatchH2H";
 import { MatchStandings } from "@/components/football/MatchStandings";
 import { PlayerRatingsTable } from "@/components/football/PlayerRatingsTable";
+import { useLiveMatch } from "@/lib/football/live-engine/useLiveMatch";
 import {
   Activity,
   Shield,
@@ -18,8 +19,9 @@ import {
   Trophy,
   Clock,
   TrendingUp,
-  MapPin,
-  User,
+  Radio,
+  AlertCircle,
+  Wifi,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -27,7 +29,9 @@ interface MatchDetailHubProps {
   match: ProviderMatchDetail;
 }
 
-export function MatchDetailHub({ match }: MatchDetailHubProps) {
+export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
+  const { match, isLive, freshness, secondsAgo, connectionState } = useLiveMatch(initialMatch);
+
   const [activeTab, setActiveTab] = useState<
     "lineups" | "overview" | "timeline" | "stats" | "players" | "h2h" | "standings"
   >("lineups");
@@ -65,7 +69,56 @@ export function MatchDetailHub({ match }: MatchDetailHubProps) {
   const isFriendly = match.competition.name.toLowerCase().includes("friendly");
 
   return (
-    <div className="space-y-8 font-sans">
+    <div className="space-y-6 font-sans">
+      {/* Real-time Live Synchronization Freshness Indicator */}
+      {isLive && (
+        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-2xl bg-pitch-950/90 border border-pitch-800 text-xs font-mono">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2.5 w-2.5">
+              <span
+                className={cn(
+                  "animate-ping absolute inline-flex h-full w-full rounded-full opacity-75",
+                  freshness === "FRESH"
+                    ? "bg-emerald-400"
+                    : freshness === "DELAYED"
+                    ? "bg-amber-400"
+                    : "bg-brand-red"
+                )}
+              />
+              <span
+                className={cn(
+                  "relative inline-flex rounded-full h-2.5 w-2.5",
+                  freshness === "FRESH"
+                    ? "bg-emerald-500"
+                    : freshness === "DELAYED"
+                    ? "bg-amber-500"
+                    : "bg-brand-red"
+                )}
+              />
+            </span>
+
+            <span className="font-bold text-slate-200">
+              {freshness === "FRESH" ? (
+                <span className="text-emerald-400">DATA LIVE RESMI (Sinkronisasi ~15s)</span>
+              ) : freshness === "DELAYED" ? (
+                <span className="text-amber-400">LIVE DATA DELAYED (Pembaruan tertunda)</span>
+              ) : (
+                <span className="text-rose-400">DATA STALE (Menunggu sinyal provider)</span>
+              )}
+            </span>
+          </div>
+
+          <div className="flex items-center gap-3 text-[11px] text-slate-400">
+            <span className="flex items-center gap-1">
+              <Wifi className="w-3.5 h-3.5 text-cyan-400" />
+              <span>{connectionState === "CONNECTED" ? "SSE Aktif" : connectionState === "FALLBACK" ? "Polling 15s" : "Live Stream"}</span>
+            </span>
+            <span>•</span>
+            <span>Diperbarui {secondsAgo} detik lalu</span>
+          </div>
+        </div>
+      )}
+
       {/* Navigation Tabs (Mobile Horizontal Scroll / Desktop Layout) */}
       <div className="border-b border-pitch-800 flex items-center gap-1 sm:gap-2 overflow-x-auto no-scrollbar pb-1">
         <button
