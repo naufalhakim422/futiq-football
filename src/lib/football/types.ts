@@ -115,7 +115,11 @@ export interface ProviderMatchEvent {
   playerName?: string;
   assistPlayerId?: string;
   assistPlayerName?: string;
+  inPlayerName?: string;
+  outPlayerName?: string;
+  varReason?: string;
   detail?: string;
+  description?: string; // Factual generated description
 }
 
 export interface LineupPlayer {
@@ -136,7 +140,15 @@ export interface LineupPlayer {
   saves?: number;
   tackles?: number;
   passes?: number;
+  passAccuracy?: number;
   keyPasses?: number;
+  interceptions?: number;
+  clearances?: number;
+  fouls?: number;
+  fouled?: number;
+  dribbles?: number;
+  duelsWon?: number;
+  minutesPlayed?: number;
 }
 
 export interface ProviderMatchLineup {
@@ -151,6 +163,16 @@ export interface ProviderMatchLineup {
   bench: LineupPlayer[];
 }
 
+export interface ProviderH2HSummary {
+  totalMatches: number;
+  homeWins: number;
+  draws: number;
+  awayWins: number;
+  homeGoals: number;
+  awayGoals: number;
+  recentMatches: ProviderMatch[];
+}
+
 export interface ProviderMatch {
   id: string;
   externalId?: string;
@@ -160,9 +182,13 @@ export interface ProviderMatch {
     code: string;
     slug: string;
     logoUrl?: string;
+    isInternational?: boolean;
   };
   season: string;
   round?: string;
+  group?: string; // e.g. "Group C"
+  stage?: string; // e.g. "Round of 16", "Quarter-Final"
+  isKnockout?: boolean;
   homeTeam: {
     id: string;
     name: string;
@@ -170,6 +196,7 @@ export interface ProviderMatch {
     tla: string;
     slug: string;
     logoUrl?: string;
+    isNationalTeam?: boolean;
   };
   awayTeam: {
     id: string;
@@ -178,6 +205,7 @@ export interface ProviderMatch {
     tla: string;
     slug: string;
     logoUrl?: string;
+    isNationalTeam?: boolean;
   };
   venue?: ProviderStadium;
   matchDate: string; // ISO 8601
@@ -187,6 +215,11 @@ export interface ProviderMatch {
   awayScore: number;
   htHomeScore?: number;
   htAwayScore?: number;
+  etHomeScore?: number;
+  etAwayScore?: number;
+  penaltyHomeScore?: number;
+  penaltyAwayScore?: number;
+  decidedByPenalty?: boolean;
   referee?: string;
 }
 
@@ -196,6 +229,12 @@ export interface ProviderMatchDetail extends ProviderMatch {
     home?: ProviderMatchLineup;
     away?: ProviderMatchLineup;
   };
+  h2h?: ProviderH2HSummary;
+  homeForm?: string[]; // e.g. ["W", "W", "D", "L", "W"]
+  awayForm?: string[];
+  homeRecentMatches?: ProviderMatch[];
+  awayRecentMatches?: ProviderMatch[];
+  standing?: ProviderStanding[];
   stats?: {
     possessionHome: number;
     possessionAway: number;
@@ -203,16 +242,30 @@ export interface ProviderMatchDetail extends ProviderMatch {
     shotsAway: number;
     shotsOnTargetHome: number;
     shotsOnTargetAway: number;
+    shotsOffTargetHome?: number;
+    shotsOffTargetAway?: number;
+    blockedShotsHome?: number;
+    blockedShotsAway?: number;
     cornersHome: number;
     cornersAway: number;
     foulsHome: number;
     foulsAway: number;
-    xgHome?: number;
-    xgAway?: number;
+    yellowCardsHome?: number;
+    yellowCardsAway?: number;
+    redCardsHome?: number;
+    redCardsAway?: number;
+    offsidesHome?: number;
+    offsidesAway?: number;
+    savesHome?: number;
+    savesAway?: number;
+    bigChancesHome?: number;
+    bigChancesAway?: number;
     passesHome?: number;
     passesAway?: number;
     passAccuracyHome?: number;
     passAccuracyAway?: number;
+    xgHome?: number;
+    xgAway?: number;
   };
 }
 

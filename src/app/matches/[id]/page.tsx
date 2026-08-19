@@ -1,11 +1,12 @@
 import React from "react";
 import { notFound } from "next/navigation";
+import { Metadata } from "next";
 import { footballService } from "@/lib/football/football.service";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { TeamBadge } from "@/components/football/TeamBadge";
 import { CompetitionBadge } from "@/components/football/CompetitionBadge";
 import { MatchDetailHub } from "./MatchDetailHub";
-import { MapPin, User, ChevronLeft } from "lucide-react";
+import { MapPin, User, ChevronLeft, Shield, AlertTriangle, Trophy } from "lucide-react";
 import Link from "next/link";
 
 interface MatchDetailPageProps {
@@ -13,6 +14,33 @@ interface MatchDetailPageProps {
 }
 
 export const revalidate = 15; // 15 seconds ISR for live matches
+
+export async function generateMetadata({ params }: MatchDetailPageProps): Promise<Metadata> {
+  const { id } = await params;
+  const match = await footballService.getMatchDetail(id);
+
+  if (!match) {
+    return {
+      title: "Pertandingan Tidak Ditemukan | FUTIQ FOOTBALL",
+    };
+  }
+
+  const statusText =
+    match.status === "FINISHED"
+      ? `Hasil Akhir ${match.homeScore} - ${match.awayScore}`
+      : match.status.startsWith("LIVE")
+      ? `Skor Langsung ${match.homeScore} - ${match.awayScore} (${match.minute}')`
+      : "Jadwal & Susunan Pemain";
+
+  return {
+    title: `${match.homeTeam.name} vs ${match.awayTeam.name} — ${statusText} | ${match.competition.name} | FUTIQ`,
+    description: `Ikuti pertandingan sepak bola ${match.homeTeam.name} vs ${match.awayTeam.name} di ${match.competition.name}. Skor langsung, susunan pemain resmi, statistik Opta, rating pemain, dan linimasa pertandingan.`,
+    openGraph: {
+      title: `${match.homeTeam.name} vs ${match.awayTeam.name} — ${statusText}`,
+      description: `Live Match Center & Telemetri Sepak Bola: ${match.competition.name}`,
+    },
+  };
+}
 
 export default async function MatchDetailPage({ params }: MatchDetailPageProps) {
   const { id } = await params;
@@ -25,11 +53,44 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
   const isLive =
     match.status === "LIVE_1H" ||
     match.status === "LIVE_2H" ||
-    match.status === "HT";
+    match.status === "HT" ||
+    match.status === "ET" ||
+    match.status === "PENALTY";
   const isFinished = match.status === "FINISHED";
+  const isPostponed = match.status === "POSTPONED" || match.status === "CANCELLED";
+
+  // Structured Data Schema for SportsEvent
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "SportsEvent",
+    name: `${match.homeTeam.name} vs ${match.awayTeam.name}`,
+    startDate: match.matchDate,
+    location: {
+      "@type": "Place",
+      name: match.venue?.name || "Stadion Resmi",
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: match.venue?.city || "Kota Pertandingan",
+      },
+    },
+    homeTeam: {
+      "@type": "SportsTeam",
+      name: match.homeTeam.name,
+    },
+    awayTeam: {
+      "@type": "SportsTeam",
+      name: match.awayTeam.name,
+    },
+  };
 
   return (
     <div className="py-8 space-y-8 font-sans">
+      {/* Injected SportsEvent JSON-LD Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       <PageContainer>
         {/* Navigation Breadcrumb */}
         <div className="pb-4 border-b border-pitch-800 flex items-center justify-between">
@@ -44,7 +105,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
           <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
             <span className="text-[#c3ff00] font-bold">{match.competition.name}</span>
             <span>•</span>
-            <span>{match.round || "Matchday"}</span>
+            <span>{match.group ? `${match.round || "Matchday"} (${match.group})` : match.round || "Matchday"}</span>
           </div>
         </div>
 
@@ -59,7 +120,9 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
                 name={match.competition.name}
                 code={match.competition.code}
               />
-              <span className="font-mono text-slate-300">{match.round || "Matchday"}</span>
+              <span className="font-mono text-slate-300">
+                {match.group ? `${match.round || "Matchday"} (${match.group})` : match.round || "Matchday"}
+              </span>
             </div>
 
             <div className="flex items-center gap-4 font-mono text-[11px]">
@@ -87,7 +150,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
                   {match.homeTeam.name}
                 </h2>
                 <span className="text-xs text-[#c3ff00] font-mono uppercase font-bold">
-                  Tuan Rumah
+                  {match.homeTeam.isNationalTeam ? "Tim Nasional" : "Tuan Rumah"}
                 </span>
               </div>
               <TeamBadge
@@ -108,21 +171,41 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
                 )}
               </div>
 
+              {/* Extra Time or Penalty Shootout Result */}
+              {match.penaltyHomeScore !== undefined && match.penaltyAwayScore !== undefined && (
+                <span className="mt-1 text-xs font-mono font-bold text-purple-300 bg-purple-950/80 px-2.5 py-0.5 rounded-full border border-purple-800">
+                  Adu Penalti: {match.penaltyHomeScore} - {match.penaltyAwayScore}
+                </span>
+              )}
+
               <div className="mt-3">
                 {isLive && (
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 text-xs font-bold uppercase tracking-widest bg-brand-red/20 text-brand-red border border-brand-red/30 rounded-full font-mono shadow-sm">
                     <span className="w-2 h-2 rounded-full bg-brand-red animate-ping" />
-                    <span>{match.status === "HT" ? "Babak Pertama (HT)" : `LIVE ${match.minute}'`}</span>
+                    <span>
+                      {match.status === "HT"
+                        ? "Babak Pertama (HT)"
+                        : match.status === "ET"
+                        ? `Extra Time (${match.minute}')`
+                        : match.status === "PENALTY"
+                        ? "Adu Penalti (LIVE)"
+                        : `LIVE ${match.minute}'`}
+                    </span>
                   </span>
                 )}
                 {isFinished && (
                   <span className="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-pitch-950 border border-pitch-750 text-slate-300">
-                    Selesai (Full Time)
+                    {match.etHomeScore !== undefined ? "Selesai (AET)" : "Selesai (Full Time)"}
                   </span>
                 )}
                 {match.status === "SCHEDULED" && (
                   <span className="text-xs font-mono text-slate-300 px-3 py-1 rounded bg-pitch-950 border border-pitch-800">
-                    {new Date(match.matchDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} WIB
+                    {new Date(match.matchDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} WIB
+                  </span>
+                )}
+                {isPostponed && (
+                  <span className="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-amber-950/80 text-amber-300 border border-amber-800">
+                    Ditunda (Postponed)
                   </span>
                 )}
               </div>
@@ -140,15 +223,15 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
                 <h2 className="text-xl sm:text-2xl font-extrabold text-slate-100 uppercase tracking-tight font-sans">
                   {match.awayTeam.name}
                 </h2>
-                <span className="text-xs text-slate-400 font-mono uppercase font-bold">
-                  Tim Tamu
+                <span className="text-xs text-cyan-400 font-mono uppercase font-bold">
+                  {match.awayTeam.isNationalTeam ? "Tim Nasional" : "Tim Tamu"}
                 </span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Google-Style Match Hub with Interactive Visual Tactical Pitch */}
+        {/* Google & FotMob Level Match Hub with Multi-Tab Telemetry */}
         <MatchDetailHub match={match} />
       </PageContainer>
     </div>

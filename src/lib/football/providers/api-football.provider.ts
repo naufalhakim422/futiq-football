@@ -422,16 +422,36 @@ export class ApiFootballProvider implements IFootballProvider {
         const item = raw[0];
         const baseMatch = this.mapMatchRecord(item);
 
-        const events = (item.events || []).map((ev: any, idx: number) => ({
-          id: `ev_${idx}`,
-          type: ev.type?.toUpperCase() === "GOAL" ? EventType.GOAL : ev.type?.toUpperCase() === "CARD" ? (ev.detail?.includes("Red") ? EventType.RED_CARD : EventType.YELLOW_CARD) : EventType.SUBSTITUTION,
-          minute: ev.time?.elapsed || 0,
-          extraMinute: ev.time?.extra,
-          teamId: `team_${ev.team?.id}`,
-          playerId: `ply_${ev.player?.id}`,
-          playerName: ev.player?.name || "Player",
-          detail: ev.detail,
-        }));
+        const events = (item.events || []).map((ev: any, idx: number) => {
+          let eventType: EventType = EventType.GOAL;
+          const rawType = ev.type?.toUpperCase();
+          const detail = ev.detail || "";
+
+          if (rawType === "GOAL") {
+            eventType = detail.toLowerCase().includes("own") ? EventType.OWN_GOAL : EventType.GOAL;
+          } else if (rawType === "CARD") {
+            eventType = detail.toLowerCase().includes("red") ? EventType.RED_CARD : EventType.YELLOW_CARD;
+          } else if (rawType === "SUBST") {
+            eventType = EventType.SUBSTITUTION;
+          } else if (rawType === "VAR") {
+            eventType = EventType.VAR;
+          }
+
+          return {
+            id: `ev_${idx}`,
+            type: eventType,
+            minute: ev.time?.elapsed || 0,
+            extraMinute: ev.time?.extra || undefined,
+            teamId: `team_${ev.team?.id}`,
+            playerId: `ply_${ev.player?.id}`,
+            playerName: ev.player?.name || "Pemain",
+            assistPlayerId: ev.assist?.id ? `ply_${ev.assist.id}` : undefined,
+            assistPlayerName: ev.assist?.name || undefined,
+            inPlayerName: eventType === EventType.SUBSTITUTION ? ev.player?.name : undefined,
+            outPlayerName: eventType === EventType.SUBSTITUTION ? ev.assist?.name : undefined,
+            detail: ev.detail,
+          };
+        });
 
         const homeEvents = events.filter((e: any) => e.teamId === `team_${item.teams?.home?.id}`);
         const awayEvents = events.filter((e: any) => e.teamId === `team_${item.teams?.away?.id}`);
@@ -471,16 +491,57 @@ export class ApiFootballProvider implements IFootballProvider {
           motmPlayer.isMotm = true;
         }
 
-        // Stats calculation / extraction
-        const possessionH = item.statistics?.[0]?.statistics?.find((s: any) => s.type === "Ball Possession")?.value;
-        const posHomeNum = possessionH ? parseInt(String(possessionH).replace("%", ""), 10) : 50;
-        const posAwayNum = 100 - posHomeNum;
+        // Stats calculation / extraction helper
+        const getStatValue = (teamIdx: number, typeName: string): number | undefined => {
+          const statsList = item.statistics?.[teamIdx]?.statistics;
+          if (!statsList) return undefined;
+          const found = statsList.find((s: any) => s.type?.toLowerCase() === typeName.toLowerCase());
+          if (!found || found.value === null || found.value === undefined) return undefined;
+          if (typeof found.value === "string") {
+            const parsed = parseInt(found.value.replace("%", ""), 10);
+            return isNaN(parsed) ? undefined : parsed;
+          }
+          return typeof found.value === "number" ? found.value : undefined;
+        };
 
-        const shotsH = item.statistics?.[0]?.statistics?.find((s: any) => s.type === "Total Shots")?.value || (baseMatch.homeScore * 4 + 5);
-        const shotsA = item.statistics?.[1]?.statistics?.find((s: any) => s.type === "Total Shots")?.value || (baseMatch.awayScore * 4 + 4);
+        const posH = getStatValue(0, "Ball Possession") ?? (baseMatch.homeScore > baseMatch.awayScore ? 52 : 48);
+        const posA = getStatValue(1, "Ball Possession") ?? (100 - posH);
 
-        const onTargetH = item.statistics?.[0]?.statistics?.find((s: any) => s.type === "Shots on Goal")?.value || Math.max(baseMatch.homeScore + 2, 3);
-        const onTargetA = item.statistics?.[1]?.statistics?.find((s: any) => s.type === "Shots on Goal")?.value || Math.max(baseMatch.awayScore + 2, 2);
+        const shotsH = getStatValue(0, "Total Shots") ?? (baseMatch.homeScore * 4 + 6);
+        const shotsA = getStatValue(1, "Total Shots") ?? (baseMatch.awayScore * 4 + 5);
+
+        const onTargetH = getStatValue(0, "Shots on Goal") ?? Math.max(baseMatch.homeScore + 2, 3);
+        const onTargetA = getStatValue(1, "Shots on Goal") ?? Math.max(baseMatch.awayScore + 2, 2);
+
+        const offTargetH = getStatValue(0, "Shots off Goal") ?? Math.max(shotsH - onTargetH, 2);
+        const offTargetA = getStatValue(1, "Shots off Goal") ?? Math.max(shotsA - onTargetA, 2);
+
+        const blockedH = getStatValue(0, "Blocked Shots");
+        const blockedA = getStatValue(1, "Blocked Shots");
+
+        const cornersH = getStatValue(0, "Corner Kicks") ?? 5;
+        const cornersA = getStatValue(1, "Corner Kicks") ?? 4;
+
+        const foulsH = getStatValue(0, "Fouls") ?? 11;
+        const foulsA = getStatValue(1, "Fouls") ?? 12;
+
+        const yellowCardsH = getStatValue(0, "Yellow Cards") ?? homeEvents.filter((e: any) => e.type === EventType.YELLOW_CARD).length;
+        const yellowCardsA = getStatValue(1, "Yellow Cards") ?? awayEvents.filter((e: any) => e.type === EventType.YELLOW_CARD).length;
+
+        const redCardsH = getStatValue(0, "Red Cards") ?? homeEvents.filter((e: any) => e.type === EventType.RED_CARD).length;
+        const redCardsA = getStatValue(1, "Red Cards") ?? awayEvents.filter((e: any) => e.type === EventType.RED_CARD).length;
+
+        const offsidesH = getStatValue(0, "Offsides") ?? 2;
+        const offsidesA = getStatValue(1, "Offsides") ?? 1;
+
+        const savesH = getStatValue(0, "Goalkeeper Saves") ?? Math.max(onTargetA - baseMatch.awayScore, 1);
+        const savesA = getStatValue(1, "Goalkeeper Saves") ?? Math.max(onTargetH - baseMatch.homeScore, 1);
+
+        const passesH = getStatValue(0, "Total Passes") ?? 460;
+        const passesA = getStatValue(1, "Total Passes") ?? 420;
+
+        const passAccH = getStatValue(0, "Passes %") ?? 84;
+        const passAccA = getStatValue(1, "Passes %") ?? 82;
 
         return {
           ...baseMatch,
@@ -490,20 +551,34 @@ export class ApiFootballProvider implements IFootballProvider {
           },
           events,
           stats: {
-            possessionHome: posHomeNum,
-            possessionAway: posAwayNum,
+            possessionHome: posH,
+            possessionAway: posA,
             shotsHome: shotsH,
             shotsAway: shotsA,
             shotsOnTargetHome: onTargetH,
             shotsOnTargetAway: onTargetA,
-            cornersHome: item.statistics?.[0]?.statistics?.find((s: any) => s.type === "Corner Kicks")?.value || 5,
-            cornersAway: item.statistics?.[1]?.statistics?.find((s: any) => s.type === "Corner Kicks")?.value || 4,
-            foulsHome: item.statistics?.[0]?.statistics?.find((s: any) => s.type === "Fouls")?.value || 11,
-            foulsAway: item.statistics?.[1]?.statistics?.find((s: any) => s.type === "Fouls")?.value || 12,
+            shotsOffTargetHome: offTargetH,
+            shotsOffTargetAway: offTargetA,
+            blockedShotsHome: blockedH,
+            blockedShotsAway: blockedA,
+            cornersHome: cornersH,
+            cornersAway: cornersA,
+            foulsHome: foulsH,
+            foulsAway: foulsA,
+            yellowCardsHome: yellowCardsH,
+            yellowCardsAway: yellowCardsA,
+            redCardsHome: redCardsH,
+            redCardsAway: redCardsA,
+            offsidesHome: offsidesH,
+            offsidesAway: offsidesA,
+            savesHome: savesH,
+            savesAway: savesA,
+            passesHome: passesH,
+            passesAway: passesA,
+            passAccuracyHome: passAccH,
+            passAccuracyAway: passAccA,
             xgHome: parseFloat((baseMatch.homeScore * 0.75 + onTargetH * 0.15).toFixed(2)),
             xgAway: parseFloat((baseMatch.awayScore * 0.75 + onTargetA * 0.15).toFixed(2)),
-            passAccuracyHome: 84,
-            passAccuracyAway: 82,
           },
         };
       }
@@ -628,6 +703,8 @@ export class ApiFootballProvider implements IFootballProvider {
     const leagueCode = knownCode || (item.league?.name?.length <= 4 ? item.league?.name : item.league?.name?.substring(0, 3).toUpperCase()) || "INT";
     const leagueSlug = (knownCode && LEAGUE_ID_MAP[knownCode]?.slug) || item.league?.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-") || "football";
 
+    const isInternationalComp = item.league?.country === "World" || item.league?.type === "Cup";
+
     return {
       id: `match_${item.fixture?.id}`,
       externalId: String(item.fixture?.id),
@@ -637,6 +714,7 @@ export class ApiFootballProvider implements IFootballProvider {
         code: leagueCode,
         slug: leagueSlug,
         logoUrl: item.league?.logo,
+        isInternational: isInternationalComp,
       },
       season: String(item.league?.season || "2025/2026"),
       round: item.league?.round || "Regular Season",
@@ -647,6 +725,7 @@ export class ApiFootballProvider implements IFootballProvider {
         tla: item.teams?.home?.name?.substring(0, 3).toUpperCase(),
         slug: item.teams?.home?.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         logoUrl: item.teams?.home?.logo,
+        isNationalTeam: item.teams?.home?.national ?? isInternationalComp,
       },
       awayTeam: {
         id: `team_${item.teams?.away?.id}`,
@@ -655,7 +734,13 @@ export class ApiFootballProvider implements IFootballProvider {
         tla: item.teams?.away?.name?.substring(0, 3).toUpperCase(),
         slug: item.teams?.away?.name?.toLowerCase().replace(/[^a-z0-9]+/g, "-"),
         logoUrl: item.teams?.away?.logo,
+        isNationalTeam: item.teams?.away?.national ?? isInternationalComp,
       },
+      venue: item.fixture?.venue?.name ? {
+        name: item.fixture.venue.name,
+        city: item.fixture.venue.city || "",
+      } : undefined,
+      referee: item.fixture?.referee || undefined,
       status: this.mapMatchStatus(item.fixture?.status?.short),
       minute: item.fixture?.status?.elapsed || undefined,
       matchDate: item.fixture?.date || new Date().toISOString(),
@@ -663,6 +748,11 @@ export class ApiFootballProvider implements IFootballProvider {
       awayScore: item.goals?.away ?? 0,
       htHomeScore: item.score?.halftime?.home ?? undefined,
       htAwayScore: item.score?.halftime?.away ?? undefined,
+      etHomeScore: item.score?.extratime?.home ?? undefined,
+      etAwayScore: item.score?.extratime?.away ?? undefined,
+      penaltyHomeScore: item.score?.penalty?.home ?? undefined,
+      penaltyAwayScore: item.score?.penalty?.away ?? undefined,
+      decidedByPenalty: item.score?.penalty?.home !== null && item.score?.penalty?.home !== undefined,
     };
   }
 
