@@ -13,7 +13,7 @@ import {
   TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getPlayerFacePhoto } from "@/lib/football/player-face.helper";
+import { playerIdentityResolver } from "@/lib/football/player-identity.resolver";
 
 interface TacticalPitchLineupProps {
   homeLineup: ProviderMatchLineup;
@@ -78,12 +78,8 @@ function PlayerAvatar({
 }) {
   const [imgError, setImgError] = useState(false);
 
-  // 1. Direct photo URL (API-Football proxy or high-res match photo)
-  // 2. Fallback to clean 3D Jersey with number & position
-  const cleanPlayerId = playerId ? playerId.replace(/^ply_/, "") : "";
-  const proxyUrl = photoUrl || (cleanPlayerId && !cleanPlayerId.startsWith("gen_") ? `/api/football/player-image?id=${cleanPlayerId}` : undefined);
-  const verifiedStarPhoto = getPlayerFacePhoto(name, number, playerId);
-  const targetPhoto = proxyUrl || verifiedStarPhoto;
+  // Use centralized PlayerIdentityResolver with canonical provider ID validation
+  const targetPhoto = playerIdentityResolver.resolvePlayerPhoto(playerId, photoUrl);
 
   if (targetPhoto && !imgError) {
     return (

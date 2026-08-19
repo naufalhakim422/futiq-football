@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { ProviderMatchLineup, LineupPlayer } from "@/lib/football/types";
 import { Star, Shield, User, X } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { getPlayerFacePhoto } from "@/lib/football/player-face.helper";
+import { playerIdentityResolver } from "@/lib/football/player-identity.resolver";
 
 interface PlayerRatingsTableProps {
   homeLineup: ProviderMatchLineup;
@@ -77,7 +77,7 @@ export function PlayerRatingsTable({
             </thead>
             <tbody className="divide-y divide-pitch-850">
               {allPlayers.map((p, idx) => {
-                const verifiedPhoto = p.photoUrl || getPlayerFacePhoto(p.name, p.number, p.playerId);
+                const verifiedPhoto = playerIdentityResolver.resolvePlayerPhoto(p.playerId, p.photoUrl);
 
                 return (
                   <tr
@@ -153,10 +153,10 @@ export function PlayerRatingsTable({
 
             <div className="flex items-center gap-4">
               <div className="w-14 h-14 rounded-2xl bg-pitch-950 border-2 border-[#c3ff00] overflow-hidden flex items-center justify-center shadow-lg shrink-0">
-                {selectedPlayer.player.photoUrl || getPlayerFacePhoto(selectedPlayer.player.name, selectedPlayer.player.number, selectedPlayer.player.playerId) ? (
+                {playerIdentityResolver.resolvePlayerPhoto(selectedPlayer.player.playerId, selectedPlayer.player.photoUrl) ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
-                    src={selectedPlayer.player.photoUrl || getPlayerFacePhoto(selectedPlayer.player.name, selectedPlayer.player.number, selectedPlayer.player.playerId)!}
+                    src={playerIdentityResolver.resolvePlayerPhoto(selectedPlayer.player.playerId, selectedPlayer.player.photoUrl)!}
                     alt={selectedPlayer.player.name}
                     className="w-full h-full object-cover"
                   />

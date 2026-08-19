@@ -15,14 +15,29 @@ export async function GET(request: NextRequest) {
 
   let targetUrl = "";
   if (urlParam) {
-    targetUrl = decodeURIComponent(urlParam);
+    const decoded = decodeURIComponent(urlParam);
+    if (
+      decoded.startsWith("https://media.api-sports.io/") ||
+      decoded.startsWith("https://media-1.api-sports.io/") ||
+      decoded.startsWith("https://media-2.api-sports.io/") ||
+      decoded.startsWith("https://media-3.api-sports.io/") ||
+      decoded.startsWith("https://media-4.api-sports.io/")
+    ) {
+      targetUrl = decoded;
+    } else {
+      return new NextResponse("Unauthorized image source domain", { status: 400 });
+    }
   } else if (playerId) {
-    const cleanId = playerId.replace(/^ply_/, "");
-    targetUrl = `https://media.api-sports.io/football/players/${cleanId}.png`;
+    const cleanId = playerId.replace(/^(ply_|player_)/, "");
+    if (/^\d+$/.test(cleanId)) {
+      targetUrl = `https://media.api-sports.io/football/players/${cleanId}.png`;
+    } else {
+      return new NextResponse("Invalid player ID format", { status: 400 });
+    }
   }
 
   if (!targetUrl) {
-    return new NextResponse("Missing player id or url", { status: 400 });
+    return new NextResponse("Missing or invalid player identity", { status: 400 });
   }
 
   try {
