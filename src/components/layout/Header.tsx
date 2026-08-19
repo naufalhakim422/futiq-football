@@ -4,7 +4,7 @@ import { LiveTicker } from "@/components/football/LiveTicker";
 import { Navigation } from "./Navigation";
 import { MobileNav } from "./MobileNav";
 import { UserNav } from "./UserNav";
-import { Search, Globe } from "lucide-react";
+import { Search, Globe, PenTool } from "lucide-react";
 import { footballService } from "@/lib/football/football.service";
 import { getCurrentUser } from "@/lib/auth/session";
 
@@ -53,10 +53,10 @@ export async function Header() {
           <div className="hidden sm:flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-400">
             <Link
               href="/contributor/apply"
-              className="px-3 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#c3ff00] bg-pitch-850 hover:bg-pitch-800 border border-[#c3ff00]/30 hover:border-[#c3ff00] flex items-center gap-1.5 transition-colors rounded"
+              className="px-3 py-1.5 text-[11px] font-bold text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-lg flex items-center gap-1.5 transition-all shadow-sm active:scale-95 font-sans"
             >
-              <Globe className="w-3.5 h-3.5" />
-              <span>Write for Us</span>
+              <PenTool className="w-3.5 h-3.5" />
+              <span>Tulis Berita</span>
             </Link>
           </div>
 

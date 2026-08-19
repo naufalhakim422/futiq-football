@@ -187,39 +187,39 @@ export default async function HomePage() {
         </div>
       </PageContainer>
 
-      {/* 8. Contributor VIP Creator Studio Callout Banner */}
+      {/* 8. Contributor Creator Callout Banner */}
       <PageContainer>
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-pitch-950 via-pitch-900 to-pitch-950 border border-[#c3ff00]/40 p-8 sm:p-10 shadow-2xl">
-          {/* Subtle Ambient Glow */}
-          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-[#c3ff00]/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-pitch-950 via-pitch-900 to-pitch-950 border border-pitch-750 hover:border-[#c3ff00]/40 transition-all duration-300 p-7 sm:p-9 shadow-2xl">
+          {/* Subtle Accent Light */}
+          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-72 h-72 bg-[#c3ff00]/10 rounded-full blur-3xl pointer-events-none" />
           
           <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-            <div className="space-y-4 max-w-2xl text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#c3ff00]/10 text-[#c3ff00] text-[10px] font-mono font-bold uppercase tracking-widest border border-[#c3ff00]/30 rounded-full">
-                <Sparkles className="w-3.5 h-3.5" />
-                <span>Program Jurnalis & Kontributor FUTIQ</span>
+            <div className="space-y-3.5 max-w-2xl text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-pitch-850 text-[#c3ff00] text-[10px] font-mono font-bold uppercase tracking-widest border border-pitch-700 rounded-full">
+                <PenTool className="w-3 h-3 text-[#c3ff00]" />
+                <span>Open Journalism Desk</span>
               </div>
 
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight font-sans">
-                Tulis Berita Sepak Bola & Dapatkan Royalti Nyata
+                Punya Analisis Sepak Bola? Terbitkan di Sini.
               </h2>
 
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-                Bergabunglah dengan meja redaksi independen terbesar. Publikasikan artikel analisis taktik, investigasi transfer, dan laporan pertandingan. Dapatkan royalti transparan dengan penarikan instan mulai dari <strong>RM 85,00</strong>.
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans font-normal">
+                Bagi perspektif taktik, liputan klub, atau rumor transfer Anda ke ribuan pembaca setia. Nikmati sistem bagi hasil royalti transparan dengan pencairan langsung ke rekening bank lokal Anda mulai dari <strong>RM 85,00</strong>.
               </p>
 
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-1 text-xs font-mono text-slate-300">
-                <div className="flex items-center gap-1.5 text-slate-200">
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-1 text-xs font-sans text-slate-300">
+                <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
-                  <span>Editor Blok Modular</span>
+                  <span>Editor Blok Modern</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-slate-200">
+                <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
-                  <span>Penarikan Bank Lokal (RM 85+)</span>
+                  <span>Pencairan Cepat (Min. RM 85)</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-slate-200">
+                <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
-                  <span>Audit Integritas AI Otomatis</span>
+                  <span>Statistik Pembaca Real-Time</span>
                 </div>
               </div>
             </div>
@@ -227,17 +227,17 @@ export default async function HomePage() {
             <div className="shrink-0 flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
               <Link
                 href="/contributor/apply"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-xs font-bold uppercase tracking-wider text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-xl transition-all shadow-[0_0_20px_rgba(195,255,0,0.3)] active:scale-[0.99]"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-xs font-bold text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-xl transition-all shadow-[0_0_20px_rgba(195,255,0,0.25)] hover:shadow-[0_0_25px_rgba(195,255,0,0.4)] active:scale-[0.98]"
               >
-                <PenTool className="w-4 h-4 text-slate-950" />
-                <span>Daftar Menjadi Penulis</span>
+                <span>Gabung Jadi Penulis</span>
+                <ArrowUpRight className="w-4 h-4 text-slate-950" />
               </Link>
               
               <Link
                 href="/contributor"
-                className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-4 text-xs font-bold text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-xl transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3.5 text-xs font-semibold text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-xl transition-colors"
               >
-                <span>Masuk Meja Kerja</span>
+                <span>Masuk Dashboard</span>
               </Link>
             </div>
           </div>
