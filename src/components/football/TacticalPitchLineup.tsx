@@ -145,10 +145,10 @@ export function TacticalPitchLineup({
         {/* Circular Player Photo Avatar */}
         <div
           className={cn(
-            "relative w-11 h-11 sm:w-13 sm:h-13 rounded-full border-2 transition-all shadow-2xl flex items-center justify-center overflow-hidden bg-pitch-950",
+            "relative w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 transition-all shadow-2xl flex items-center justify-center overflow-hidden bg-pitch-950",
             team === "home"
-              ? "border-[#c3ff00] group-hover:border-white shadow-[0_0_15px_rgba(195,255,0,0.35)]"
-              : "border-cyan-400 group-hover:border-white shadow-[0_0_15px_rgba(34,211,238,0.35)]"
+              ? "border-[#c3ff00] group-hover:border-white shadow-[0_0_18px_rgba(195,255,0,0.4)] ring-2 ring-[#c3ff00]/20"
+              : "border-cyan-400 group-hover:border-white shadow-[0_0_18px_rgba(34,211,238,0.4)] ring-2 ring-cyan-400/20"
           )}
         >
           <PlayerAvatar
@@ -162,8 +162,8 @@ export function TacticalPitchLineup({
         </div>
 
         {/* Player Name Tag */}
-        <div className="mt-1 text-center max-w-[85px] sm:max-w-[100px]">
-          <span className="font-bold text-white text-[10px] sm:text-[11px] leading-tight block truncate drop-shadow-[0_1px_4px_rgba(0,0,0,1)] bg-black/60 px-1.5 py-0.5 rounded-md">
+        <div className="mt-1.5 text-center max-w-[90px] sm:max-w-[110px]">
+          <span className="font-bold text-white text-[10px] sm:text-[11px] leading-tight block truncate drop-shadow-[0_2px_4px_rgba(0,0,0,1)] bg-slate-950/85 backdrop-blur-sm border border-white/10 px-2 py-0.5 rounded-full">
             {player.name.split(" ").slice(-1)[0]}
           </span>
 

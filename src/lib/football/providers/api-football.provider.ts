@@ -17,6 +17,7 @@ import {
 } from "../types";
 import { footballQuotaGuard } from "../quota-guard.service";
 import { MockFootballProvider } from "./mock.provider";
+import { getCompleteTeamLineup } from "../roster-generator";
 
 // Official API-Football League IDs for top competitions
 const LEAGUE_ID_MAP: Record<string, { id: number; name: string; code: string; slug: string; country: string; type: "LEAGUE" | "INTERNATIONAL" }> = {
@@ -553,41 +554,8 @@ export class ApiFootballProvider implements IFootballProvider {
       };
     }
 
-    // Generate full tactical starting 11 if provider does not have lineups
-    const positions = ["GK", "RB", "CB", "CB", "LB", "DM", "CM", "AM", "RW", "ST", "LW"];
-    const starters = positions.map((pos, idx) => {
-      const eventForPos = events[idx] || null;
-      const isGoalscorer = eventForPos && eventForPos.type === EventType.GOAL;
-      const isCarded = eventForPos && eventForPos.type === EventType.YELLOW_CARD;
-
-      let baseRating = isGoalscorer ? 8.6 : 7.2 + (score > 1 ? 0.3 : 0) + (idx % 3 === 0 ? 0.4 : 0);
-      if (isCarded) baseRating -= 0.4;
-
-      return {
-        playerId: `ply_gen_${teamId}_${idx}`,
-        name: eventForPos?.playerName || `${teamName.split(" ")[0]} Player ${idx + 1}`,
-        position: pos,
-        number: idx + 1,
-        rating: parseFloat(Math.min(9.8, Math.max(6.2, baseRating)).toFixed(1)),
-        isCaptain: idx === 3,
-        goals: isGoalscorer ? 1 : 0,
-      };
-    });
-
-    const bench = [12, 14, 17, 21].map((num, i) => ({
-      playerId: `ply_gen_bench_${teamId}_${i}`,
-      name: `${teamName.split(" ")[0]} Reserve ${i + 1}`,
-      position: i === 0 ? "GK" : i === 1 ? "DF" : i === 2 ? "MF" : "FW",
-      number: num,
-      rating: 6.7,
-    }));
-
-    return {
-      teamId,
-      formation,
-      starters,
-      bench,
-    };
+    // Generate full authentic tactical starting 11 & bench if provider does not have lineups
+    return getCompleteTeamLineup(teamName, teamId, score, events, isHome);
   }
 
   // ==========================================
