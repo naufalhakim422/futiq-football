@@ -13,8 +13,12 @@ import {
   Lock,
   Globe,
   Award,
+  BookOpen,
+  ExternalLink,
+  Info,
 } from "lucide-react";
 import Link from "next/link";
+import { GuidelinesModal, GuidelineSection } from "@/components/contributor/GuidelinesModal";
 
 export default function ContributorApplyPage() {
   const [formData, setFormData] = useState({
@@ -39,6 +43,15 @@ export default function ContributorApplyPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
+
+  // Guidelines Modal State
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [modalSection, setModalSection] = useState<GuidelineSection>("all");
+
+  const openGuidelines = (section: GuidelineSection = "all") => {
+    setModalSection(section);
+    setIsModalOpen(true);
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
@@ -150,6 +163,13 @@ export default function ContributorApplyPage() {
 
   return (
     <div className="py-8 space-y-8">
+      {/* Interactive Modal for Reading Guidelines & Standards */}
+      <GuidelinesModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        initialSection={modalSection}
+      />
+
       <PageContainer>
         <SectionHeader
           title="Contributor Accreditation Application"
@@ -158,31 +178,37 @@ export default function ContributorApplyPage() {
         />
 
         <div className="max-w-3xl mx-auto space-y-6">
-          {/* Trust & Quality Banner */}
-          <div className="p-4 bg-pitch-900 border border-pitch-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          {/* Trust & Quality Banner with Read Guidelines Trigger */}
+          <div className="p-4 bg-pitch-900 border border-pitch-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl">
             <div className="flex items-start sm:items-center gap-3 text-xs text-slate-300">
-              <ShieldCheck className="w-5 h-5 text-brand-green shrink-0 mt-0.5 sm:mt-0" />
+              <ShieldCheck className="w-5 h-5 text-[#c3ff00] shrink-0 mt-0.5 sm:mt-0" />
               <p className="leading-relaxed">
                 All submissions undergo editorial verification, source citation audits, and intellectual property clearance.
               </p>
             </div>
-            <span className="text-[10px] font-mono text-slate-500 uppercase tracking-widest shrink-0 self-end sm:self-auto">
-              Standards v1.0
-            </span>
+            
+            <button
+              type="button"
+              onClick={() => openGuidelines("all")}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 text-[#c3ff00] font-mono text-[11px] font-bold tracking-wider uppercase transition-colors shrink-0 self-start sm:self-auto"
+            >
+              <BookOpen className="w-3.5 h-3.5" />
+              <span>Read Handbook</span>
+            </button>
           </div>
 
           {error && (
-            <div className="p-4 bg-brand-red/10 border border-brand-red/30 flex items-center gap-3 text-xs text-brand-red font-mono">
+            <div className="p-4 bg-brand-red/10 border border-brand-red/30 flex items-center gap-3 text-xs text-brand-red font-mono rounded-xl">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{error}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-8 text-xs">
+          <form onSubmit={handleSubmit} className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-8 text-xs rounded-2xl shadow-2xl">
             {/* Section 01: Identification */}
             <div className="space-y-4">
               <div className="flex items-center gap-2 pb-2 border-b border-pitch-800">
-                <span className="w-5 h-5 bg-pitch-800 text-brand-green font-mono text-[11px] font-bold flex items-center justify-center">
+                <span className="w-5 h-5 bg-pitch-800 text-[#c3ff00] font-mono text-[11px] font-bold flex items-center justify-center rounded">
                   01
                 </span>
                 <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-sans">
@@ -202,7 +228,7 @@ export default function ContributorApplyPage() {
                     value={formData.fullName}
                     onChange={handleChange}
                     placeholder="e.g. Elena Rostova"
-                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans transition-all"
+                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 outline-none font-sans rounded transition-all"
                   />
                 </div>
 
@@ -217,7 +243,7 @@ export default function ContributorApplyPage() {
                     value={formData.displayName}
                     onChange={handleChange}
                     placeholder="e.g. Elena Rostova"
-                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans transition-all"
+                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 outline-none font-sans rounded transition-all"
                   />
                   <p className="text-[10px] text-slate-500 font-mono">Public byline appearing on published articles</p>
                 </div>
@@ -235,7 +261,7 @@ export default function ContributorApplyPage() {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="contributor@example.com"
-                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-mono transition-all"
+                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 outline-none font-mono rounded transition-all"
                   />
                 </div>
 
@@ -250,15 +276,15 @@ export default function ContributorApplyPage() {
                     value={formData.country}
                     onChange={handleChange}
                     placeholder="e.g. United Kingdom"
-                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans transition-all"
+                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 outline-none font-sans rounded transition-all"
                   />
                 </div>
               </div>
 
               {/* Password for Future Login */}
-              <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-lg space-y-3">
+              <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-3">
                 <div className="flex items-center gap-2 text-slate-200">
-                  <Lock className="w-4 h-4 text-brand-green" />
+                  <Lock className="w-4 h-4 text-[#c3ff00]" />
                   <span className="font-bold font-mono text-[11px] uppercase tracking-wider">
                     Contributor Account Password (For Future Login)
                   </span>
@@ -279,7 +305,7 @@ export default function ContributorApplyPage() {
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="Minimum 6 characters"
-                      className="w-full bg-pitch-900 border border-pitch-750 px-3.5 py-2 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-mono transition-all"
+                      className="w-full bg-pitch-900 border border-pitch-750 px-3.5 py-2 text-slate-100 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 outline-none font-mono rounded transition-all"
                     />
                   </div>
 
@@ -294,7 +320,7 @@ export default function ContributorApplyPage() {
                       value={formData.confirmPassword}
                       onChange={handleChange}
                       placeholder="Repeat password"
-                      className="w-full bg-pitch-900 border border-pitch-750 px-3.5 py-2 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-mono transition-all"
+                      className="w-full bg-pitch-900 border border-pitch-750 px-3.5 py-2 text-slate-100 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 outline-none font-mono rounded transition-all"
                     />
                   </div>
                 </div>
@@ -304,7 +330,7 @@ export default function ContributorApplyPage() {
             {/* Section 02: Coverage & Beat Specialization */}
             <div className="space-y-4 pt-2">
               <div className="flex items-center gap-2 pb-2 border-b border-pitch-800">
-                <span className="w-5 h-5 bg-pitch-800 text-brand-green font-mono text-[11px] font-bold flex items-center justify-center">
+                <span className="w-5 h-5 bg-pitch-800 text-[#c3ff00] font-mono text-[11px] font-bold flex items-center justify-center rounded">
                   02
                 </span>
                 <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-sans">
@@ -321,7 +347,7 @@ export default function ContributorApplyPage() {
                     name="preferredCategories"
                     value={formData.preferredCategories}
                     onChange={handleChange}
-                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans transition-all"
+                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 outline-none font-sans rounded transition-all"
                   >
                     <option value="Tactical Analysis">Tactical Analysis & Deep Dives</option>
                     <option value="Match Reports">Match Reports & Player Ratings</option>
@@ -339,7 +365,7 @@ export default function ContributorApplyPage() {
                     name="preferredLanguage"
                     value={formData.preferredLanguage}
                     onChange={handleChange}
-                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans transition-all"
+                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 outline-none font-sans rounded transition-all"
                   >
                     <option value="en">English (UK/Global)</option>
                     <option value="es">Spanish</option>
@@ -361,7 +387,7 @@ export default function ContributorApplyPage() {
                   value={formData.footballInterests}
                   onChange={handleChange}
                   placeholder="e.g. Premier League (Arsenal, Brighton), Serie A tactical setups, Champions League knockout analytics"
-                  className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans transition-all"
+                  className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2.5 text-slate-100 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 outline-none font-sans rounded transition-all"
                 />
               </div>
             </div>
@@ -369,7 +395,7 @@ export default function ContributorApplyPage() {
             {/* Section 03: Editorial Dossier */}
             <div className="space-y-4 pt-2">
               <div className="flex items-center gap-2 pb-2 border-b border-pitch-800">
-                <span className="w-5 h-5 bg-pitch-800 text-brand-green font-mono text-[11px] font-bold flex items-center justify-center">
+                <span className="w-5 h-5 bg-pitch-800 text-[#c3ff00] font-mono text-[11px] font-bold flex items-center justify-center rounded">
                   03
                 </span>
                 <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-sans">
@@ -388,7 +414,7 @@ export default function ContributorApplyPage() {
                   value={formData.shortBio}
                   onChange={handleChange}
                   placeholder="Summarize your football journalism perspective, analytical focus, and publication voice..."
-                  className="w-full bg-pitch-950 border border-pitch-750 p-3.5 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans leading-relaxed"
+                  className="w-full bg-pitch-950 border border-pitch-750 p-3.5 text-slate-100 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 outline-none font-sans leading-relaxed rounded"
                 />
               </div>
 
@@ -403,7 +429,7 @@ export default function ContributorApplyPage() {
                   value={formData.writingExperience}
                   onChange={handleChange}
                   placeholder="List relevant sports blogs, tactical newsletters, independent reporting, or accredited media outlets..."
-                  className="w-full bg-pitch-950 border border-pitch-750 p-3.5 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-sans leading-relaxed"
+                  className="w-full bg-pitch-950 border border-pitch-750 p-3.5 text-slate-100 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 outline-none font-sans leading-relaxed rounded"
                 />
               </div>
 
@@ -418,7 +444,7 @@ export default function ContributorApplyPage() {
                     value={formData.portfolioUrl}
                     onChange={handleChange}
                     placeholder="https://..."
-                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-mono"
+                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2 text-slate-100 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 outline-none font-mono rounded"
                   />
                 </div>
 
@@ -432,7 +458,7 @@ export default function ContributorApplyPage() {
                     value={formData.socialUrl}
                     onChange={handleChange}
                     placeholder="https://x.com/..."
-                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2 text-slate-100 focus:border-brand-green focus:ring-1 focus:ring-brand-green/30 outline-none font-mono"
+                    className="w-full bg-pitch-950 border border-pitch-750 px-3.5 py-2 text-slate-100 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00]/30 outline-none font-mono rounded"
                   />
                 </div>
               </div>
@@ -440,88 +466,147 @@ export default function ContributorApplyPage() {
 
             {/* Section 04: Legal & Standards Declarations */}
             <div className="space-y-4 pt-2">
-              <div className="flex items-center gap-2 pb-2 border-b border-pitch-800">
-                <span className="w-5 h-5 bg-pitch-800 text-brand-green font-mono text-[11px] font-bold flex items-center justify-center">
-                  04
-                </span>
-                <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-sans">
-                  Editorial Integrity & Copyright Declarations
-                </h3>
+              <div className="flex items-center justify-between pb-2 border-b border-pitch-800">
+                <div className="flex items-center gap-2">
+                  <span className="w-5 h-5 bg-pitch-800 text-[#c3ff00] font-mono text-[11px] font-bold flex items-center justify-center rounded">
+                    04
+                  </span>
+                  <h3 className="text-xs font-bold text-slate-200 uppercase tracking-wider font-sans">
+                    Editorial Integrity & Copyright Declarations
+                  </h3>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => openGuidelines("all")}
+                  className="text-[11px] font-mono text-[#c3ff00] hover:underline flex items-center gap-1 font-bold"
+                >
+                  <span>Click to Read All Terms</span>
+                  <ExternalLink className="w-3 h-3" />
+                </button>
               </div>
 
               <div className="space-y-3">
-                <label className="flex items-start gap-3 p-3 bg-pitch-950 border border-pitch-800 hover:border-pitch-700 transition-colors cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="agreementAccepted"
-                    checked={formData.agreementAccepted}
-                    onChange={handleChange}
-                    required
-                    className="mt-0.5 rounded-none border-pitch-700 bg-pitch-900 text-brand-green focus:ring-0 w-4 h-4"
-                  />
-                  <div className="space-y-0.5">
-                    <span className="font-bold text-slate-200 block text-[11px]">
-                      Contributor Code of Conduct & Editorial Guidelines
-                    </span>
-                    <p className="text-slate-400 text-[10px] leading-relaxed">
-                      I agree to maintain factual precision, professional sports journalism standards, and editorial independence.
-                    </p>
-                  </div>
-                </label>
+                {/* Checkbox 1 */}
+                <div className="p-3.5 bg-pitch-950 border border-pitch-800 hover:border-pitch-700 rounded-xl transition-colors space-y-2">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="agreementAccepted"
+                      checked={formData.agreementAccepted}
+                      onChange={handleChange}
+                      required
+                      className="mt-0.5 rounded border-pitch-700 bg-pitch-900 text-[#c3ff00] focus:ring-0 w-4 h-4 accent-[#c3ff00]"
+                    />
+                    <div className="space-y-0.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-bold text-slate-100 block text-xs">
+                          Contributor Code of Conduct & Editorial Guidelines
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            openGuidelines("code-of-conduct");
+                          }}
+                          className="text-[10px] font-mono text-[#c3ff00] hover:underline inline-flex items-center gap-1 font-bold bg-[#c3ff00]/10 px-2 py-0.5 rounded border border-[#c3ff00]/30"
+                        >
+                          <span>Read Guidelines</span>
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </button>
+                      </div>
+                      <p className="text-slate-400 text-[11px] leading-relaxed">
+                        I agree to maintain factual precision, professional sports journalism standards, and editorial independence.
+                      </p>
+                    </div>
+                  </label>
+                </div>
 
-                <label className="flex items-start gap-3 p-3 bg-pitch-950 border border-pitch-800 hover:border-pitch-700 transition-colors cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="originalityDeclared"
-                    checked={formData.originalityDeclared}
-                    onChange={handleChange}
-                    required
-                    className="mt-0.5 rounded-none border-pitch-700 bg-pitch-900 text-brand-green focus:ring-0 w-4 h-4"
-                  />
-                  <div className="space-y-0.5">
-                    <span className="font-bold text-slate-200 block text-[11px]">
-                      Declaration of Original Authorship
-                    </span>
-                    <p className="text-slate-400 text-[10px] leading-relaxed">
-                      I affirm that all submitted articles will be 100% original work with verifiable citations and primary sources.
-                    </p>
-                  </div>
-                </label>
+                {/* Checkbox 2 */}
+                <div className="p-3.5 bg-pitch-950 border border-pitch-800 hover:border-pitch-700 rounded-xl transition-colors space-y-2">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="originalityDeclared"
+                      checked={formData.originalityDeclared}
+                      onChange={handleChange}
+                      required
+                      className="mt-0.5 rounded border-pitch-700 bg-pitch-900 text-[#c3ff00] focus:ring-0 w-4 h-4 accent-[#c3ff00]"
+                    />
+                    <div className="space-y-0.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-bold text-slate-100 block text-xs">
+                          Declaration of Original Authorship
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            openGuidelines("originality");
+                          }}
+                          className="text-[10px] font-mono text-[#c3ff00] hover:underline inline-flex items-center gap-1 font-bold bg-[#c3ff00]/10 px-2 py-0.5 rounded border border-[#c3ff00]/30"
+                        >
+                          <span>Read Originality Rules</span>
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </button>
+                      </div>
+                      <p className="text-slate-400 text-[11px] leading-relaxed">
+                        I affirm that all submitted articles will be 100% original work with verifiable citations and primary sources.
+                      </p>
+                    </div>
+                  </label>
+                </div>
 
-                <label className="flex items-start gap-3 p-3 bg-pitch-950 border border-pitch-800 hover:border-pitch-700 transition-colors cursor-pointer">
-                  <input
-                    type="checkbox"
-                    name="copyrightDeclared"
-                    checked={formData.copyrightDeclared}
-                    onChange={handleChange}
-                    required
-                    className="mt-0.5 rounded-none border-pitch-700 bg-pitch-900 text-brand-green focus:ring-0 w-4 h-4"
-                  />
-                  <div className="space-y-0.5">
-                    <span className="font-bold text-slate-200 block text-[11px]">
-                      Intellectual Property & Image Rights Compliance
-                    </span>
-                    <p className="text-slate-400 text-[10px] leading-relaxed">
-                      I will strictly utilize authorized media (Owned, Licensed, Official Press Kits, or Public Domain) with proper attribution.
-                    </p>
-                  </div>
-                </label>
+                {/* Checkbox 3 */}
+                <div className="p-3.5 bg-pitch-950 border border-pitch-800 hover:border-pitch-700 rounded-xl transition-colors space-y-2">
+                  <label className="flex items-start gap-3 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      name="copyrightDeclared"
+                      checked={formData.copyrightDeclared}
+                      onChange={handleChange}
+                      required
+                      className="mt-0.5 rounded border-pitch-700 bg-pitch-900 text-[#c3ff00] focus:ring-0 w-4 h-4 accent-[#c3ff00]"
+                    />
+                    <div className="space-y-0.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="font-bold text-slate-100 block text-xs">
+                          Intellectual Property & Image Rights Compliance
+                        </span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            openGuidelines("image-rights");
+                          }}
+                          className="text-[10px] font-mono text-[#c3ff00] hover:underline inline-flex items-center gap-1 font-bold bg-[#c3ff00]/10 px-2 py-0.5 rounded border border-[#c3ff00]/30"
+                        >
+                          <span>Read IP & Image Policy</span>
+                          <ExternalLink className="w-2.5 h-2.5" />
+                        </button>
+                      </div>
+                      <p className="text-slate-400 text-[11px] leading-relaxed">
+                        I will strictly utilize authorized media (Owned, Licensed, Official Press Kits, or Public Domain) with proper attribution.
+                      </p>
+                    </div>
+                  </label>
+                </div>
               </div>
             </div>
 
             {/* Action Group */}
             <div className="pt-4 border-t border-pitch-800 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-2 text-slate-400 text-[11px] font-mono">
-                <Lock className="w-3.5 h-3.5 text-brand-green shrink-0" />
+                <Lock className="w-3.5 h-3.5 text-[#c3ff00] shrink-0" />
                 <span>SSL Encrypted • Direct Editorial Routing</span>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full sm:w-auto px-8 py-3 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover disabled:opacity-50 transition-all shadow-lg active:scale-[0.99]"
+                className="w-full sm:w-auto px-8 py-3.5 text-xs font-bold uppercase tracking-wider text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] disabled:opacity-50 transition-all rounded-xl shadow-lg active:scale-[0.99]"
               >
-                {loading ? "Submitting Dossier..." : "Submit Contributor Application"}
+                {loading ? "Submitting Application..." : "Submit Contributor Application"}
               </button>
             </div>
           </form>

@@ -132,7 +132,7 @@ export function Footer() {
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-[11px] text-slate-500 font-mono">
           <p>© 2026 FUTIQ FOOTBALL. All rights reserved.</p>
           <div className="flex items-center gap-4 text-slate-400">
-            <Link href="/news" className="hover:text-[#c3ff00] transition-colors">
+            <Link href="/editorial-guidelines" className="hover:text-[#c3ff00] transition-colors">
               Editorial Guidelines
             </Link>
             <span>•</span>
