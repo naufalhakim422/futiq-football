@@ -21,40 +21,61 @@ interface TacticalPitchLineupProps {
   awayScore?: number;
 }
 
-// 3D Jersey SVG Component as crisp fallback for players without headshot photos
-function JerseyIcon({ number, color = "home" }: { number: number; color?: "home" | "away" }) {
-  const isHome = color === "home";
+// Robust Player Avatar component with automatic seamless fallback
+function PlayerAvatar({
+  photoUrl,
+  name,
+  number,
+  position,
+  team = "home",
+}: {
+  photoUrl?: string;
+  name: string;
+  number: number;
+  position?: string;
+  team?: "home" | "away";
+}) {
+  const [imgError, setImgError] = useState(false);
+  const isGk = position?.toUpperCase() === "GK";
+  const isHome = team === "home";
+
+  if (photoUrl && !imgError) {
+    return (
+      <div className="w-full h-full relative overflow-hidden bg-pitch-950 flex items-center justify-center">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={photoUrl}
+          alt=""
+          className="w-full h-full object-cover select-none"
+          onError={() => setImgError(true)}
+        />
+        {/* Number mini-tag */}
+        <div className="absolute bottom-0 right-0 bg-black/90 text-white font-mono font-bold text-[8px] px-1 rounded-tl">
+          #{number}
+        </div>
+      </div>
+    );
+  }
+
+  // Crisp, high-contrast 3D Jersey Avatar with shirt number
+  const gradientColor = isGk
+    ? "from-amber-400 via-amber-500 to-amber-600 text-slate-950 border-amber-300"
+    : isHome
+    ? "from-[#c3ff00] via-[#a6db00] to-[#88b800] text-slate-950 border-[#d8ff4d]"
+    : "from-[#00d4ff] via-[#00a6e6] to-[#0077b3] text-slate-950 border-[#80e5ff]";
+
   return (
-    <div className="relative w-full h-full flex items-center justify-center">
-      <svg
-        viewBox="0 0 40 40"
-        className="w-8 h-8 drop-shadow-md"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        {/* Jersey Body */}
-        <path
-          d="M12 8L6 14L10 18L13 14V34H27V14L30 18L34 14L28 8C26 11 22 12 20 12C18 12 14 11 12 8Z"
-          fill={isHome ? "#c3ff00" : "#00d4ff"}
-          stroke={isHome ? "#95c400" : "#0099cc"}
-          strokeWidth="1.2"
-        />
-        {/* Collar Accent */}
-        <path
-          d="M16 8C17 10 19 11 20 11C21 11 23 10 24 8"
-          stroke="#000"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-      </svg>
-      {/* Shirt Number */}
-      <span
-        className={cn(
-          "absolute font-mono font-black text-[10px] leading-none select-none",
-          isHome ? "text-slate-950" : "text-slate-950"
-        )}
-      >
+    <div
+      className={cn(
+        "w-full h-full bg-gradient-to-b flex flex-col items-center justify-center border shadow-inner select-none relative",
+        gradientColor
+      )}
+    >
+      <span className="font-mono font-black text-xs sm:text-sm leading-none drop-shadow-sm">
         {number}
+      </span>
+      <span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-tighter font-extrabold leading-none mt-0.5 opacity-90">
+        {position || (isGk ? "GK" : "MF")}
       </span>
     </div>
   );
@@ -83,20 +104,19 @@ export function TacticalPitchLineup({
   const getRatingBadgeClass = (rating?: number | string) => {
     if (!rating) return "bg-pitch-900 text-slate-300 border-pitch-700";
     const num = typeof rating === "string" ? parseFloat(rating) : rating;
-    if (num >= 8.5) return "bg-emerald-950 text-emerald-400 border-emerald-600 shadow-[0_0_12px_rgba(52,211,153,0.4)]";
-    if (num >= 7.5) return "bg-cyan-950 text-cyan-300 border-cyan-600 shadow-[0_0_8px_rgba(34,211,238,0.3)]";
+    if (num >= 8.5) return "bg-emerald-950 text-emerald-400 border-emerald-500 shadow-[0_0_12px_rgba(52,211,153,0.4)]";
+    if (num >= 7.5) return "bg-cyan-950 text-cyan-300 border-cyan-500 shadow-[0_0_8px_rgba(34,211,238,0.3)]";
     if (num >= 6.5) return "bg-pitch-900 text-slate-200 border-pitch-700";
     return "bg-amber-950 text-amber-400 border-amber-800";
   };
 
-  // Helper to split starters into tactical formation rows (e.g. 4-3-3 -> GK, DEF(4), MID(3), ATT(3))
+  // Helper to split starters into tactical formation rows
   const organizeFormation = (starters: LineupPlayer[], formation: string, reverse = false) => {
     if (!starters || starters.length === 0) return [];
     const parts = (formation || "4-3-3").split("-").map((n) => parseInt(n, 10)).filter((n) => !isNaN(n));
     
     const rows: LineupPlayer[][] = [];
-    // GK row
-    rows.push([starters[0]]);
+    rows.push([starters[0]]); // GK row
     
     let currentIndex = 1;
     parts.forEach((count) => {
@@ -114,12 +134,10 @@ export function TacticalPitchLineup({
     return reverse ? rows.reverse() : rows;
   };
 
-  // Away team rows facing downward (GK top, ATT near center)
   const awayRows = organizeFormation(awayLineup.starters || [], awayLineup.formation || "4-2-3-1", false);
-  // Home team rows facing upward (GK bottom, ATT near center)
   const homeRows = organizeFormation(homeLineup.starters || [], homeLineup.formation || "4-3-3", true);
 
-  // Render individual player node
+  // Render player node on pitch
   const renderPlayerNode = (player: LineupPlayer, team: "home" | "away", teamName: string) => {
     const ratingStr = formatRating(player.rating);
     const ratingBadgeClass = getRatingBadgeClass(player.rating);
@@ -130,7 +148,7 @@ export function TacticalPitchLineup({
         onClick={() => setSelectedPlayer({ player, teamName })}
         className="group relative flex flex-col items-center focus:outline-none transition-transform hover:scale-110 active:scale-95"
       >
-        {/* High-Contrast Rating Badge on Top */}
+        {/* Rating Badge on Top */}
         <div className="mb-1">
           <span
             className={cn(
@@ -145,43 +163,31 @@ export function TacticalPitchLineup({
           </span>
         </div>
 
-        {/* Circular Player Photo Avatar or 3D Jersey */}
+        {/* Circular Player Photo Avatar */}
         <div
           className={cn(
-            "relative w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 transition-all shadow-2xl flex items-center justify-center overflow-hidden bg-pitch-950",
+            "relative w-11 h-11 sm:w-13 sm:h-13 rounded-full border-2 transition-all shadow-2xl flex items-center justify-center overflow-hidden bg-pitch-950",
             team === "home"
-              ? "border-[#c3ff00] group-hover:border-white shadow-[0_0_12px_rgba(195,255,0,0.3)]"
-              : "border-cyan-400 group-hover:border-white shadow-[0_0_12px_rgba(34,211,238,0.3)]"
+              ? "border-[#c3ff00] group-hover:border-white shadow-[0_0_15px_rgba(195,255,0,0.35)]"
+              : "border-cyan-400 group-hover:border-white shadow-[0_0_15px_rgba(34,211,238,0.35)]"
           )}
         >
-          {player.photoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={player.photoUrl}
-              alt={player.name}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                // If remote photo 404s, replace with jersey icon gracefully
-                (e.target as HTMLElement).style.display = "none";
-              }}
-            />
-          ) : (
-            <JerseyIcon number={player.number} color={team} />
-          )}
-
-          {/* Number mini-tag */}
-          <div className="absolute bottom-0 right-0 bg-black/90 text-white font-mono font-bold text-[8px] px-1 rounded-tl">
-            #{player.number}
-          </div>
+          <PlayerAvatar
+            photoUrl={player.photoUrl}
+            name={player.name}
+            number={player.number}
+            position={player.position}
+            team={team}
+          />
         </div>
 
         {/* Player Name Tag */}
         <div className="mt-1 text-center max-w-[85px] sm:max-w-[100px]">
-          <span className="font-bold text-white text-[10px] sm:text-[11px] leading-tight block truncate drop-shadow-[0_1px_4px_rgba(0,0,0,1)] bg-black/50 px-1 rounded">
+          <span className="font-bold text-white text-[10px] sm:text-[11px] leading-tight block truncate drop-shadow-[0_1px_4px_rgba(0,0,0,1)] bg-black/60 px-1.5 py-0.5 rounded-md">
             {player.name.split(" ").slice(-1)[0]}
           </span>
 
-          {/* Event Badges (No stray 0s!) */}
+          {/* Event Badges */}
           <div className="flex items-center justify-center gap-1 mt-0.5">
             {Boolean(player.isCaptain) && (
               <span className="text-[9px] font-mono font-bold text-[#c3ff00] bg-black/70 px-1 rounded">
@@ -355,7 +361,7 @@ export function TacticalPitchLineup({
             <span className="font-extrabold uppercase">
               {viewMode === "home" ? homeTeamName : awayTeamName} ({viewMode === "home" ? homeLineup.formation : awayLineup.formation})
             </span>
-            <span className="text-[10px] text-[#c3ff00]">Klik foto pemain untuk detail</span>
+            <span className="text-[10px] text-[#c3ff00]">Klik pemain untuk detail</span>
           </div>
 
           {/* Rows */}
@@ -409,12 +415,13 @@ export function TacticalPitchLineup({
                       <td className="py-2.5 px-2">
                         <div className="flex items-center gap-2">
                           <div className="w-7 h-7 rounded-full bg-pitch-950 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
-                            {p.photoUrl ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={p.photoUrl} alt={p.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <User className="w-3.5 h-3.5 text-slate-400" />
-                            )}
+                            <PlayerAvatar
+                              photoUrl={p.photoUrl}
+                              name={p.name}
+                              number={p.number}
+                              position={p.position}
+                              team="home"
+                            />
                           </div>
                           <span className="font-bold text-slate-100 truncate max-w-[120px]">
                             {p.name} {p.isCaptain && <strong className="text-[#c3ff00] text-[9px] font-mono">(C)</strong>}
@@ -472,12 +479,13 @@ export function TacticalPitchLineup({
                       <td className="py-2.5 px-2">
                         <div className="flex items-center gap-2">
                           <div className="w-7 h-7 rounded-full bg-pitch-950 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
-                            {p.photoUrl ? (
-                              // eslint-disable-next-line @next/next/no-img-element
-                              <img src={p.photoUrl} alt={p.name} className="w-full h-full object-cover" />
-                            ) : (
-                              <User className="w-3.5 h-3.5 text-slate-400" />
-                            )}
+                            <PlayerAvatar
+                              photoUrl={p.photoUrl}
+                              name={p.name}
+                              number={p.number}
+                              position={p.position}
+                              team="away"
+                            />
                           </div>
                           <span className="font-bold text-slate-100 truncate max-w-[120px]">
                             {p.name} {p.isCaptain && <strong className="text-cyan-400 text-[9px] font-mono">(C)</strong>}
@@ -593,16 +601,13 @@ export function TacticalPitchLineup({
             {/* Modal Header */}
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-2xl bg-pitch-950 border-2 border-[#c3ff00] overflow-hidden flex items-center justify-center shadow-lg shrink-0">
-                {selectedPlayer.player.photoUrl ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={selectedPlayer.player.photoUrl}
-                    alt={selectedPlayer.player.name}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <JerseyIcon number={selectedPlayer.player.number} />
-                )}
+                <PlayerAvatar
+                  photoUrl={selectedPlayer.player.photoUrl}
+                  name={selectedPlayer.player.name}
+                  number={selectedPlayer.player.number}
+                  position={selectedPlayer.player.position}
+                  team={selectedPlayer.teamName === homeTeamName ? "home" : "away"}
+                />
               </div>
 
               <div className="space-y-1">
