@@ -5,6 +5,7 @@ import Link from "next/link";
 import { SessionUser } from "@/types/auth";
 import {
   User,
+  Users,
   Shield,
   PenTool,
   Coins,
@@ -120,14 +121,25 @@ export function UserNav({ user }: UserNavProps) {
           {/* Nav Links */}
           <div className="p-1.5 space-y-0.5">
             {isAdmin && (
-              <Link
-                href="/admin"
-                onClick={() => setOpen(false)}
-                className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-pitch-800 transition-colors"
-              >
-                <Shield className="w-4 h-4 text-[#c3ff00]" />
-                <span className="font-semibold">Pusat Admin Portal</span>
-              </Link>
+              <>
+                <Link
+                  href="/admin"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-pitch-800 transition-colors"
+                >
+                  <Shield className="w-4 h-4 text-[#c3ff00]" />
+                  <span className="font-semibold">Pusat Admin Portal</span>
+                </Link>
+
+                <Link
+                  href="/admin/contributors"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-pitch-800 transition-colors"
+                >
+                  <Users className="w-4 h-4 text-red-400" />
+                  <span>Moderasi Kontributor</span>
+                </Link>
+              </>
             )}
 
             {isContributor && (

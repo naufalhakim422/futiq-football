@@ -199,6 +199,20 @@ export default async function AdminPortalPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
             <Link
+              href="/admin/contributors"
+              className="p-5 bg-pitch-950 border border-pitch-800 hover:border-red-500/50 transition-colors block group"
+            >
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold text-slate-100 group-hover:text-red-400 transition-colors">
+                  Manajemen & Moderasi Kontributor →
+                </h4>
+              </div>
+              <p className="text-xs text-slate-400 mt-1">
+                Aksi 1-klik Suspend, Ban, audit kepatuhan, skor integritas AI, dan pembekuan dompet.
+              </p>
+            </Link>
+
+            <Link
               href="/admin/finance"
               className="p-5 bg-pitch-950 border border-pitch-800 hover:border-emerald-500/50 transition-colors block group"
             >
