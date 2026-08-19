@@ -80,7 +80,6 @@ export function FinanceConsole({
   // Approval / Process Loading State
   const [processingWithdrawalId, setProcessingWithdrawalId] = useState<string | null>(null);
   const [processingPayoutId, setProcessingPayoutId] = useState<string | null>(null);
-  const [retryingPayoutId, setRetryingPayoutId] = useState<string | null>(null);
   const [isRunningSweep, setIsRunningSweep] = useState(false);
 
   // Policy Form State (USD based)
@@ -156,24 +155,43 @@ export function FinanceConsole({
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  const handleApproveWithdrawal = async (id: string) => {
+  // Direct Transfer & Approve Handler (Executes disbursement and marks as PAID)
+  const handleConfirmTransferAndApprove = async (withdrawalItem: any) => {
     setActionError("");
     setActionSuccess("");
-    setProcessingWithdrawalId(id);
+    setProcessingPayoutId(withdrawalItem.id);
 
     try {
-      const res = await fetch(`/api/admin/finance/withdrawals/${id}/approve`, {
+      // 1. Optimistic state update
+      const updatedList = withdrawals.map((w) => {
+        if (w.id === withdrawalItem.id) {
+          return { ...w, status: "PAID", payout: { ...w.payout, status: "PAID", paidAt: new Date() } };
+        }
+        return w;
+      });
+      setWithdrawals(updatedList);
+
+      // 2. Send approval and disbursement to API
+      await fetch(`/api/admin/finance/withdrawals/${withdrawalItem.id}/approve`, {
         method: "POST",
       });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Approval failed");
 
-      setActionSuccess("Withdrawal approved and queued for disbursement.");
+      // 3. Update overview
+      setOverview((prev: any) => ({
+        ...prev,
+        totalHeldLiabilitiesMinor: Math.max(0, (prev?.totalHeldLiabilitiesMinor || 2000) - withdrawalItem.amountMinor),
+        totalLifetimeWithdrawnMinor: (prev?.totalLifetimeWithdrawnMinor || 0) + withdrawalItem.amountMinor,
+      }));
+
+      setActionSuccess(
+        `Transfer confirmed! ${formatMoney(withdrawalItem.amountMinor, "IDR")} successfully marked as disbursed to ${withdrawalItem.accountHolderName || "Naufal"}.`
+      );
+      setViewingPayout(null);
       await refreshData();
     } catch (err: any) {
-      setActionError(err.message || "Failed to approve withdrawal");
+      setActionError(err.message || "Failed to confirm transfer");
     } finally {
-      setProcessingWithdrawalId(null);
+      setProcessingPayoutId(null);
     }
   };
 
@@ -197,34 +215,12 @@ export function FinanceConsole({
       setActionSuccess("Withdrawal rejected. Funds released back to contributor.");
       setRejectingWithdrawalId(null);
       setRejectReason("");
+      setViewingPayout(null);
       await refreshData();
     } catch (err: any) {
       setActionError(err.message || "Failed to reject withdrawal");
     } finally {
       setIsRejecting(false);
-    }
-  };
-
-  const handleProcessPayout = async (payoutId: string) => {
-    setActionError("");
-    setActionSuccess("");
-    setProcessingPayoutId(payoutId);
-
-    try {
-      // Optimistic mark as PAID for simulation or live gateway
-      const targetItem = withdrawals.find((w) => w.id === payoutId || w.payout?.id === payoutId);
-      if (targetItem) {
-        targetItem.status = "PAID";
-        if (targetItem.payout) targetItem.payout.status = "PAID";
-      }
-
-      setActionSuccess("Payout successfully recorded as disbursed to contributor!");
-      setViewingPayout(null);
-      await refreshData();
-    } catch (err: any) {
-      setActionError(err.message || "Disbursement failed");
-    } finally {
-      setProcessingPayoutId(null);
     }
   };
 
@@ -512,7 +508,7 @@ export function FinanceConsole({
                 <th className="p-3.5">Destination Bank / E-Wallet</th>
                 <th className="p-3.5 text-right">Amount</th>
                 <th className="p-3.5 text-right">Status</th>
-                <th className="p-3.5 text-right">Transfer & Action</th>
+                <th className="p-3.5 text-right">Action</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-pitch-800">
@@ -569,32 +565,27 @@ export function FinanceConsole({
                       </span>
                     </td>
                     <td className="p-3.5 text-right space-x-2">
-                      {w.status === "PENDING_REVIEW" ? (
-                        <>
-                          <button
-                            onClick={() => handleApproveWithdrawal(w.id)}
-                            disabled={processingWithdrawalId === w.id}
-                            className="px-3 py-1.5 bg-emerald-500 text-white font-bold text-[10px] rounded-lg hover:bg-emerald-600 transition-colors shadow-sm"
-                          >
-                            Approve
-                          </button>
-                          <button
-                            onClick={() => {
-                              setRejectingWithdrawalId(w.id);
-                              setRejectReason("");
-                            }}
-                            className="px-3 py-1.5 bg-red-500/15 border border-red-500/30 text-red-500 font-bold text-[10px] rounded-lg hover:bg-red-500/25 transition-colors"
-                          >
-                            Reject
-                          </button>
-                        </>
-                      ) : (
+                      <button
+                        onClick={() => setViewingPayout(w)}
+                        className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-[10px] rounded-lg transition-colors inline-flex items-center gap-1 shadow-sm"
+                      >
+                        <Eye className="w-3.5 h-3.5" />
+                        <span>
+                          {w.status === "PAID"
+                            ? "Lihat Bukti"
+                            : "Periksa Rekening & Transfer"}
+                        </span>
+                      </button>
+
+                      {w.status === "PENDING_REVIEW" && (
                         <button
-                          onClick={() => setViewingPayout(w)}
-                          className="px-3 py-1.5 bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 text-emerald-500 font-bold text-[10px] rounded-lg transition-colors inline-flex items-center gap-1"
+                          onClick={() => {
+                            setRejectingWithdrawalId(w.id);
+                            setRejectReason("");
+                          }}
+                          className="px-3 py-1.5 bg-red-500/15 border border-red-500/30 text-red-500 font-bold text-[10px] rounded-lg hover:bg-red-500/25 transition-colors"
                         >
-                          <Eye className="w-3 h-3" />
-                          <span>View Details & Transfer</span>
+                          Tolak
                         </button>
                       )}
                     </td>
@@ -791,7 +782,19 @@ export function FinanceConsole({
                   <span>Beneficiary Payout & Bank Transfer Details</span>
                 </h3>
                 <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-                  ID: {viewingPayout.id} • Status: <strong className="text-emerald-500">{viewingPayout.status}</strong>
+                  ID: {viewingPayout.id} • Status:{" "}
+                  <span
+                    className={cn(
+                      "font-bold uppercase",
+                      viewingPayout.status === "PAID"
+                        ? "text-emerald-500"
+                        : viewingPayout.status === "APPROVED"
+                        ? "text-blue-400"
+                        : "text-amber-400"
+                    )}
+                  >
+                    {viewingPayout.status === "PAID" ? "SUDAH DITRANSFER (PAID)" : "MENUNGGU TRANSFER"}
+                  </span>
                 </p>
               </div>
               <button
@@ -884,6 +887,13 @@ export function FinanceConsole({
               </div>
             </div>
 
+            {/* Instruction Notice for Admin */}
+            {viewingPayout.status !== "PAID" && (
+              <div className="p-3 bg-pitch-950 border border-pitch-800 rounded-xl text-[11px] text-slate-300 font-sans leading-relaxed">
+                💡 <strong>Petunjuk Transfer:</strong> Salin nomor rekening & nominal di atas, kirim uang via M-Banking / PayPal Anda. Setelah dana berhasil terkirim, klik tombol hijau <strong>&quot;Uang Sudah Terkirim? Setujui &amp; Selesaikan&quot;</strong> di bawah!
+              </div>
+            )}
+
             {/* Action Buttons */}
             <div className="pt-3 border-t border-pitch-800 flex items-center justify-between gap-3">
               <button
@@ -891,21 +901,25 @@ export function FinanceConsole({
                 onClick={() => setViewingPayout(null)}
                 className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-200"
               >
-                Close
+                Tutup
               </button>
               {viewingPayout.status !== "PAID" ? (
                 <button
                   type="button"
-                  onClick={() => handleProcessPayout(viewingPayout.id)}
+                  onClick={() => handleConfirmTransferAndApprove(viewingPayout)}
                   disabled={processingPayoutId === viewingPayout.id}
                   className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors shadow-md flex items-center gap-1.5"
                 >
                   <CheckCircle className="w-4 h-4" />
-                  <span>Mark as Transferred & Disbursed</span>
+                  <span>
+                    {processingPayoutId === viewingPayout.id
+                      ? "Memproses..."
+                      : "Uang Sudah Terkirim? Setujui & Selesaikan"}
+                  </span>
                 </button>
               ) : (
                 <span className="text-xs font-mono font-bold text-emerald-500 flex items-center gap-1">
-                  <CheckCircle className="w-4 h-4" /> Successfully Disbursed
+                  <CheckCircle className="w-4 h-4" /> Dana Telah Berhasil Ditransfer & Disetujui
                 </span>
               )}
             </div>
