@@ -3,111 +3,103 @@
 @tailwind utilities;
 
 @layer base {
-  :root {
+  :root, html.dark {
     --font-inter: 'Inter', system-ui, -apple-system, sans-serif;
     --font-newsreader: 'Newsreader', Georgia, serif;
     --font-jetbrains: 'JetBrains Mono', monospace;
+
+    /* Pitch dark palette */
+    --pitch-950: #070A0F;
+    --pitch-900: #0B1017;
+    --pitch-850: #101722;
+    --pitch-800: #172131;
+    --pitch-750: #1C283B;
+    --pitch-700: #223147;
+    --pitch-600: #324663;
+
+    --brand-green: #10B981;
+    --brand-green-hover: #059669;
+    --brand-red: #EF4444;
+    --brand-gold: #F59E0B;
+  }
+
+  html.light {
+    /* Pure, crisp, high-contrast light palette */
+    --pitch-950: #F8FAFC; /* Clean modern page background (Slate-50) */
+    --pitch-900: #FFFFFF; /* Pure White card surface */
+    --pitch-850: #F1F5F9; /* Slate-100 for pills, secondary headers, light badges */
+    --pitch-800: #E2E8F0; /* Slate-200 for clean subtle borders */
+    --pitch-750: #CBD5E1; /* Slate-300 for interactive borders */
+    --pitch-700: #94A3B8; /* Slate-400 */
+    --pitch-600: #64748B; /* Slate-500 */
+
+    --brand-green: #059669; /* Deep, readable Emerald Green (4.5:1+ contrast on white) */
+    --brand-green-hover: #047857;
+    --brand-red: #DC2626; /* Deep Red */
+    --brand-gold: #D97706; /* Deep Amber */
   }
 
   body {
-    background-color: #070A0F;
+    background-color: var(--pitch-950);
     color: #F1F5F9;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     transition: background-color 0.15s ease, color 0.15s ease;
   }
+
+  html.light body {
+    background-color: #F8FAFC;
+    color: #0F172A;
+  }
 }
 
 /* ========================================================================= */
-/* LIGHT THEME OVERRIDES (Clean Modern Sports Platform Theme) */
+/* LIGHT THEME COMPREHENSIVE OVERRIDES & SHARP CONTRAST */
 /* ========================================================================= */
 html.light {
   color-scheme: light;
 }
 
-html.light body {
-  background-color: #f8fafc !important;
-  color: #0f172a !important;
-}
-
-/* Background mappings in Light Mode */
-html.light .bg-pitch-950 {
-  background-color: #f8fafc !important;
-}
-
-html.light .bg-pitch-900 {
-  background-color: #ffffff !important;
-}
-
-html.light .bg-pitch-850 {
-  background-color: #f1f5f9 !important;
-}
-
-html.light .bg-pitch-800 {
-  background-color: #e2e8f0 !important;
-}
-
-html.light .bg-pitch-750 {
-  background-color: #cbd5e1 !important;
-}
-
-/* Crisp Clean Borders in Light Mode */
-html.light .border-pitch-950,
-html.light .border-pitch-900,
-html.light .border-pitch-850,
-html.light .border-pitch-800,
-html.light .border-pitch-750,
-html.light .border-pitch-700 {
-  border-color: #e2e8f0 !important;
-}
-
-html.light .divide-pitch-800 > :not([hidden]) ~ :not([hidden]),
-html.light .divide-pitch-750 > :not([hidden]) ~ :not([hidden]) {
-  border-color: #e2e8f0 !important;
-}
-
-/* High-Contrast Sharp Typography in Light Mode */
+/* 1. Global Text Contrast in Light Mode */
 html.light .text-slate-100,
 html.light .text-slate-200 {
-  color: #0f172a !important;
+  color: #0F172A !important; /* Deep Slate-900 */
 }
 
 html.light .text-slate-300 {
-  color: #1e293b !important;
+  color: #1E293B !important; /* Slate-800 */
 }
 
 html.light .text-slate-400 {
-  color: #475569 !important;
+  color: #475569 !important; /* Slate-600 (High contrast readability) */
 }
 
 html.light .text-slate-500 {
-  color: #64748b !important;
+  color: #64748B !important; /* Slate-500 */
 }
 
-/* Brand Neon / Accent Green adjustments in Light Mode */
+/* 2. Neon #c3ff00 adaptation in Light Mode */
 html.light .text-\[\#c3ff00\] {
-  color: #059669 !important;
+  color: #059669 !important; /* Rich readable emerald */
 }
 
-html.light .border-\[\#c3ff00\] {
-  border-color: #10b981 !important;
-}
-
-html.light .border-\[\#c3ff00\]\/40,
+html.light .border-\[\#c3ff00\],
 html.light .border-\[\#c3ff00\]\/30,
+html.light .border-\[\#c3ff00\]\/40,
 html.light .border-\[\#c3ff00\]\/50,
 html.light .border-\[\#c3ff00\]\/60 {
-  border-color: rgba(16, 185, 129, 0.4) !important;
+  border-color: #10B981 !important;
 }
 
 html.light .bg-\[\#c3ff00\] {
-  background-color: #10b981 !important;
-  color: #ffffff !important;
+  background-color: #10B981 !important;
+  color: #FFFFFF !important;
 }
 
 html.light .bg-\[\#c3ff00\]\/10,
+html.light .bg-\[\#c3ff00\]\/15,
 html.light .bg-\[\#c3ff00\]\/5 {
-  background-color: rgba(16, 185, 129, 0.12) !important;
-  color: #059669 !important;
+  background-color: #ECFDF5 !important; /* Emerald-50 */
+  color: #047857 !important; /* Emerald-700 */
 }
 
 html.light .hover\:text-\[\#c3ff00\]:hover {
@@ -116,48 +108,89 @@ html.light .hover\:text-\[\#c3ff00\]:hover {
 
 html.light .hover\:border-\[\#c3ff00\]:hover,
 html.light .hover\:border-\[\#c3ff00\]\/60:hover {
-  border-color: #10b981 !important;
+  border-color: #10B981 !important;
 }
 
-/* Gradient overrides in Light Mode */
-html.light .bg-gradient-to-r,
-html.light .bg-gradient-to-b,
-html.light .bg-gradient-to-br {
-  background-image: none !important;
+/* 3. Surface & Card Contrast in Light Mode */
+html.light .bg-pitch-950 {
+  background-color: #F8FAFC !important;
 }
 
-/* Header, Navigation & Bars in Light Mode */
+html.light .bg-pitch-900 {
+  background-color: #FFFFFF !important;
+}
+
+html.light .bg-pitch-850 {
+  background-color: #F1F5F9 !important;
+}
+
+html.light .bg-pitch-800 {
+  background-color: #E2E8F0 !important;
+}
+
+html.light .border-pitch-950,
+html.light .border-pitch-900,
+html.light .border-pitch-850,
+html.light .border-pitch-800,
+html.light .border-pitch-750,
+html.light .border-pitch-700 {
+  border-color: #E2E8F0 !important;
+}
+
+/* Hover effects in Light Mode */
+html.light .hover\:bg-pitch-850:hover,
+html.light .hover\:bg-pitch-800:hover,
+html.light .hover\:bg-pitch-750:hover {
+  background-color: #E2E8F0 !important;
+}
+
+html.light .hover\:text-white:hover {
+  color: #0F172A !important;
+}
+
+/* 4. Header, Navigation & Footers */
 html.light header {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
   box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05) !important;
 }
 
+html.light header nav {
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
+}
+
 html.light footer {
-  background-color: #ffffff !important;
-  border-color: #e2e8f0 !important;
+  background-color: #FFFFFF !important;
+  border-color: #E2E8F0 !important;
 }
 
-/* Modern Card Shadows in Light Mode */
-html.light .shadow-2xl,
-html.light .shadow-xl,
-html.light .shadow-lg,
-html.light .shadow-md {
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.04) !important;
-}
-
-/* Form Controls in Light Mode */
+/* 5. Inputs & Form Elements */
 html.light input:not([type="checkbox"]):not([type="radio"]),
 html.light textarea,
 html.light select {
-  background-color: #ffffff !important;
-  color: #0f172a !important;
-  border-color: #cbd5e1 !important;
+  background-color: #FFFFFF !important;
+  color: #0F172A !important;
+  border-color: #CBD5E1 !important;
 }
 
 html.light input::placeholder,
 html.light textarea::placeholder {
-  color: #94a3b8 !important;
+  color: #94A3B8 !important;
+}
+
+/* 6. Modals & Dialogs */
+html.light .shadow-2xl,
+html.light .shadow-xl,
+html.light .shadow-lg {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08), 0 2px 6px -1px rgba(0, 0, 0, 0.04) !important;
+}
+
+/* 7. Gradients cancellation in Light Mode */
+html.light .bg-gradient-to-r,
+html.light .bg-gradient-to-b,
+html.light .bg-gradient-to-br {
+  background-image: none !important;
 }
 
 /* Custom utility classes */

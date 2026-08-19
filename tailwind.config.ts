@@ -11,19 +11,19 @@ const config: Config = {
     extend: {
       colors: {
         pitch: {
-          950: "#070A0F", // Deepest background
-          900: "#0B1017", // Primary surface
-          850: "#101722", // Card / Panel background
-          800: "#172131", // Elevated container
-          750: "#1C283B", // Secondary container
-          700: "#223147", // Hover state
-          600: "#324663", // Interactive border
+          950: "var(--pitch-950)", // Deepest background
+          900: "var(--pitch-900)", // Primary card / surface
+          850: "var(--pitch-850)", // Sub-panel / Pill background
+          800: "var(--pitch-800)", // Clean container border
+          750: "var(--pitch-750)", // Divider / Interactive border
+          700: "var(--pitch-700)", // Hover state
+          600: "var(--pitch-600)", // Subtle border
         },
         brand: {
-          green: "#10B981", // Pitch Green / Live indicator / Primary CTA
-          "green-hover": "#059669",
-          red: "#EF4444", // Broadcast Alert / Live Flash
-          gold: "#F59E0B", // Expert Tier / Trophies
+          green: "var(--brand-green)", // Pitch Green / Primary CTA
+          "green-hover": "var(--brand-green-hover)",
+          red: "var(--brand-red)", // Broadcast Alert
+          gold: "var(--brand-gold)", // Expert Tier
         },
       },
       fontFamily: {
