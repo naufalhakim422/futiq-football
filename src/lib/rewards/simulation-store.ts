@@ -28,46 +28,15 @@ export interface SimulatedWithdrawal {
 }
 
 class SimulationStore {
-  public availableBalanceMinor: number = 3000; // $30.00 USD remaining after $20 withdrawal
-  public heldBalanceMinor: number = 2000; // $20.00 USD held in withdrawal
-  public lifetimeEarningsMinor: number = 5000; // $50.00 USD
+  public availableBalanceMinor: number = 10000; // $100.00 USD
+  public heldBalanceMinor: number = 0;
+  public lifetimeEarningsMinor: number = 10000; // $100.00 USD
   public lifetimeWithdrawnMinor: number = 0;
 
-  public withdrawals: SimulatedWithdrawal[] = [
-    {
-      id: "with_sim_20usd",
-      contributorProfileId: "prof_naufal_dev",
-      amountMinor: 2000, // $20.00 USD
-      bankName: "BCA (Bank Central Asia)",
-      accountNumberMasked: "•••• 8821",
-      accountHolderName: "Naufal (Developer & Contributor)",
-      status: "PENDING_REVIEW",
-      createdAt: new Date(),
-      targetCurrency: "IDR",
-      targetAmountFormatted: "Rp 320.000",
-      contributorProfile: {
-        penName: "Naufal (Developer & Contributor)",
-        displayName: "Naufal (Developer & Contributor)",
-        user: {
-          email: "dev.contributor@futiq.com",
-          fullName: "Naufal (Developer & Contributor)",
-        },
-      },
-    },
-  ];
-
+  public withdrawals: SimulatedWithdrawal[] = [];
   public payouts: any[] = [];
   public fraudSignals: any[] = [];
-  public auditLogs: any[] = [
-    {
-      id: "audit_sim_01",
-      action: "WITHDRAWAL_REQUESTED",
-      entityType: "WithdrawalRequest",
-      reason: "Contributor requested $20.00 USD payout to BCA •••• 8821",
-      amountMinor: 2000,
-      createdAt: new Date(),
-    },
-  ];
+  public auditLogs: any[] = [];
 
   public addWithdrawal(amountMinor: number, bankName: string, accountMasked: string, holderName: string) {
     this.heldBalanceMinor += amountMinor;
@@ -75,7 +44,7 @@ class SimulationStore {
 
     const newW: SimulatedWithdrawal = {
       id: `with_sim_${Date.now()}`,
-      contributorProfileId: "prof_naufal_dev",
+      contributorProfileId: "prof_naufal_pure_contributor",
       amountMinor,
       bankName,
       accountNumberMasked: accountMasked,
@@ -86,7 +55,7 @@ class SimulationStore {
         penName: holderName,
         displayName: holderName,
         user: {
-          email: "dev.contributor@futiq.com",
+          email: "naufal.contributor@futiq.com",
           fullName: holderName,
         },
       },

@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 export async function GET(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  const role = (searchParams.get("role") || "SUPER_ADMIN") as RoleType;
+  const role = (searchParams.get("role") || "CONTRIBUTOR") as RoleType;
   const redirectTo = searchParams.get("redirect") || "/contributor";
 
   if (searchParams.get("action") === "logout") {
@@ -15,17 +15,17 @@ export async function GET(request: NextRequest) {
     return response;
   }
 
-  const isContributor = role === "CONTRIBUTOR";
+  const isPureContributor = role === "CONTRIBUTOR";
 
-  // Active session payload for Naufal (Developer & Contributor)
+  // Active session payload
   const sessionUser = {
-    id: isContributor ? "usr_dev_contributor_futiq_com" : "admin_master_001",
-    email: isContributor ? "dev.contributor@futiq.com" : "superadmin@futiq.com",
-    fullName: isContributor ? "Naufal (Developer & Contributor)" : "Chief Administrator",
-    roles: isContributor
-      ? (["CONTRIBUTOR", "SUPER_ADMIN", "SENIOR_EDITOR", "EDITOR_IN_CHIEF"] as RoleType[])
-      : ([role, "EDITOR_IN_CHIEF", "CONTRIBUTOR"] as RoleType[]),
-    permissions: ["*"],
+    id: isPureContributor ? "usr_naufal_pure_contributor" : "admin_master_001",
+    email: isPureContributor ? "naufal.contributor@futiq.com" : "superadmin@futiq.com",
+    fullName: isPureContributor ? "Naufal (Pure Contributor)" : "Chief Administrator",
+    roles: isPureContributor
+      ? (["CONTRIBUTOR"] as RoleType[]) // PURE CONTRIBUTOR ONLY
+      : (["SUPER_ADMIN", "FINANCE", "EDITOR_IN_CHIEF", "CONTRIBUTOR"] as RoleType[]),
+    permissions: isPureContributor ? ["contributor:read", "contributor:write"] : ["*"],
   };
 
   const token = await createSessionToken(sessionUser);
@@ -49,16 +49,16 @@ export async function POST(request: NextRequest) {
   try {
     const body = await request.json().catch(() => ({}));
     const role = (body.role || "CONTRIBUTOR") as RoleType;
-    const isContributor = role === "CONTRIBUTOR";
+    const isPureContributor = role === "CONTRIBUTOR";
 
     const sessionUser = {
-      id: isContributor ? "usr_dev_contributor_futiq_com" : "admin_master_001",
-      email: isContributor ? "dev.contributor@futiq.com" : "superadmin@futiq.com",
-      fullName: isContributor ? "Naufal (Developer & Contributor)" : "Chief Administrator",
-      roles: isContributor
-        ? (["CONTRIBUTOR", "SUPER_ADMIN", "SENIOR_EDITOR", "EDITOR_IN_CHIEF"] as RoleType[])
-        : ([role, "EDITOR_IN_CHIEF", "CONTRIBUTOR"] as RoleType[]),
-      permissions: ["*"],
+      id: isPureContributor ? "usr_naufal_pure_contributor" : "admin_master_001",
+      email: isPureContributor ? "naufal.contributor@futiq.com" : "superadmin@futiq.com",
+      fullName: isPureContributor ? "Naufal (Pure Contributor)" : "Chief Administrator",
+      roles: isPureContributor
+        ? (["CONTRIBUTOR"] as RoleType[]) // PURE CONTRIBUTOR ONLY
+        : (["SUPER_ADMIN", "FINANCE", "EDITOR_IN_CHIEF", "CONTRIBUTOR"] as RoleType[]),
+      permissions: isPureContributor ? ["contributor:read", "contributor:write"] : ["*"],
     };
 
     const token = await createSessionToken(sessionUser);

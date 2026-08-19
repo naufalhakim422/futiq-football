@@ -18,12 +18,12 @@ export default async function ContributorEarningsPage() {
     redirect("/contributor");
   }
 
-  // Developer Simulation Wallet Balance ($50.00 USD = 5000 minor cents ≈ Rp 800.000 / RM 225.00)
+  // Pure Contributor Simulation Wallet Balance ($100.00 USD = 10,000 minor units ≈ Rp 1.600.000 / RM 450.00 / €92.00)
   let walletSummary: any = {
     walletId: `wallet_${user.id}`,
-    availableBalanceMinor: 5000, // $50.00 USD
+    availableBalanceMinor: 10000, // $100.00 USD
     heldBalanceMinor: 0,
-    lifetimeEarningsMinor: 5000, // $50.00 USD
+    lifetimeEarningsMinor: 10000, // $100.00 USD
     lifetimeWithdrawnMinor: 0,
     currency: "USD",
     bankAccountMasked: "•••• 8821",
@@ -31,9 +31,9 @@ export default async function ContributorEarningsPage() {
     isPayoutAccountVerified: true,
     payoutAccount: {
       isConfigured: true,
-      bankName: "BCA (Bank Central Asia) / GoPay",
+      bankName: "BCA (Bank Central Asia)",
       accountNumberMasked: "•••• 8821",
-      accountHolderName: user.fullName || "Developer Contributor",
+      accountHolderName: user.fullName || "Naufal (Pure Contributor)",
       isUnderCooldown: false,
     },
   };
@@ -41,6 +41,21 @@ export default async function ContributorEarningsPage() {
   let rewards: any[] = [
     {
       id: "rew_sim_01",
+      totalRewardMinor: 3500, // $35.00 USD
+      baseRewardMinor: 500,
+      viewBonusMinor: 2000,
+      qualityBonusMinor: 600,
+      breakingBonusMinor: 400,
+      qualifiedViewsCount: 2000,
+      status: "FINALIZED",
+      createdAt: new Date(Date.now() - 86400000 * 1),
+      article: {
+        title: "Tactical Blueprint: Real Madrid Midfield Transition Mastery & Counter-Press Efficiency",
+        category: "TACTICS",
+      },
+    },
+    {
+      id: "rew_sim_02",
       totalRewardMinor: 2850, // $28.50 USD
       baseRewardMinor: 500,
       viewBonusMinor: 1425,
@@ -48,14 +63,14 @@ export default async function ContributorEarningsPage() {
       breakingBonusMinor: 425,
       qualifiedViewsCount: 1425,
       status: "FINALIZED",
-      createdAt: new Date(Date.now() - 86400000 * 2),
+      createdAt: new Date(Date.now() - 86400000 * 3),
       article: {
         title: "Inside Mikel Arteta's High-Press Evolution & Tactical Rest-Defense Masterclass",
         category: "TACTICS",
       },
     },
     {
-      id: "rew_sim_02",
+      id: "rew_sim_03",
       totalRewardMinor: 2150, // $21.50 USD
       baseRewardMinor: 500,
       viewBonusMinor: 1075,
@@ -63,10 +78,25 @@ export default async function ContributorEarningsPage() {
       breakingBonusMinor: 0,
       qualifiedViewsCount: 1075,
       status: "FINALIZED",
-      createdAt: new Date(Date.now() - 86400000 * 5),
+      createdAt: new Date(Date.now() - 86400000 * 6),
       article: {
         title: "Premier League Expected Goals (xG) Delta & Midfield Engine Room Analysis",
         category: "ANALYTICS",
+      },
+    },
+    {
+      id: "rew_sim_04",
+      totalRewardMinor: 1500, // $15.00 USD
+      baseRewardMinor: 500,
+      viewBonusMinor: 750,
+      qualityBonusMinor: 250,
+      breakingBonusMinor: 0,
+      qualifiedViewsCount: 750,
+      status: "FINALIZED",
+      createdAt: new Date(Date.now() - 86400000 * 9),
+      article: {
+        title: "Champions League Knockout Stage: Top 5 High-Impact Tactical Substitutions",
+        category: "ANALYSIS",
       },
     },
   ];
@@ -77,17 +107,33 @@ export default async function ContributorEarningsPage() {
       id: "ledg_sim_01",
       type: "CREDIT",
       reason: "Article Reward #rew_sim_01 (70% Adsterra Revenue Share)",
-      amountMinor: 2850,
-      balanceAfterMinor: 2850,
-      createdAt: new Date(Date.now() - 86400000 * 2),
+      amountMinor: 3500,
+      balanceAfterMinor: 3500,
+      createdAt: new Date(Date.now() - 86400000 * 1),
     },
     {
       id: "ledg_sim_02",
       type: "CREDIT",
       reason: "Article Reward #rew_sim_02 (70% Adsterra Revenue Share)",
+      amountMinor: 2850,
+      balanceAfterMinor: 6350,
+      createdAt: new Date(Date.now() - 86400000 * 3),
+    },
+    {
+      id: "ledg_sim_03",
+      type: "CREDIT",
+      reason: "Article Reward #rew_sim_03 (70% Adsterra Revenue Share)",
       amountMinor: 2150,
-      balanceAfterMinor: 5000,
-      createdAt: new Date(Date.now() - 86400000 * 5),
+      balanceAfterMinor: 8500,
+      createdAt: new Date(Date.now() - 86400000 * 6),
+    },
+    {
+      id: "ledg_sim_04",
+      type: "CREDIT",
+      reason: "Article Reward #rew_sim_04 (70% Adsterra Revenue Share)",
+      amountMinor: 1500,
+      balanceAfterMinor: 10000,
+      createdAt: new Date(Date.now() - 86400000 * 9),
     },
   ];
 
@@ -116,7 +162,7 @@ export default async function ContributorEarningsPage() {
       }
     }
   } catch (err) {
-    // Graceful fallback with simulation data active
+    // Simulation active
   }
 
   return (
@@ -134,7 +180,7 @@ export default async function ContributorEarningsPage() {
           <SectionHeader
             title="Contributor Earnings & Wallet Desk"
             subtitle="Server-authoritative 70% Adsterra revenue share, qualified reader telemetry, and payout settlement"
-            badgeText="Simulation Active • $50.00 USD"
+            badgeText="Pure Contributor Simulation • $100.00 USD"
           />
         </div>
       </div>

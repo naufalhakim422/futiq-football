@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { walletService } from "@/lib/rewards/wallet.service";
+import { simulationStore } from "@/lib/rewards/simulation-store";
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,7 +18,7 @@ export async function GET(req: NextRequest) {
 
       if (contributorProfile) {
         const summary = await walletService.getWalletSummary(contributorProfile.id);
-        if (summary && summary.availableBalanceMinor > 0) {
+        if (summary) {
           return NextResponse.json({
             success: true,
             wallet: summary,
@@ -25,27 +26,27 @@ export async function GET(req: NextRequest) {
         }
       }
     } catch {
-      // Fallback to simulation
+      // Fallback
     }
 
-    // Dev Simulation Wallet Summary ($50.00 USD)
+    // Pure Contributor Simulation Fallback ($100.00 USD)
     return NextResponse.json({
       success: true,
       wallet: {
         walletId: `wallet_${user.id}`,
-        availableBalanceMinor: 5000, // $50.00 USD
-        heldBalanceMinor: 0,
-        lifetimeEarningsMinor: 5000,
-        lifetimeWithdrawnMinor: 0,
+        availableBalanceMinor: simulationStore.availableBalanceMinor,
+        heldBalanceMinor: simulationStore.heldBalanceMinor,
+        lifetimeEarningsMinor: simulationStore.lifetimeEarningsMinor,
+        lifetimeWithdrawnMinor: simulationStore.lifetimeWithdrawnMinor,
         currency: "USD",
         bankAccountMasked: "•••• 8821",
         payoutProvider: null,
         isPayoutAccountVerified: true,
         payoutAccount: {
           isConfigured: true,
-          bankName: "BCA (Bank Central Asia) / GoPay",
+          bankName: "BCA (Bank Central Asia)",
           accountNumberMasked: "•••• 8821",
-          accountHolderName: user.fullName || "Developer Contributor",
+          accountHolderName: user.fullName || "Naufal (Pure Contributor)",
           isUnderCooldown: false,
         },
       },
