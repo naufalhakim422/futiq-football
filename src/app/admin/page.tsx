@@ -199,6 +199,20 @@ export default async function AdminPortalPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-2">
             <Link
+              href="/admin/articles/new"
+              className="p-5 bg-pitch-950 border border-[#c3ff00]/50 hover:border-[#c3ff00] transition-all block group bg-gradient-to-br from-[#c3ff00]/5 to-transparent"
+            >
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-bold text-[#c3ff00] group-hover:text-white transition-colors">
+                  ✍️ Tulis & Rilis Berita (Studio) →
+                </h4>
+              </div>
+              <p className="text-xs text-slate-300 mt-1">
+                Tulis naskah editorial resmi, publikasi instan ke beranda, dan atur Breaking/Featured news.
+              </p>
+            </Link>
+
+            <Link
               href="/admin/contributors"
               className="p-5 bg-pitch-950 border border-pitch-800 hover:border-red-500/50 transition-colors block group"
             >
