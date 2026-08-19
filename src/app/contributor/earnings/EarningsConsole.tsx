@@ -20,6 +20,7 @@ import {
   Sparkles,
   ArrowRight,
   CreditCard,
+  Check,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -38,7 +39,8 @@ interface EarningsConsoleProps {
 
 const DESTINATION_PRESETS = {
   ID: {
-    region: "Indonesia (IDR - Rupiah)",
+    region: "Indonesia (IDR)",
+    flag: "🇮🇩",
     currency: "IDR" as SupportedCurrency,
     options: [
       "BCA (Bank Central Asia)",
@@ -53,21 +55,32 @@ const DESTINATION_PRESETS = {
       "OVO (E-Wallet)",
       "ShopeePay",
     ],
+    accountLabel: "Bank Account Number / E-Wallet Mobile Number",
+    accountPlaceholder: "e.g. 1234567890 (BCA) or 081234567890 (GoPay/DANA)",
   },
   MY: {
-    region: "Malaysia (MYR - Ringgit)",
+    region: "Malaysia (MYR)",
+    flag: "🇲🇾",
     currency: "MYR" as SupportedCurrency,
     options: ["Maybank", "CIMB Bank", "Public Bank", "RHB Bank", "DuitNow ID"],
+    accountLabel: "Bank Account Number / DuitNow ID",
+    accountPlaceholder: "e.g. 164012345678 or +60123456789",
   },
   EU: {
-    region: "Europe & UK (EUR / GBP)",
+    region: "Europe (EUR)",
+    flag: "🇪🇺",
     currency: "EUR" as SupportedCurrency,
     options: ["SEPA / IBAN Bank Transfer", "Revolut", "Wise Multi-Currency", "Monzo"],
+    accountLabel: "IBAN / SEPA Account Number / PayPal Email",
+    accountPlaceholder: "e.g. DE89 3704 0044 0532 0130 00 or author@email.com",
   },
   GLOBAL: {
-    region: "Global / United States (USD)",
+    region: "Global / US (USD)",
+    flag: "🌍",
     currency: "USD" as SupportedCurrency,
     options: ["PayPal", "Wise Transfer", "Direct USD Wire / ACH", "Stripe Connect"],
+    accountLabel: "PayPal Email / Wire Account Number",
+    accountPlaceholder: "e.g. author.payments@gmail.com",
   },
 };
 
@@ -122,12 +135,12 @@ export function EarningsConsole({
     setWithdrawSuccess("");
 
     if (isNaN(numUSD) || numUSD < 10) {
-      setWithdrawError("Minimum withdrawal amount is $10.00 USD (≈ Rp 160.000 / RM 45.00 / €9.20)");
+      setWithdrawError("Minimum withdrawal threshold is $10.00 USD (≈ Rp 160.000 / RM 45.00 / €9.20)");
       return;
     }
 
     if (minorAmount > wallet.availableBalanceMinor) {
-      setWithdrawError("Requested amount exceeds available balance.");
+      setWithdrawError("Requested amount exceeds available wallet balance.");
       return;
     }
 
@@ -163,7 +176,7 @@ export function EarningsConsole({
       const newLedgerRecord = {
         id: `ledg_${Date.now()}`,
         type: "WITHDRAWAL_HOLD",
-        reason: `Pending Payout to ${newWithdrawalRecord.bankName} (${newWithdrawalRecord.targetAmountFormatted})`,
+        reason: `Disbursement Queue: ${newWithdrawalRecord.bankName} (${newWithdrawalRecord.targetAmountFormatted})`,
         amountMinor: minorAmount,
         balanceAfterMinor: newAvailable,
         createdAt: new Date(),
@@ -179,7 +192,7 @@ export function EarningsConsole({
       setLedger([newLedgerRecord, ...ledger]);
 
       setWithdrawSuccess(
-        `Withdrawal submitted! Transfer of ${newWithdrawalRecord.targetAmountFormatted} to ${newWithdrawalRecord.bankName} queued for review.`
+        `Withdrawal requested successfully! Disbursing ${newWithdrawalRecord.targetAmountFormatted} to ${newWithdrawalRecord.bankName}.`
       );
 
       setTimeout(() => {
@@ -199,10 +212,22 @@ export function EarningsConsole({
     setAccountError("");
     setAccountSuccess("");
 
-    const finalBankName = bankName === "Other" ? customBankName : bankName;
+    const finalBankName = bankName === "Other" ? customBankName.trim() : bankName.trim();
+    const finalAccountNumber = accountNumber.trim();
+    const finalAccountHolder = accountHolderName.trim();
 
-    if (!finalBankName || !accountNumber || !accountHolderName) {
-      setAccountError("All payment destination fields are required.");
+    if (!finalBankName) {
+      setAccountError("Please select or enter a valid bank/provider name.");
+      return;
+    }
+
+    if (!finalAccountNumber) {
+      setAccountError("Account number / E-Wallet phone number is required.");
+      return;
+    }
+
+    if (!finalAccountHolder) {
+      setAccountError("Account holder full legal name is strictly required.");
       return;
     }
 
@@ -213,12 +238,12 @@ export function EarningsConsole({
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           bankName: finalBankName,
-          accountNumber,
-          accountHolderName,
+          accountNumber: finalAccountNumber,
+          accountHolderName: finalAccountHolder,
         }),
       });
 
-      const masked = accountNumber.length > 4 ? `•••• ${accountNumber.slice(-4)}` : accountNumber;
+      const masked = finalAccountNumber.length > 4 ? `•••• ${finalAccountNumber.slice(-4)}` : finalAccountNumber;
 
       setWallet({
         ...wallet,
@@ -226,7 +251,7 @@ export function EarningsConsole({
           isConfigured: true,
           bankName: finalBankName,
           accountNumberMasked: masked,
-          accountHolderName,
+          accountHolderName: finalAccountHolder,
           isUnderCooldown: false,
         },
       });
@@ -238,7 +263,7 @@ export function EarningsConsole({
         setAccountSuccess("");
       }, 1500);
     } catch (err: any) {
-      setAccountError(err.message || "Failed to update account");
+      setAccountError(err.message || "Failed to update payout destination");
     } finally {
       setIsSubmittingAccount(false);
     }
@@ -402,7 +427,7 @@ export function EarningsConsole({
             )}
           </div>
           <p className="pt-2 text-[11px] text-slate-400 border-t border-pitch-800">
-            Successfully paid out to your bank account
+            Successfully paid out to your registered destination
           </p>
         </div>
       </div>
@@ -417,11 +442,11 @@ export function EarningsConsole({
             <h3 className="font-bold text-slate-100 text-sm flex items-center gap-2 font-sans">
               Registered Payout Destination
               {wallet?.payoutAccount?.isConfigured ? (
-                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase bg-emerald-500/15 text-emerald-500 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
                   <CheckCircle className="w-3 h-3" /> Ready for Transfer
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase bg-amber-500/15 text-amber-500 border border-amber-500/30 px-2 py-0.5 rounded-full">
+                <span className="inline-flex items-center gap-1 text-[10px] font-mono font-bold uppercase bg-amber-500/15 text-amber-500 border border-amber-500/30 px-2.5 py-0.5 rounded-full">
                   <AlertTriangle className="w-3 h-3" /> Not Configured
                 </span>
               )}
@@ -636,12 +661,12 @@ export function EarningsConsole({
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-400 font-mono">
-                      Beneficiary: {w.accountHolderName} • Date:{" "}
+                      Beneficiary: {w.accountHolderName} • Requested:{" "}
                       {new Date(w.createdAt).toLocaleString()}
                     </p>
                     {/* Live Multi-Currency Conversion Breakdown */}
                     <div className="pt-1 flex flex-wrap items-center gap-2 text-[10px] font-mono text-slate-400">
-                      <span>Equivalent:</span>
+                      <span>Disbursement Value:</span>
                       <span className="text-emerald-500 font-bold">
                         {formatMoney(w.amountMinor, "IDR")}
                       </span>
@@ -705,8 +730,8 @@ export function EarningsConsole({
 
             <form onSubmit={handleWithdraw} className="space-y-4">
               <div>
-                <label className="text-xs font-bold text-slate-300 block mb-1">
-                  Nominal Penarikan (Withdrawal Amount in USD $)
+                <label className="text-xs font-bold text-slate-300 block mb-1 font-sans">
+                  Withdrawal Amount (in USD $) <span className="text-emerald-500 font-bold">*</span>
                 </label>
                 <div className="relative">
                   <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold font-mono">$</span>
@@ -727,25 +752,25 @@ export function EarningsConsole({
               {/* AUTOMATIC LIVE MULTI-CURRENCY CONVERSION MATRIX */}
               <div className="bg-pitch-950 border border-pitch-800 rounded-xl p-3.5 space-y-2 font-mono text-xs">
                 <div className="text-[10px] uppercase font-bold tracking-wider text-slate-400 flex items-center justify-between">
-                  <span>Kalkulasi Otomatis (Live Exchange Sum)</span>
-                  <span className="text-emerald-500">Real-time</span>
+                  <span>Live Exchange Conversion Breakdown</span>
+                  <span className="text-emerald-500 font-bold">Real-time</span>
                 </div>
 
                 <div className="grid grid-cols-2 gap-2 pt-1">
                   <div className="p-2.5 rounded-lg bg-pitch-900 border border-pitch-800">
-                    <span className="text-[10px] text-slate-400 block font-sans">🇺🇸 USD (US Dollar)</span>
+                    <span className="text-[10px] text-slate-400 block font-sans">🇺🇸 USD (Base Standard)</span>
                     <span className="text-sm font-extrabold text-slate-100">{formatMoney(minorAmount, "USD")}</span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-pitch-900 border border-pitch-800">
-                    <span className="text-[10px] text-slate-400 block font-sans">🇮🇩 IDR (Rupiah Indonesia)</span>
+                    <span className="text-[10px] text-slate-400 block font-sans">🇮🇩 IDR (Indonesian Rupiah)</span>
                     <span className="text-sm font-extrabold text-emerald-500">{formatMoney(minorAmount, "IDR")}</span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-pitch-900 border border-pitch-800">
-                    <span className="text-[10px] text-slate-400 block font-sans">🇲🇾 MYR (Ringgit Malaysia)</span>
+                    <span className="text-[10px] text-slate-400 block font-sans">🇲🇾 MYR (Malaysian Ringgit)</span>
                     <span className="text-sm font-extrabold text-blue-400">{formatMoney(minorAmount, "MYR")}</span>
                   </div>
                   <div className="p-2.5 rounded-lg bg-pitch-900 border border-pitch-800">
-                    <span className="text-[10px] text-slate-400 block font-sans">🇪🇺 EUR (Euro Eropa)</span>
+                    <span className="text-[10px] text-slate-400 block font-sans">🇪🇺 EUR (Eurozone Euro)</span>
                     <span className="text-sm font-extrabold text-purple-400">{formatMoney(minorAmount, "EUR")}</span>
                   </div>
                 </div>
@@ -754,9 +779,9 @@ export function EarningsConsole({
                 <div className="pt-2 border-t border-pitch-800 text-[11px] text-slate-300 font-sans flex items-start gap-2">
                   <Building className="w-3.5 h-3.5 text-emerald-500 shrink-0 mt-0.5" />
                   <div>
-                    <span>Uang akan ditransfer ke rekening tujuan:</span>
+                    <span className="text-slate-400">Funds will be disbursed to registered destination:</span>
                     <div className="font-bold text-slate-100 font-mono mt-0.5">
-                      {wallet?.payoutAccount?.bankName || "BCA"} ({wallet?.payoutAccount?.accountNumberMasked || "•••• 8821"}) a.n {wallet?.payoutAccount?.accountHolderName || "Naufal"}
+                      {wallet?.payoutAccount?.bankName || "BCA"} ({wallet?.payoutAccount?.accountNumberMasked || "•••• 8821"}) • {wallet?.payoutAccount?.accountHolderName || "Naufal"}
                     </div>
                   </div>
                 </div>
@@ -768,14 +793,14 @@ export function EarningsConsole({
                   onClick={() => setShowWithdrawModal(false)}
                   className="px-4 py-2 text-xs font-bold text-slate-400 hover:text-slate-200"
                 >
-                  Batal
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingWithdraw || minorAmount < 1000}
                   className="px-6 py-2.5 text-xs font-bold uppercase tracking-wider text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors shadow-md flex items-center gap-1.5"
                 >
-                  {isSubmittingWithdraw ? "Memproses..." : "Konfirmasi Tarik Dana"}
+                  {isSubmittingWithdraw ? "Processing..." : "Confirm Withdrawal"}
                   <ArrowRight className="w-3.5 h-3.5" />
                 </button>
               </div>
@@ -784,15 +809,20 @@ export function EarningsConsole({
         </div>
       )}
 
-      {/* ACCOUNT CONFIGURATION MODAL */}
+      {/* ACCOUNT CONFIGURATION MODAL (100% ENGLISH & STRICT VALIDATION) */}
       {showAccountModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-pitch-900 border border-pitch-800 rounded-2xl max-w-lg w-full p-6 sm:p-7 shadow-2xl space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-pitch-800">
-              <h3 className="font-extrabold text-slate-100 text-base font-sans flex items-center gap-2">
-                <CreditCard className="w-4 h-4 text-emerald-500" />
-                <span>Pengaturan Rekening Penarikan (*Payout Destination*)</span>
-              </h3>
+              <div>
+                <h3 className="font-extrabold text-slate-100 text-base font-sans flex items-center gap-2">
+                  <CreditCard className="w-4 h-4 text-emerald-500" />
+                  <span>Configure Payout Destination</span>
+                </h3>
+                <p className="text-[11px] text-slate-400 font-sans mt-0.5">
+                  Select your region and enter verified banking or payment details.
+                </p>
+              </div>
               <button
                 onClick={() => setShowAccountModal(false)}
                 className="text-slate-400 hover:text-white text-sm p-1.5 rounded-lg hover:bg-pitch-800"
@@ -817,7 +847,7 @@ export function EarningsConsole({
               {/* Region / Currency Presets Selector */}
               <div>
                 <label className="font-bold text-slate-300 block mb-1.5 font-sans">
-                  Pilih Wilayah / Mata Uang Rekening Tujuan
+                  Payout Region & Disbursement Currency
                 </label>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-1.5 font-mono text-[11px]">
                   {(["ID", "MY", "EU", "GLOBAL"] as Array<"ID" | "MY" | "EU" | "GLOBAL">).map((reg) => (
@@ -829,16 +859,14 @@ export function EarningsConsole({
                         setBankName(DESTINATION_PRESETS[reg].options[0]);
                       }}
                       className={cn(
-                        "p-2 rounded-xl border text-center font-bold transition-all",
+                        "p-2.5 rounded-xl border text-center font-bold transition-all flex flex-col items-center justify-center gap-1",
                         selectedRegion === reg
                           ? "bg-emerald-500 text-white border-emerald-500 shadow-sm"
-                          : "bg-pitch-950 border-pitch-800 text-slate-400 hover:text-slate-200"
+                          : "bg-pitch-950 border-pitch-800 text-slate-400 hover:text-slate-200 hover:border-pitch-750"
                       )}
                     >
-                      {reg === "ID" && "🇮🇩 Indonesia"}
-                      {reg === "MY" && "🇲🇾 Malaysia"}
-                      {reg === "EU" && "🇪🇺 Eropa (EUR)"}
-                      {reg === "GLOBAL" && "🌍 Global (USD)"}
+                      <span className="text-base">{DESTINATION_PRESETS[reg].flag}</span>
+                      <span className="text-[10px] tracking-tight">{DESTINATION_PRESETS[reg].region}</span>
                     </button>
                   ))}
                 </div>
@@ -847,7 +875,7 @@ export function EarningsConsole({
               {/* Institution / Bank Select */}
               <div>
                 <label className="font-bold text-slate-300 block mb-1 font-sans">
-                  Nama Bank / E-Wallet ({DESTINATION_PRESETS[selectedRegion].currency})
+                  Payment Method / Banking Institution ({DESTINATION_PRESETS[selectedRegion].currency})
                 </label>
                 <select
                   value={bankName}
@@ -859,18 +887,18 @@ export function EarningsConsole({
                       {opt}
                     </option>
                   ))}
-                  <option value="Other">Lainnya / Other Bank...</option>
+                  <option value="Other">Other Bank / Custom Provider...</option>
                 </select>
               </div>
 
               {bankName === "Other" && (
                 <div>
                   <label className="font-bold text-slate-300 block mb-1 font-sans">
-                    Ketik Nama Bank Khusus
+                    Custom Bank / Institution Name <span className="text-red-500 font-bold">*</span>
                   </label>
                   <input
                     type="text"
-                    placeholder="Masukkan nama bank"
+                    placeholder="Enter full bank or provider name"
                     value={customBankName}
                     onChange={(e) => setCustomBankName(e.target.value)}
                     className="w-full bg-pitch-950 border border-pitch-800 rounded-xl px-3.5 py-2.5 text-slate-100 font-sans focus:outline-none focus:border-emerald-500"
@@ -881,12 +909,15 @@ export function EarningsConsole({
 
               {/* Account Number / Phone */}
               <div>
-                <label className="font-bold text-slate-300 block mb-1 font-sans">
-                  Nomor Rekening / No. HP E-Wallet / Email PayPal
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-slate-300 font-sans">
+                    {DESTINATION_PRESETS[selectedRegion].accountLabel}
+                  </label>
+                  <span className="text-[10px] font-bold text-red-400 font-mono">* Required</span>
+                </div>
                 <input
                   type="text"
-                  placeholder="Contoh: 1234567890 atau 08123456789"
+                  placeholder={DESTINATION_PRESETS[selectedRegion].accountPlaceholder}
                   value={accountNumber}
                   onChange={(e) => setAccountNumber(e.target.value)}
                   className="w-full bg-pitch-950 border border-pitch-800 rounded-xl px-3.5 py-2.5 text-slate-100 font-mono focus:outline-none focus:border-emerald-500"
@@ -896,17 +927,23 @@ export function EarningsConsole({
 
               {/* Account Holder Name */}
               <div>
-                <label className="font-bold text-slate-300 block mb-1 font-sans">
-                  Nama Lengkap Pemilik Rekening (Sesuai KTP / Buku Tabungan)
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="font-bold text-slate-300 font-sans">
+                    Account Holder Full Legal Name
+                  </label>
+                  <span className="text-[10px] font-bold text-red-400 font-mono">* Required</span>
+                </div>
                 <input
                   type="text"
-                  placeholder="Nama lengkap resmi pemilik rekening"
+                  placeholder="Must match government ID / bank passbook exactly"
                   value={accountHolderName}
                   onChange={(e) => setAccountHolderName(e.target.value)}
                   className="w-full bg-pitch-950 border border-pitch-800 rounded-xl px-3.5 py-2.5 text-slate-100 font-sans focus:outline-none focus:border-emerald-500"
                   required
                 />
+                <p className="text-[10px] text-slate-400 mt-1 font-sans">
+                  Payouts with mismatched beneficiary names will be held for manual compliance review.
+                </p>
               </div>
 
               <div className="pt-2 flex items-center justify-end gap-2">
@@ -915,14 +952,14 @@ export function EarningsConsole({
                   onClick={() => setShowAccountModal(false)}
                   className="px-4 py-2 font-bold text-slate-400 hover:text-slate-200"
                 >
-                  Batal
+                  Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={isSubmittingAccount}
                   className="px-6 py-2.5 font-bold uppercase tracking-wider text-white bg-emerald-500 hover:bg-emerald-600 rounded-xl transition-colors shadow-md"
                 >
-                  {isSubmittingAccount ? "Menyimpan..." : "Simpan Rekening"}
+                  {isSubmittingAccount ? "Saving..." : "Save Payout Destination"}
                 </button>
               </div>
             </form>
