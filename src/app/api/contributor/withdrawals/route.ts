@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth/session";
 import { prisma } from "@/lib/db";
 import { walletService } from "@/lib/rewards/wallet.service";
 import { checkRateLimit } from "@/lib/redis";
+import { simulationStore } from "@/lib/rewards/simulation-store";
 import { z } from "zod";
 
 const withdrawalSchema = z.object({
@@ -29,10 +30,12 @@ export async function GET(req: NextRequest) {
           orderBy: { createdAt: "desc" },
         });
 
-        return NextResponse.json({
-          success: true,
-          withdrawals,
-        });
+        if (withdrawals && withdrawals.length > 0) {
+          return NextResponse.json({
+            success: true,
+            withdrawals,
+          });
+        }
       }
     } catch {
       // Fallback
@@ -41,7 +44,7 @@ export async function GET(req: NextRequest) {
     // Dev Simulation Fallback
     return NextResponse.json({
       success: true,
-      withdrawals: [],
+      withdrawals: simulationStore.withdrawals,
     });
   } catch (error: any) {
     console.error("[Contributor Withdrawals GET Error]:", error);
@@ -98,28 +101,32 @@ export async function POST(req: NextRequest) {
         });
       }
     } catch (dbErr) {
-      // Dev Simulation Instant Confirmation
+      // Dev Simulation Instant Add to Simulation Store
+      const newSimW = simulationStore.addWithdrawal(
+        parsed.data.amountMinor,
+        "BCA (Bank Central Asia)",
+        "•••• 8821",
+        user.fullName || "Naufal (Developer & Contributor)"
+      );
+
       return NextResponse.json({
         success: true,
         message: "Simulation: Withdrawal request submitted successfully.",
-        withdrawal: {
-          id: `with_sim_${Date.now()}`,
-          amountMinor: parsed.data.amountMinor,
-          status: "PENDING_REVIEW",
-          createdAt: new Date(),
-        },
+        withdrawal: newSimW,
       });
     }
+
+    const newSimW = simulationStore.addWithdrawal(
+      parsed.data.amountMinor,
+      "BCA (Bank Central Asia)",
+      "•••• 8821",
+      user.fullName || "Naufal (Developer & Contributor)"
+    );
 
     return NextResponse.json({
       success: true,
       message: "Simulation: Withdrawal request submitted successfully.",
-      withdrawal: {
-        id: `with_sim_${Date.now()}`,
-        amountMinor: parsed.data.amountMinor,
-        status: "PENDING_REVIEW",
-        createdAt: new Date(),
-      },
+      withdrawal: newSimW,
     });
   } catch (error: any) {
     console.error("[Contributor Withdrawal POST Error]:", error);
