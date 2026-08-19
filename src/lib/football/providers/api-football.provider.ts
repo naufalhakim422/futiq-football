@@ -536,7 +536,7 @@ export class ApiFootballProvider implements IFootballProvider {
             position: x.player?.pos || (idx === 0 ? "GK" : idx < 5 ? "DF" : idx < 8 ? "MF" : "FW"),
             number: x.player?.number || idx + 1,
             gridPosition: x.player?.grid,
-            photoUrl: x.player?.id ? `https://media.api-sports.io/football/players/${x.player.id}.png` : undefined,
+            photoUrl: x.player?.id ? `/api/football/player-image?id=${x.player.id}` : undefined,
             rating: parseFloat(Math.min(9.8, Math.max(6.0, ratingNum)).toFixed(1)),
             isCaptain: idx === 0 || idx === 3,
             goals: hasScored ? 1 : 0,
@@ -547,7 +547,7 @@ export class ApiFootballProvider implements IFootballProvider {
           name: x.player?.name,
           position: x.player?.pos || "SUB",
           number: x.player?.number || idx + 12,
-          photoUrl: x.player?.id ? `https://media.api-sports.io/football/players/${x.player.id}.png` : undefined,
+          photoUrl: x.player?.id ? `/api/football/player-image?id=${x.player.id}` : undefined,
           rating: 6.8,
         })),
       };

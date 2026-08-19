@@ -155,6 +155,7 @@ export function TacticalPitchLineup({
             photoUrl={player.photoUrl}
             name={player.name}
             number={player.number}
+            playerId={player.playerId}
             position={player.position}
             team={team}
           />
@@ -398,6 +399,7 @@ export function TacticalPitchLineup({
                               photoUrl={p.photoUrl}
                               name={p.name}
                               number={p.number}
+                              playerId={p.playerId}
                               position={p.position}
                               team="home"
                             />
@@ -462,6 +464,7 @@ export function TacticalPitchLineup({
                               photoUrl={p.photoUrl}
                               name={p.name}
                               number={p.number}
+                              playerId={p.playerId}
                               position={p.position}
                               team="away"
                             />
@@ -608,6 +611,7 @@ export function TacticalPitchLineup({
                   photoUrl={selectedPlayer.player.photoUrl}
                   name={selectedPlayer.player.name}
                   number={selectedPlayer.player.number}
+                  playerId={selectedPlayer.player.playerId}
                   position={selectedPlayer.player.position}
                   team={selectedPlayer.teamName === homeTeamName ? "home" : "away"}
                 />
