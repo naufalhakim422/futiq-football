@@ -18,7 +18,7 @@
 }
 
 /* ========================================================================= */
-/* LIGHT THEME OVERRIDES (Clean Modern Sports Platform Theme) */
+/* LIGHT THEME OVERRIDES (Clean Modern Sports Platform & Backoffice Theme) */
 /* ========================================================================= */
 html.light {
   color-scheme: light;
@@ -31,7 +31,7 @@ html.light body {
 
 /* Background mappings */
 html.light .bg-pitch-950 {
-  background-color: #f1f5f9 !important;
+  background-color: #f8fafc !important;
 }
 
 html.light .bg-pitch-900 {
@@ -39,7 +39,7 @@ html.light .bg-pitch-900 {
 }
 
 html.light .bg-pitch-850 {
-  background-color: #f8fafc !important;
+  background-color: #f1f5f9 !important;
 }
 
 html.light .bg-pitch-800 {
@@ -79,11 +79,10 @@ html.light .text-slate-400 {
 }
 
 html.light .text-slate-500 {
-  color: #94a3b8 !important;
+  color: #64748b !important;
 }
 
 /* Brand Neon / Accent Green adjustments in Light Mode */
-/* In light mode, replace bright unreadable neon yellow-green with high-contrast emerald */
 html.light .text-\[\#c3ff00\] {
   color: #059669 !important;
 }
@@ -121,7 +120,8 @@ html.light .hover\:border-\[\#c3ff00\]\/60:hover {
 
 /* Gradients override in Light Mode */
 html.light .bg-gradient-to-r,
-html.light .bg-gradient-to-b {
+html.light .bg-gradient-to-b,
+html.light .bg-gradient-to-br {
   background-image: none !important;
 }
 
@@ -137,7 +137,7 @@ html.light footer {
   border-color: #e2e8f0 !important;
 }
 
-/* Cards & Modals */
+/* Cards, Backoffice Panels & Modals */
 html.light .shadow-2xl,
 html.light .shadow-xl,
 html.light .shadow-lg {

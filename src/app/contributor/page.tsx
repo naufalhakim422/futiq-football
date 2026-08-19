@@ -42,11 +42,11 @@ export default async function ContributorDashboardPage() {
           <div className="max-w-4xl mx-auto space-y-8">
             {/* Header Masthead */}
             <div className="text-center space-y-3">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-pitch-900 border border-pitch-800 text-[10px] font-mono font-bold uppercase tracking-widest text-brand-green">
-                <Lock className="w-3.5 h-3.5 text-brand-green" />
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-pitch-900 border border-pitch-800 text-[10px] font-mono font-bold uppercase tracking-widest text-[#c3ff00] rounded-full shadow-sm">
+                <Lock className="w-3.5 h-3.5" />
                 <span>Restricted Newsroom Portal • Accredited Access Only</span>
               </div>
-              <h1 className="text-2xl sm:text-4xl font-extrabold text-slate-100 font-sans tracking-tight">
+              <h1 className="text-3xl sm:text-4xl font-extrabold text-slate-100 font-sans tracking-tight">
                 Contributor & Tactical Journalism Desk
               </h1>
               <p className="text-sm text-slate-400 max-w-2xl mx-auto leading-relaxed">
@@ -57,15 +57,13 @@ export default async function ContributorDashboardPage() {
             {/* Portal Gateways Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Card 1: Apply to Become a Contributor */}
-              <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xl relative overflow-hidden group">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-brand-green/5 blur-3xl rounded-full" />
-                
+              <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 flex flex-col justify-between rounded-2xl shadow-xl relative overflow-hidden group">
                 <div className="space-y-4">
-                  <div className="w-12 h-12 bg-brand-green/10 border border-brand-green/30 text-brand-green flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-pitch-850 border border-[#c3ff00]/40 text-[#c3ff00] flex items-center justify-center">
                     <PenTool className="w-6 h-6" />
                   </div>
                   <div className="space-y-1.5">
-                    <span className="text-[10px] font-mono uppercase tracking-widest text-brand-green font-bold block">
+                    <span className="text-[10px] font-mono uppercase tracking-widest text-[#c3ff00] font-bold block">
                       New Writers & Beat Analysts
                     </span>
                     <h3 className="text-lg font-bold text-slate-100 font-sans">
@@ -95,18 +93,18 @@ export default async function ContributorDashboardPage() {
                 <div className="pt-4 border-t border-pitch-800">
                   <Link
                     href="/contributor/apply"
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover transition-colors shadow-lg active:scale-[0.99]"
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-xl transition-colors shadow-lg active:scale-[0.99]"
                   >
                     <span>Submit Accreditation Application</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-4 h-4 text-slate-950" />
                   </Link>
                 </div>
               </div>
 
               {/* Card 2: Existing Contributor Terminal */}
-              <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 flex flex-col justify-between shadow-2xl">
+              <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 space-y-6 flex flex-col justify-between rounded-2xl shadow-xl">
                 <div className="space-y-4">
-                  <div className="w-12 h-12 bg-pitch-850 border border-pitch-750 text-slate-300 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-xl bg-pitch-850 border border-pitch-750 text-slate-300 flex items-center justify-center">
                     <ShieldCheck className="w-6 h-6 text-brand-green" />
                   </div>
                   <div className="space-y-1.5">
@@ -121,18 +119,18 @@ export default async function ContributorDashboardPage() {
                     </p>
                   </div>
 
-                  <div className="p-4 bg-pitch-950 border border-pitch-800 space-y-2 text-xs font-mono text-slate-400">
+                  <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-2 text-xs font-mono text-slate-400">
                     <div className="flex items-center justify-between text-[11px]">
                       <span>Authentication:</span>
-                      <span className="text-brand-green">Server JWT Session</span>
+                      <span className="text-brand-green font-bold">Server JWT Session</span>
                     </div>
                     <div className="flex items-center justify-between text-[11px]">
                       <span>Role Verification:</span>
-                      <span className="text-slate-300">CONTRIBUTOR / EDITOR</span>
+                      <span className="text-slate-300 font-semibold">CONTRIBUTOR / EDITOR</span>
                     </div>
                     <div className="flex items-center justify-between text-[11px]">
                       <span>Ledger Invariant:</span>
-                      <span className="text-emerald-400">Locked / Server-Auth</span>
+                      <span className="text-emerald-400 font-bold">Locked / Server-Auth</span>
                     </div>
                   </div>
                 </div>
@@ -140,14 +138,14 @@ export default async function ContributorDashboardPage() {
                 <div className="pt-4 border-t border-pitch-800 space-y-2.5 font-sans">
                   <Link
                     href="/login?redirect=/contributor"
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-lg transition-colors shadow-md active:scale-[0.99]"
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 text-xs font-bold uppercase tracking-wider text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-xl transition-colors shadow-md active:scale-[0.99]"
                   >
                     <span>Accredited Writer Login</span>
-                    <ChevronRight className="w-4 h-4" />
+                    <ChevronRight className="w-4 h-4 text-slate-950" />
                   </Link>
                   <a
                     href="/api/auth/dev-session?role=CONTRIBUTOR&redirect=/contributor"
-                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-lg transition-colors font-mono"
+                    className="w-full inline-flex items-center justify-center gap-2 px-5 py-2.5 text-xs font-bold text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-xl transition-colors font-mono"
                   >
                     <span>1-Click Fast Dev Contributor Access</span>
                   </a>
@@ -199,11 +197,11 @@ export default async function ContributorDashboardPage() {
         />
 
         {/* Top Newsroom Control Panel */}
-        <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-7 space-y-6 shadow-xl">
+        <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-7 space-y-6 rounded-2xl shadow-xl">
           <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-pitch-800">
             <div className="space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="px-2 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-pitch-850 text-brand-green border border-pitch-750">
+                <span className="px-2.5 py-0.5 text-[10px] font-mono font-bold uppercase tracking-wider bg-[#c3ff00]/10 text-[#c3ff00] border border-[#c3ff00]/30 rounded-md">
                   AUTHENTICATED AUTHOR
                 </span>
                 <span className="text-xs font-mono text-slate-300 font-semibold">
@@ -218,83 +216,83 @@ export default async function ContributorDashboardPage() {
             <div className="flex flex-wrap items-center gap-2.5 shrink-0">
               <a
                 href="/api/auth/dev-session?action=logout&redirect=/contributor"
-                className="px-3 py-2 text-xs font-semibold text-slate-300 bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 flex items-center gap-1.5 transition-colors"
+                className="px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-xl flex items-center gap-1.5 transition-colors"
               >
                 <span>Sign Out</span>
               </a>
               <Link
                 href="/contributor/earnings"
-                className="px-3.5 py-2 text-xs font-semibold text-emerald-400 bg-emerald-950/40 hover:bg-emerald-900/40 border border-emerald-800/60 flex items-center gap-2 transition-colors active:scale-[0.99]"
+                className="px-4 py-2 text-xs font-bold text-emerald-400 bg-emerald-950/40 hover:bg-emerald-900/50 border border-emerald-800/60 rounded-xl flex items-center gap-2 transition-colors active:scale-[0.99]"
               >
                 <DollarSign className="w-3.5 h-3.5 text-emerald-400" />
                 <span>Earnings & Wallet</span>
               </Link>
               <Link
                 href="/contributor/notifications"
-                className="px-3.5 py-2 text-xs font-semibold text-slate-300 bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 flex items-center gap-2 transition-colors active:scale-[0.99]"
+                className="px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-xl flex items-center gap-2 transition-colors active:scale-[0.99]"
               >
                 <Bell className="w-3.5 h-3.5 text-brand-green" />
                 <span>Alerts</span>
               </Link>
               <Link
                 href="/contributor/profile"
-                className="px-3.5 py-2 text-xs font-semibold text-slate-300 bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 flex items-center gap-2 transition-colors active:scale-[0.99]"
+                className="px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-xl flex items-center gap-2 transition-colors active:scale-[0.99]"
               >
                 <User className="w-3.5 h-3.5 text-brand-green" />
                 <span>Author Dossier</span>
               </Link>
               <Link
                 href="/contributor/articles/new"
-                className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover transition-colors shadow-lg active:scale-[0.99]"
+                className="inline-flex items-center gap-2 px-5 py-2 text-xs font-bold uppercase tracking-wider text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-xl transition-all shadow-lg active:scale-[0.99]"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4 text-slate-950" />
                 <span>New Manuscript</span>
               </Link>
             </div>
           </div>
 
-          {/* Genuine Telemetry Grid (Zero Fake Numbers) */}
+          {/* Genuine Telemetry Grid */}
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 font-mono">
-            <div className="bg-pitch-950 border border-pitch-800 p-3.5 space-y-1">
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Total Articles</span>
-              <div className="text-2xl font-bold text-slate-100">{metrics.total}</div>
+            <div className="bg-pitch-950 border border-pitch-800 p-4 rounded-xl space-y-1">
+              <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Total Articles</span>
+              <div className="text-2xl font-black text-slate-100">{metrics.total}</div>
               <span className="text-[9px] text-slate-500 block">All-time count</span>
             </div>
 
-            <div className="bg-pitch-950 border border-pitch-800 p-3.5 space-y-1">
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Active Drafts</span>
-              <div className="text-2xl font-bold text-slate-200">{metrics.drafts}</div>
+            <div className="bg-pitch-950 border border-pitch-800 p-4 rounded-xl space-y-1">
+              <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Active Drafts</span>
+              <div className="text-2xl font-black text-slate-200">{metrics.drafts}</div>
               <span className="text-[9px] text-slate-500 block">In progress</span>
             </div>
 
-            <div className="bg-pitch-950 border border-pitch-800 p-3.5 space-y-1">
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider block">In Review</span>
-              <div className="text-2xl font-bold text-brand-gold">{metrics.submitted}</div>
+            <div className="bg-pitch-950 border border-pitch-800 p-4 rounded-xl space-y-1">
+              <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">In Review</span>
+              <div className="text-2xl font-black text-amber-500">{metrics.submitted}</div>
               <span className="text-[9px] text-slate-500 block">Editorial Queue</span>
             </div>
 
-            <div className="bg-pitch-950 border border-pitch-800 p-3.5 space-y-1">
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Revisions Req.</span>
-              <div className="text-2xl font-bold text-brand-red">{metrics.revisionRequired}</div>
+            <div className="bg-pitch-950 border border-pitch-800 p-4 rounded-xl space-y-1">
+              <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Revisions Req.</span>
+              <div className="text-2xl font-black text-rose-500">{metrics.revisionRequired}</div>
               <span className="text-[9px] text-slate-500 block">Needs changes</span>
             </div>
 
-            <div className="bg-pitch-950 border border-pitch-800 p-3.5 space-y-1">
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Published</span>
-              <div className="text-2xl font-bold text-brand-green">{metrics.published}</div>
+            <div className="bg-pitch-950 border border-pitch-800 p-4 rounded-xl space-y-1">
+              <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Published</span>
+              <div className="text-2xl font-black text-emerald-500">{metrics.published}</div>
               <span className="text-[9px] text-slate-500 block">Live on newsfeed</span>
             </div>
 
-            <div className="bg-pitch-950 border border-pitch-800 p-3.5 space-y-1">
-              <span className="text-[10px] text-slate-500 uppercase tracking-wider block">Not Accepted</span>
-              <div className="text-2xl font-bold text-slate-400">{metrics.rejected}</div>
+            <div className="bg-pitch-950 border border-pitch-800 p-4 rounded-xl space-y-1">
+              <span className="text-[10px] text-slate-400 uppercase tracking-wider block font-bold">Not Accepted</span>
+              <div className="text-2xl font-black text-slate-400">{metrics.rejected}</div>
               <span className="text-[9px] text-slate-500 block">Closed</span>
             </div>
           </div>
         </div>
 
         {/* Articles List / Workspace */}
-        <div className="bg-pitch-900 border border-pitch-800 overflow-hidden shadow-xl">
+        <div className="bg-pitch-900 border border-pitch-800 rounded-2xl overflow-hidden shadow-xl">
           <div className="p-4 sm:p-5 border-b border-pitch-800 bg-pitch-950 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div className="flex items-center gap-2.5">
               <Layers className="w-4 h-4 text-brand-green" />
@@ -309,7 +307,7 @@ export default async function ContributorDashboardPage() {
 
           {articles.length === 0 ? (
             <div className="py-14 px-6 text-center space-y-4 max-w-md mx-auto">
-              <div className="w-12 h-12 bg-pitch-850 border border-pitch-750 flex items-center justify-center mx-auto text-slate-400">
+              <div className="w-12 h-12 rounded-xl bg-pitch-850 border border-pitch-750 flex items-center justify-center mx-auto text-slate-400">
                 <PenTool className="w-5 h-5 text-brand-green" />
               </div>
               <div className="space-y-1">
@@ -320,9 +318,9 @@ export default async function ContributorDashboardPage() {
               </div>
               <Link
                 href="/contributor/articles/new"
-                className="inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover transition-colors shadow-md active:scale-[0.99]"
+                className="inline-flex items-center gap-2 px-6 py-3 text-xs font-bold uppercase tracking-wider text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-xl transition-all shadow-md active:scale-[0.99]"
               >
-                <Plus className="w-4 h-4" />
+                <Plus className="w-4 h-4 text-slate-950" />
                 <span>Create Your First Manuscript</span>
               </Link>
             </div>
@@ -337,19 +335,19 @@ export default async function ContributorDashboardPage() {
                     <div className="flex flex-wrap items-center gap-2">
                       <span
                         className={cn(
-                          "px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider font-mono border",
+                          "px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider font-mono rounded border",
                           art.status === "DRAFT" && "bg-pitch-800 text-slate-300 border-pitch-700",
-                          art.status === "SUBMITTED" && "bg-brand-gold/15 text-brand-gold border-brand-gold/30",
-                          art.status === "IN_REVIEW" && "bg-brand-gold/15 text-brand-gold border-brand-gold/30",
-                          art.status === "REVISION_REQUIRED" && "bg-brand-red/15 text-brand-red border-brand-red/30 font-bold",
-                          art.status === "APPROVED" && "bg-brand-green/15 text-brand-green border-brand-green/30",
-                          art.status === "PUBLISHED" && "bg-brand-green/25 text-brand-green border-brand-green/40 font-bold",
+                          art.status === "SUBMITTED" && "bg-amber-500/15 text-amber-400 border-amber-500/30",
+                          art.status === "IN_REVIEW" && "bg-amber-500/15 text-amber-400 border-amber-500/30",
+                          art.status === "REVISION_REQUIRED" && "bg-rose-500/15 text-rose-400 border-rose-500/30 font-bold",
+                          art.status === "APPROVED" && "bg-emerald-500/15 text-emerald-400 border-emerald-500/30",
+                          art.status === "PUBLISHED" && "bg-emerald-500/25 text-emerald-400 border-emerald-500/40 font-bold",
                           art.status === "REJECTED" && "bg-slate-800 text-slate-400 border-slate-700"
                         )}
                       >
                         {art.status}
                       </span>
-                      <span className="px-2 py-0.5 text-[10px] font-mono bg-pitch-950 text-slate-400 border border-pitch-800">
+                      <span className="px-2 py-0.5 text-[10px] font-mono bg-pitch-950 text-slate-400 border border-pitch-800 rounded">
                         {art.category}
                       </span>
                       <span className="text-[11px] font-mono text-slate-500">
@@ -368,7 +366,7 @@ export default async function ContributorDashboardPage() {
                     </span>
                     <Link
                       href={`/contributor/articles/${art.id}/edit`}
-                      className="px-4 py-2 text-xs font-bold uppercase tracking-wider bg-pitch-800 hover:bg-pitch-750 text-slate-200 border border-pitch-700 transition-colors flex items-center gap-1.5 active:scale-[0.99]"
+                      className="px-4 py-2 text-xs font-bold uppercase tracking-wider bg-pitch-800 hover:bg-pitch-750 text-slate-200 border border-pitch-700 rounded-lg transition-colors flex items-center gap-1.5 active:scale-[0.99]"
                     >
                       <span>{art.status === "DRAFT" || art.status === "REVISION_REQUIRED" ? "Edit Manuscript" : "Inspect"}</span>
                       <ChevronRight className="w-3.5 h-3.5 text-slate-400" />
