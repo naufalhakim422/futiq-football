@@ -123,7 +123,9 @@ export interface LineupPlayer {
   name: string;
   number: number;
   position: string;
+  positionLabel?: string; // e.g. "Kiper", "Bek Tengah", "Gelandang Serang"
   gridPosition?: string; // e.g. "1:1", "2:3"
+  photoUrl?: string;
   rating?: number | string; // e.g. 8.8
   isCaptain?: boolean;
   isMotm?: boolean;
@@ -131,11 +133,20 @@ export interface LineupPlayer {
   assists?: number;
   yellowCards?: number;
   redCards?: number;
+  saves?: number;
+  tackles?: number;
+  passes?: number;
+  keyPasses?: number;
 }
 
 export interface ProviderMatchLineup {
   teamId: string;
+  teamName?: string;
   formation: string;
+  manager?: {
+    name: string;
+    photoUrl?: string;
+  };
   starters: LineupPlayer[];
   bench: LineupPlayer[];
 }
