@@ -27,10 +27,10 @@ export function MatchStandings({
       <div className="bg-pitch-900 border border-pitch-800 rounded-3xl p-8 shadow-xl text-center space-y-2 font-sans">
         <Trophy className="w-8 h-8 text-slate-600 mx-auto" />
         <h4 className="text-xs font-mono font-bold text-slate-300 uppercase">
-          Pertandingan Uji Coba / Persahabatan
+          Friendly / Exhibition Match
         </h4>
         <p className="text-[11px] text-slate-500">
-          Laga ini berstatus laga uji coba internasional non-klasemen (tidak memiliki sistem poin grup/liga).
+          This fixture is an international exhibition with no league table or group points standing.
         </p>
       </div>
     );
@@ -41,10 +41,10 @@ export function MatchStandings({
       <div className="bg-pitch-900 border border-pitch-800 rounded-3xl p-8 shadow-xl text-center space-y-2 font-sans">
         <Trophy className="w-8 h-8 text-slate-600 mx-auto" />
         <h4 className="text-xs font-mono font-bold text-slate-300 uppercase">
-          Klasemen Belum Tersedia
+          Standings Not Available
         </h4>
         <p className="text-[11px] text-slate-500">
-          Data klasemen grup/liga untuk kompetisi ini belum tersedia atau sedang dalam fase gugur (knockout).
+          Group standings for this competition are not applicable or the tournament is currently in knockout rounds.
         </p>
       </div>
     );
@@ -57,10 +57,10 @@ export function MatchStandings({
         <div className="flex items-center gap-2">
           <Trophy className="w-4 h-4 text-[#c3ff00]" />
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200 font-mono">
-            Klasemen {groupName ? `${competitionName} — ${groupName}` : competitionName}
+            Standings: {groupName ? `${competitionName} — ${groupName}` : competitionName}
           </h3>
         </div>
-        <span className="text-[10px] font-mono text-slate-400">Pembaruan Real-Time</span>
+        <span className="text-[10px] font-mono text-slate-400">Live Standings Update</span>
       </div>
 
       {/* Table */}
@@ -69,15 +69,15 @@ export function MatchStandings({
           <thead>
             <tr className="border-b border-pitch-800 text-slate-400 uppercase font-mono text-[10px]">
               <th className="py-2.5 px-2 text-center w-8">#</th>
-              <th className="py-2.5 px-3">Klub / Tim</th>
-              <th className="py-2.5 px-2 text-center">Main</th>
-              <th className="py-2.5 px-2 text-center">M</th>
-              <th className="py-2.5 px-2 text-center">S</th>
-              <th className="py-2.5 px-2 text-center">K</th>
-              <th className="py-2.5 px-2 text-center hidden sm:table-cell">GM</th>
-              <th className="py-2.5 px-2 text-center hidden sm:table-cell">GK</th>
-              <th className="py-2.5 px-2 text-center">SG</th>
-              <th className="py-2.5 px-3 text-center font-bold text-slate-200">Poin</th>
+              <th className="py-2.5 px-3">Club / Team</th>
+              <th className="py-2.5 px-2 text-center">P</th>
+              <th className="py-2.5 px-2 text-center">W</th>
+              <th className="py-2.5 px-2 text-center">D</th>
+              <th className="py-2.5 px-2 text-center">L</th>
+              <th className="py-2.5 px-2 text-center hidden sm:table-cell">GF</th>
+              <th className="py-2.5 px-2 text-center hidden sm:table-cell">GA</th>
+              <th className="py-2.5 px-2 text-center">GD</th>
+              <th className="py-2.5 px-3 text-center font-bold text-slate-200">Pts</th>
               <th className="py-2.5 px-2 text-center hidden md:table-cell">Form</th>
             </tr>
           </thead>

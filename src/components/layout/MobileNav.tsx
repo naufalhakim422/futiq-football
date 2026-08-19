@@ -58,7 +58,7 @@ export function MobileNav() {
                 onClick={() => setIsOpen(false)}
                 className="px-3 py-2 text-xs font-bold uppercase tracking-wider text-[#c3ff00] bg-pitch-900 border border-[#c3ff00]/40 rounded flex items-center justify-between"
               >
-                <span>Masuk Akun / Login</span>
+                <span>Sign In / Login</span>
                 <User className="w-3.5 h-3.5 text-[#c3ff00]" />
               </Link>
 
@@ -67,7 +67,7 @@ export function MobileNav() {
                 onClick={() => setIsOpen(false)}
                 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-emerald-300 hover:text-white bg-pitch-900 border border-emerald-800/40 rounded flex items-center justify-between"
               >
-                <span>Meja Kontributor</span>
+                <span>Contributor Desk</span>
                 <PenTool className="w-3.5 h-3.5 text-emerald-400" />
               </Link>
 
@@ -76,7 +76,7 @@ export function MobileNav() {
                 onClick={() => setIsOpen(false)}
                 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-white bg-pitch-900 border border-pitch-750 rounded flex items-center justify-between"
               >
-                <span>Admin & Operasi</span>
+                <span>Admin Operations</span>
                 <ShieldCheck className="w-3.5 h-3.5 text-brand-red" />
               </Link>
 
@@ -85,7 +85,7 @@ export function MobileNav() {
                 onClick={() => setIsOpen(false)}
                 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-slate-200 bg-pitch-900/60 border border-pitch-800 rounded flex items-center justify-between"
               >
-                <span>Daftar Jadi Penulis (Apply)</span>
+                <span>Become a Contributor</span>
                 <Globe className="w-3.5 h-3.5 text-slate-400" />
               </Link>
             </div>

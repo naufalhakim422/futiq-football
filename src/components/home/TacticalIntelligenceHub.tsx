@@ -81,7 +81,7 @@ export function TacticalIntelligenceHub() {
               <span className="w-1.5 h-1.5 rounded-full bg-[#c3ff00] animate-pulse" />
             </div>
             <h3 className="text-base sm:text-lg font-extrabold text-slate-100 tracking-tight">
-              Pusat Intelijen Taktik & Radar Pertandingan
+              Tactical Intelligence & Match Radar
             </h3>
           </div>
         </div>
@@ -160,7 +160,7 @@ export function TacticalIntelligenceHub() {
           <div className="p-4 bg-[#c3ff00]/5 border border-[#c3ff00]/30 rounded-xl flex items-start gap-3 text-xs leading-relaxed">
             <Crosshair className="w-4 h-4 text-[#c3ff00] shrink-0 mt-0.5" />
             <p className="text-slate-200 font-sans">
-              <strong className="text-[#c3ff00]">Analisis Redaksi:</strong> {currentRadar.keyInsight}
+              <strong className="text-[#c3ff00]">Editorial Insight:</strong> {currentRadar.keyInsight}
             </p>
           </div>
         </div>
@@ -208,7 +208,7 @@ export function TacticalIntelligenceHub() {
             href="/players"
             className="w-full inline-flex items-center justify-center gap-1.5 py-2.5 text-xs font-bold font-mono text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-xl transition-colors"
           >
-            <span>Lihat Seluruh Database Pemain</span>
+            <span>Explore Full Players Database</span>
             <ChevronRight className="w-3.5 h-3.5 text-[#c3ff00]" />
           </Link>
         </div>

@@ -86,7 +86,7 @@ export function BreakingTickerBar() {
           href="/news"
           className="hidden md:inline-flex items-center gap-1 text-[11px] font-mono font-bold text-[#c3ff00] hover:underline uppercase shrink-0 pl-3 border-l border-pitch-800"
         >
-          <span>Pusat Berita</span>
+          <span>Newsroom</span>
           <ArrowRight className="w-3 h-3" />
         </Link>
       </div>

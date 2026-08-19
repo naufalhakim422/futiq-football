@@ -120,7 +120,7 @@ export function UserNav({ user }: UserNavProps) {
                   className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-pitch-800 transition-colors"
                 >
                   <Shield className="w-4 h-4 text-[#c3ff00]" />
-                  <span className="font-semibold">Pusat Admin Portal</span>
+                  <span className="font-semibold">Admin Portal Control</span>
                 </Link>
 
                 <Link
@@ -129,7 +129,7 @@ export function UserNav({ user }: UserNavProps) {
                   className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-pitch-800 transition-colors"
                 >
                   <Users className="w-4 h-4 text-red-400" />
-                  <span>Moderasi Kontributor</span>
+                  <span>Contributor Moderation</span>
                 </Link>
               </>
             )}
@@ -142,7 +142,7 @@ export function UserNav({ user }: UserNavProps) {
                   className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-pitch-800 transition-colors"
                 >
                   <PenTool className="w-4 h-4 text-emerald-400" />
-                  <span className="font-semibold">Meja Kontributor</span>
+                  <span className="font-semibold">Contributor Desk</span>
                 </Link>
 
                 <Link
@@ -151,7 +151,7 @@ export function UserNav({ user }: UserNavProps) {
                   className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-pitch-800 transition-colors"
                 >
                   <FileText className="w-4 h-4 text-cyan-400" />
-                  <span>Tulis Artikel Baru</span>
+                  <span>Write New Article</span>
                 </Link>
 
                 <Link
@@ -160,7 +160,7 @@ export function UserNav({ user }: UserNavProps) {
                   className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-pitch-800 transition-colors"
                 >
                   <Coins className="w-4 h-4 text-amber-400" />
-                  <span>Dompet & Penghasilan</span>
+                  <span>Earnings & Wallet</span>
                 </Link>
 
                 <Link
@@ -169,7 +169,7 @@ export function UserNav({ user }: UserNavProps) {
                   className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-pitch-800 transition-colors"
                 >
                   <Settings className="w-4 h-4 text-purple-400" />
-                  <span>Profil & Pengaturan Akun</span>
+                  <span>Profile & Account Settings</span>
                 </Link>
               </>
             )}
@@ -182,7 +182,7 @@ export function UserNav({ user }: UserNavProps) {
               className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-red-400 hover:text-red-300 hover:bg-red-950/40 transition-colors font-semibold"
             >
               <LogOut className="w-4 h-4" />
-              <span>Keluar (Logout)</span>
+              <span>Sign Out</span>
             </a>
           </div>
         </div>

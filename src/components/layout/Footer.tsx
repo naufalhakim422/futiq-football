@@ -25,7 +25,7 @@ export function Footer() {
             </div>
 
             <p className="text-slate-400 text-xs leading-relaxed max-w-sm font-normal">
-              Media dan intelijen sepak bola global. Laporan pertandingan, analisis taktik, rumor transfer, dan ruang terbuka bagi penulis sepak bola.
+              Global sports media and football intelligence. Live match tracking, tactical analysis, transfer insights, and open platform for football writers.
             </p>
 
             <div className="flex items-center gap-2 text-[10px] font-mono text-slate-500 pt-1">
@@ -34,10 +34,10 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Liputan */}
+          {/* Coverage */}
           <div className="space-y-2.5">
             <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[11px] font-mono">
-              Liputan
+              Coverage
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
@@ -52,21 +52,21 @@ export function Footer() {
               </li>
               <li>
                 <Link href="/news?category=tactics" className="hover:text-[#c3ff00] transition-colors">
-                  Analisis Taktik
+                  Tactical Analysis
                 </Link>
               </li>
               <li>
                 <Link href="/matches" className="hover:text-[#c3ff00] transition-colors">
-                  Skor & Jadwal
+                  Scores & Fixtures
                 </Link>
               </li>
             </ul>
           </div>
 
-          {/* Kompetisi */}
+          {/* Competitions */}
           <div className="space-y-2.5">
             <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[11px] font-mono">
-              Kompetisi
+              Competitions
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
@@ -92,10 +92,10 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Kontributor & Masuk Akun */}
+          {/* Contributors & Account */}
           <div className="space-y-2.5">
             <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[11px] font-mono">
-              Penulis & Akun
+              Writers & Portal
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
@@ -103,7 +103,7 @@ export function Footer() {
                   href="/contributor/apply"
                   className="hover:text-[#c3ff00] transition-colors text-slate-300 font-semibold"
                 >
-                  Daftar Kontributor
+                  Become a Contributor
                 </Link>
               </li>
               <li>
@@ -111,7 +111,7 @@ export function Footer() {
                   href="/contributor"
                   className="hover:text-[#c3ff00] transition-colors"
                 >
-                  Meja Kontributor
+                  Contributor Desk
                 </Link>
               </li>
               <li className="pt-1">
@@ -120,7 +120,7 @@ export function Footer() {
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pitch-900 hover:bg-pitch-850 border border-pitch-750 hover:border-[#c3ff00] text-slate-200 hover:text-[#c3ff00] text-xs font-bold font-mono transition-all shadow-sm"
                 >
                   <LogIn className="w-3.5 h-3.5 text-[#c3ff00]" />
-                  <span>Masuk Akun</span>
+                  <span>Sign In</span>
                   <ArrowRight className="w-3 h-3 ml-0.5" />
                 </Link>
               </li>
@@ -133,12 +133,12 @@ export function Footer() {
           <p>© 2026 FUTIQ FOOTBALL. All rights reserved.</p>
           <div className="flex items-center gap-4 text-slate-400">
             <Link href="/news" className="hover:text-[#c3ff00] transition-colors">
-              Pedoman Editorial
+              Editorial Guidelines
             </Link>
             <span>•</span>
-            <span className="hover:text-slate-300 cursor-pointer">Privasi</span>
+            <span className="hover:text-slate-300 cursor-pointer">Privacy Policy</span>
             <span>•</span>
-            <span className="hover:text-slate-300 cursor-pointer">Ketentuan</span>
+            <span className="hover:text-slate-300 cursor-pointer">Terms of Service</span>
           </div>
         </div>
       </PageContainer>

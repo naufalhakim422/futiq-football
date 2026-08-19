@@ -20,13 +20,13 @@ export default async function MatchesPage() {
           <div className="space-y-1">
             <div className="inline-flex items-center gap-2 px-3 py-1 bg-pitch-900 border border-pitch-750 text-[#c3ff00] text-[10px] font-mono font-bold uppercase tracking-widest rounded-full">
               <Activity className="w-3 h-3 text-[#c3ff00]" />
-              <span>Live Match Center & Telemetri</span>
+              <span>Live Match Center & Telemetry</span>
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-slate-100 uppercase tracking-tight">
-              Pusat Pertandingan & Skor
+              Football Matches & Live Scores
             </h1>
             <p className="text-xs text-slate-400 max-w-xl font-normal">
-              Dikelompokkan berdasarkan turnamen resmi dunia: Kualifikasi Piala Dunia, UEFA Nations League, Premier League, La Liga, dan kompetisi domestik.
+              Grouped by official world competitions: FIFA World Cup Qualifiers, UEFA Champions League, Premier League, La Liga, and international tournaments.
             </p>
           </div>
         </div>

@@ -6,12 +6,12 @@ import { Sparkles, Trophy, Shuffle, Activity, Globe2, Shield, Flame } from "luci
 import { cn } from "@/lib/utils";
 
 const CATEGORIES = [
-  { id: "all", label: "Semua Berita", icon: Sparkles, href: "/news" },
-  { id: "tactics", label: "Analisis Taktik", icon: Activity, href: "/news?category=tactics" },
+  { id: "all", label: "All Stories", icon: Sparkles, href: "/news" },
+  { id: "tactics", label: "Tactical Analysis", icon: Activity, href: "/news?category=tactics" },
   { id: "transfers", label: "Transfer Center", icon: Shuffle, href: "/news?category=transfers" },
-  { id: "ucl", label: "Liga Champions", icon: Trophy, href: "/news?category=ucl" },
+  { id: "ucl", label: "Champions League", icon: Trophy, href: "/news?category=ucl" },
   { id: "premier-league", label: "Premier League", icon: Globe2, href: "/news?category=premier-league" },
-  { id: "deep-dive", label: "Investigasi & Finansial", icon: Shield, href: "/news?category=deep-dive" },
+  { id: "deep-dive", label: "Deep Dive & Finance", icon: Shield, href: "/news?category=deep-dive" },
 ];
 
 export function CategoryPillsBar() {

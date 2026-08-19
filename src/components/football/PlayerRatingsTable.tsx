@@ -59,7 +59,7 @@ export function PlayerRatingsTable({
             </h3>
           </div>
           <span className="text-xs font-mono font-bold text-slate-400">
-            Formasi: {lineup.formation || "—"}
+            Formation: {lineup.formation || "—"}
           </span>
         </div>
 
@@ -69,10 +69,10 @@ export function PlayerRatingsTable({
             <thead>
               <tr className="border-b border-pitch-800 text-slate-400 uppercase font-mono text-[10px]">
                 <th className="py-2.5 px-2 w-8 text-center">No</th>
-                <th className="py-2.5 px-3">Pemain</th>
+                <th className="py-2.5 px-3">Player</th>
                 <th className="py-2.5 px-2 text-center">Pos</th>
-                <th className="py-2.5 px-2 text-center">Status</th>
-                <th className="py-2.5 px-2 text-right">Rating Provider</th>
+                <th className="py-2.5 px-2 text-center">Role</th>
+                <th className="py-2.5 px-2 text-right">Opta Rating</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-pitch-850">
@@ -113,7 +113,7 @@ export function PlayerRatingsTable({
                         </span>
                       ) : (
                         <span className="px-1.5 py-0.5 rounded bg-pitch-950 text-slate-400 border border-pitch-800">
-                          Cadangan
+                          Bench
                         </span>
                       )}
                     </td>
@@ -186,7 +186,7 @@ export function PlayerRatingsTable({
             <div className="p-4 bg-pitch-950 rounded-2xl border border-pitch-800 flex items-center justify-between">
               <div>
                 <span className="text-[10px] uppercase font-mono text-slate-400 block">
-                  Rating Resmi Provider
+                  Official Match Rating
                 </span>
                 <span className="text-2xl font-black font-mono text-slate-100">
                   {formatRating(selectedPlayer.player.rating)}
@@ -205,7 +205,7 @@ export function PlayerRatingsTable({
               onClick={() => setSelectedPlayer(null)}
               className="w-full py-3 rounded-xl bg-[#c3ff00] hover:bg-[#b0e600] text-slate-950 font-bold text-xs font-mono transition-colors shadow-md"
             >
-              Tutup Rincian
+              Close Details
             </button>
           </div>
         </div>

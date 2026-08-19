@@ -51,10 +51,10 @@ export function MatchStatsComparison({
       <div className="bg-pitch-900 border border-pitch-800 rounded-3xl p-8 shadow-xl text-center space-y-2">
         <Zap className="w-8 h-8 text-slate-600 mx-auto" />
         <h4 className="text-xs font-mono font-bold text-slate-300 uppercase">
-          Statistik Pertandingan Belum Tersedia
+          Match Statistics Not Available Yet
         </h4>
         <p className="text-[11px] text-slate-500 font-sans">
-          Data statistik resmi akan diperbarui saat penyedia data mengirimkan telemetri pertandingan.
+          Official match statistics will update once live telemetry feeds are transmitted.
         </p>
       </div>
     );
@@ -112,7 +112,7 @@ export function MatchStatsComparison({
         <div className="flex items-center gap-2">
           <Zap className="w-4 h-4 text-[#c3ff00]" />
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200 font-mono">
-            Statistik Pertandingan Resmi (Opta / Data Provider)
+            Official Match Statistics (Opta Analytics)
           </h3>
         </div>
         <div className="flex items-center gap-4 text-xs font-mono font-bold">
@@ -129,19 +129,19 @@ export function MatchStatsComparison({
 
       {/* Main Stats Rows */}
       <div className="space-y-1">
-        {renderStatRow("Penguasaan Bola", stats.possessionHome, stats.possessionAway, true)}
-        {renderStatRow("Total Tembakan", stats.shotsHome, stats.shotsAway)}
-        {renderStatRow("Tembakan Tepat Sasaran", stats.shotsOnTargetHome, stats.shotsOnTargetAway)}
-        {renderStatRow("Tembakan Melenceng", stats.shotsOffTargetHome, stats.shotsOffTargetAway)}
-        {renderStatRow("Tembakan Terblokir", stats.blockedShotsHome, stats.blockedShotsAway)}
-        {renderStatRow("Tendangan Sudut", stats.cornersHome, stats.cornersAway)}
-        {renderStatRow("Pelanggaran", stats.foulsHome, stats.foulsAway)}
-        {renderStatRow("Kartu Kuning", stats.yellowCardsHome, stats.yellowCardsAway)}
-        {renderStatRow("Kartu Merah", stats.redCardsHome, stats.redCardsAway)}
-        {renderStatRow("Offside", stats.offsidesHome, stats.offsidesAway)}
-        {renderStatRow("Penyelamatan Kiper", stats.savesHome, stats.savesAway)}
-        {renderStatRow("Total Operan", stats.passesHome, stats.passesAway)}
-        {renderStatRow("Akurasi Operan", stats.passAccuracyHome, stats.passAccuracyAway, true)}
+        {renderStatRow("Ball Possession", stats.possessionHome, stats.possessionAway, true)}
+        {renderStatRow("Total Shots", stats.shotsHome, stats.shotsAway)}
+        {renderStatRow("Shots on Target", stats.shotsOnTargetHome, stats.shotsOnTargetAway)}
+        {renderStatRow("Shots off Target", stats.shotsOffTargetHome, stats.shotsOffTargetAway)}
+        {renderStatRow("Blocked Shots", stats.blockedShotsHome, stats.blockedShotsAway)}
+        {renderStatRow("Corner Kicks", stats.cornersHome, stats.cornersAway)}
+        {renderStatRow("Fouls Committed", stats.foulsHome, stats.foulsAway)}
+        {renderStatRow("Yellow Cards", stats.yellowCardsHome, stats.yellowCardsAway)}
+        {renderStatRow("Red Cards", stats.redCardsHome, stats.redCardsAway)}
+        {renderStatRow("Offsides", stats.offsidesHome, stats.offsidesAway)}
+        {renderStatRow("Goalkeeper Saves", stats.savesHome, stats.savesAway)}
+        {renderStatRow("Total Passes", stats.passesHome, stats.passesAway)}
+        {renderStatRow("Pass Accuracy", stats.passAccuracyHome, stats.passAccuracyAway, true)}
         {renderStatRow("Expected Goals (xG)", stats.xgHome, stats.xgAway)}
       </div>
     </div>

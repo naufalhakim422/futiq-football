@@ -99,11 +99,11 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
 
             <span className="font-bold text-slate-200">
               {freshness === "FRESH" ? (
-                <span className="text-emerald-400">DATA LIVE RESMI (Sinkronisasi ~15s)</span>
+                <span className="text-emerald-400">OFFICIAL LIVE DATA (Sync ~15s)</span>
               ) : freshness === "DELAYED" ? (
-                <span className="text-amber-400">LIVE DATA DELAYED (Pembaruan tertunda)</span>
+                <span className="text-amber-400">LIVE DATA DELAYED (Update pending)</span>
               ) : (
-                <span className="text-rose-400">DATA STALE (Menunggu sinyal provider)</span>
+                <span className="text-rose-400">DATA STALE (Awaiting provider signal)</span>
               )}
             </span>
           </div>
@@ -111,10 +111,10 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
           <div className="flex items-center gap-3 text-[11px] text-slate-400">
             <span className="flex items-center gap-1">
               <Wifi className="w-3.5 h-3.5 text-cyan-400" />
-              <span>{connectionState === "CONNECTED" ? "SSE Aktif" : connectionState === "FALLBACK" ? "Polling 15s" : "Live Stream"}</span>
+              <span>{connectionState === "CONNECTED" ? "SSE Active" : connectionState === "FALLBACK" ? "Polling 15s" : "Live Stream"}</span>
             </span>
             <span>•</span>
-            <span>Diperbarui {secondsAgo} detik lalu</span>
+            <span>Updated {secondsAgo}s ago</span>
           </div>
         </div>
       )}
@@ -131,7 +131,7 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
           )}
         >
           <Shield className="w-3.5 h-3.5" />
-          <span>Susunan Pemain (Lineups)</span>
+          <span>Lineups</span>
         </button>
 
         <button
@@ -144,7 +144,7 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
           )}
         >
           <Activity className="w-3.5 h-3.5" />
-          <span>Ringkasan</span>
+          <span>Overview</span>
         </button>
 
         <button
@@ -157,7 +157,7 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
           )}
         >
           <Clock className="w-3.5 h-3.5" />
-          <span>Linimasa & Fakta</span>
+          <span>Timeline & Facts</span>
         </button>
 
         <button
@@ -170,7 +170,7 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
           )}
         >
           <Zap className="w-3.5 h-3.5" />
-          <span>Statistik (Opta)</span>
+          <span>Stats (Opta)</span>
         </button>
 
         <button
@@ -183,7 +183,7 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
           )}
         >
           <Users className="w-3.5 h-3.5" />
-          <span>Rating Pemain</span>
+          <span>Player Ratings</span>
         </button>
 
         <button
@@ -196,7 +196,7 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
           )}
         >
           <History className="w-3.5 h-3.5" />
-          <span>H2H & Tren</span>
+          <span>H2H & Form</span>
         </button>
 
         {!isFriendly && (
@@ -210,12 +210,12 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
             )}
           >
             <Trophy className="w-3.5 h-3.5" />
-            <span>Klasemen</span>
+            <span>Standings</span>
           </button>
         )}
       </div>
 
-      {/* TAB 1: LINEUPS (PITCH TAKTIS VISUAL FOTMOB/GOOGLE) */}
+      {/* TAB 1: LINEUPS */}
       {activeTab === "lineups" && (
         <div className="space-y-6 animate-in fade-in duration-300">
           <TacticalPitchLineup
@@ -238,10 +238,10 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
               <div className="flex items-center gap-2">
                 <TrendingUp className="w-4 h-4 text-[#c3ff00]" />
                 <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200 font-mono">
-                  Peluang Menang (Win Probability)
+                  Win Probability
                 </h3>
               </div>
-              <span className="text-[10px] font-mono text-slate-400">Model Telemetri Opta</span>
+              <span className="text-[10px] font-mono text-slate-400">Opta Telemetry Model</span>
             </div>
 
             <div className="h-3 rounded-full bg-pitch-950 flex overflow-hidden border border-pitch-800">
@@ -253,7 +253,7 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
               <div
                 style={{ width: `${drawProb}%` }}
                 className="bg-slate-500 h-full transition-all duration-500"
-                title={`Seri: ${drawProb}%`}
+                title={`Draw: ${drawProb}%`}
               />
               <div
                 style={{ width: `${awayProb}%` }}
@@ -272,7 +272,7 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
 
               <div className="text-center">
                 <span className="text-slate-300 block text-base sm:text-lg font-black">{drawProb}%</span>
-                <span className="text-slate-400 text-[10px] uppercase block">Seri (Draw)</span>
+                <span className="text-slate-400 text-[10px] uppercase block">Draw</span>
               </div>
 
               <div className="text-right">

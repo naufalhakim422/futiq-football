@@ -36,19 +36,19 @@ interface MatchCardProps {
 function formatCompetitionName(name: string, code?: string) {
   const n = (name || "").trim();
   const lower = n.toLowerCase();
-  if (lower.includes("world cup")) return "🌍 Kualifikasi Piala Dunia";
+  if (lower.includes("world cup")) return "🌍 World Cup Qualifiers";
   if (lower.includes("nations league")) return "🇪🇺 UEFA Nations League";
-  if (lower.includes("asean")) return "🌏 Piala AFF / ASEAN";
+  if (lower.includes("asean")) return "🌏 AFF Championship";
   if (lower.includes("champions")) return "🏆 Champions League";
   if (lower.includes("premier league")) return "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League";
-  if (lower.includes("la liga")) return "🇪🇸 La Liga Spanyol";
-  if (lower.includes("serie a")) return "🇮🇹 Serie A Italia";
-  if (lower.includes("iii liga")) return "🇵🇱 III Liga Polandia";
-  if (lower.includes("ligi kuu bara")) return "🇹🇿 Liga Utama Tanzania";
+  if (lower.includes("la liga")) return "🇪🇸 La Liga";
+  if (lower.includes("serie a")) return "🇮🇹 Serie A";
+  if (lower.includes("iii liga")) return "🇵🇱 Polish III Liga";
+  if (lower.includes("ligi kuu bara")) return "🇹🇿 Tanzania Premier League";
   if (lower.includes("super league") && !lower.includes("premier")) return "🇺🇿 Uzbekistan Super League";
   if (lower.includes("premier soccer league")) return "🇿🇼 Zimbabwe Soccer League";
   if (lower.includes("cup")) return `🏆 ${n}`;
-  return n || code || "Kompetisi";
+  return n || code || "Competition";
 }
 
 export function MatchCard({ match, className }: MatchCardProps) {

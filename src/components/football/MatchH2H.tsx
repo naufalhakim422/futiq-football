@@ -40,17 +40,17 @@ export function MatchH2H({
 
   return (
     <div className="space-y-6 font-sans">
-      {/* 1. Form Guide (5 Pertandingan Terakhir) */}
+      {/* 1. Form Guide (Last 5 Matches) */}
       {(homeForm || awayForm) && (
         <div className="bg-pitch-900 border border-pitch-800 rounded-3xl p-5 sm:p-7 shadow-xl space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-pitch-800">
             <div className="flex items-center gap-2">
               <History className="w-4 h-4 text-[#c3ff00]" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200 font-mono">
-                Tren Performa Tim (5 Laga Terakhir)
+                Recent Team Form (Last 5 Matches)
               </h3>
             </div>
-            <span className="text-[10px] font-mono text-slate-400">Terbaru di Kiri</span>
+            <span className="text-[10px] font-mono text-slate-400">Most Recent on Left</span>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -58,7 +58,7 @@ export function MatchH2H({
             <div className="p-4 rounded-2xl bg-pitch-950 border border-pitch-800/80 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-xs text-[#c3ff00] truncate">{homeTeamName}</span>
-                <span className="text-[10px] font-mono text-slate-400">Tuan Rumah</span>
+                <span className="text-[10px] font-mono text-slate-400">Home Team</span>
               </div>
               <div className="flex items-center gap-1.5">
                 {homeForm && homeForm.length > 0 ? (
@@ -71,7 +71,7 @@ export function MatchH2H({
                     </span>
                   ))
                 ) : (
-                  <span className="text-xs text-slate-500 font-mono">Data performa belum tersedia</span>
+                  <span className="text-xs text-slate-500 font-mono">Form data not available yet</span>
                 )}
               </div>
             </div>
@@ -80,7 +80,7 @@ export function MatchH2H({
             <div className="p-4 rounded-2xl bg-pitch-950 border border-pitch-800/80 space-y-2">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-xs text-cyan-400 truncate">{awayTeamName}</span>
-                <span className="text-[10px] font-mono text-slate-400">Tim Tamu</span>
+                <span className="text-[10px] font-mono text-slate-400">Away Team</span>
               </div>
               <div className="flex items-center gap-1.5">
                 {awayForm && awayForm.length > 0 ? (
@@ -93,7 +93,7 @@ export function MatchH2H({
                     </span>
                   ))
                 ) : (
-                  <span className="text-xs text-slate-500 font-mono">Data performa belum tersedia</span>
+                  <span className="text-xs text-slate-500 font-mono">Form data not available yet</span>
                 )}
               </div>
             </div>
@@ -108,11 +108,11 @@ export function MatchH2H({
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-[#c3ff00]" />
               <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200 font-mono">
-                Rekor Head to Head (H2H)
+                Head to Head (H2H) Record
               </h3>
             </div>
             <span className="text-xs font-mono text-slate-400">
-              Total {h2h.totalMatches} Pertemuan
+              Total {h2h.totalMatches} Meetings
             </span>
           </div>
 
@@ -120,7 +120,7 @@ export function MatchH2H({
           <div className="grid grid-cols-3 gap-3 text-center">
             <div className="p-4 rounded-2xl bg-pitch-950 border border-pitch-800">
               <span className="text-[10px] uppercase font-mono text-[#c3ff00] block truncate">
-                {homeTeamName} Menang
+                {homeTeamName} Wins
               </span>
               <span className="text-2xl font-black font-mono text-slate-100 mt-1 block">
                 {h2h.homeWins}
@@ -129,7 +129,7 @@ export function MatchH2H({
 
             <div className="p-4 rounded-2xl bg-pitch-950 border border-pitch-800">
               <span className="text-[10px] uppercase font-mono text-slate-400 block">
-                Seri (Draw)
+                Draws
               </span>
               <span className="text-2xl font-black font-mono text-slate-100 mt-1 block">
                 {h2h.draws}
@@ -138,7 +138,7 @@ export function MatchH2H({
 
             <div className="p-4 rounded-2xl bg-pitch-950 border border-pitch-800">
               <span className="text-[10px] uppercase font-mono text-cyan-400 block truncate">
-                {awayTeamName} Menang
+                {awayTeamName} Wins
               </span>
               <span className="text-2xl font-black font-mono text-slate-100 mt-1 block">
                 {h2h.awayWins}
@@ -150,7 +150,7 @@ export function MatchH2H({
           {h2h.recentMatches && h2h.recentMatches.length > 0 && (
             <div className="space-y-3 pt-2">
               <h4 className="text-xs font-mono uppercase font-bold text-slate-300">
-                Riwayat Pertandingan Sebelumnya:
+                Previous Meetings History:
               </h4>
 
               <div className="space-y-2">
@@ -162,7 +162,7 @@ export function MatchH2H({
                   >
                     <div className="flex items-center gap-3">
                       <span className="text-[10px] font-mono text-slate-500 whitespace-nowrap">
-                        {new Date(m.matchDate).toLocaleDateString("id-ID", {
+                        {new Date(m.matchDate).toLocaleDateString("en-GB", {
                           day: "numeric",
                           month: "short",
                           year: "numeric",
@@ -196,10 +196,10 @@ export function MatchH2H({
         <div className="bg-pitch-900 border border-pitch-800 rounded-3xl p-8 shadow-xl text-center space-y-2">
           <Shield className="w-8 h-8 text-slate-600 mx-auto" />
           <h4 className="text-xs font-mono font-bold text-slate-300 uppercase">
-            Data Head to Head Belum Tersedia
+            Head to Head Data Not Available Yet
           </h4>
           <p className="text-[11px] text-slate-500 font-sans">
-            Kedua tim belum memiliki riwayat pertemuan langsung dalam database pertandingan resmi.
+            These two teams have no recorded head-to-head encounters in the official database.
           </p>
         </div>
       )}

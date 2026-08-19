@@ -127,7 +127,7 @@ export default async function HomePage() {
                   href="/matches"
                   className="text-[11px] font-bold text-[#c3ff00] hover:underline uppercase font-mono flex items-center gap-1"
                 >
-                  <span>Lihat Semua</span>
+                  <span>View All</span>
                   <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>
@@ -174,8 +174,8 @@ export default async function HomePage() {
       {/* 7. Primary Grid: Tactical Intelligence & Long-Form Reports */}
       <PageContainer>
         <SectionHeader
-          title="Analisis Taktik & Laporan Mendalam"
-          subtitle="Jurnalisme sepak bola investigatif, analitik data taktis, dan profil klub terkini"
+          title="Tactical Analysis & Deep Reports"
+          subtitle="Investigative football journalism, tactical data analytics, and in-depth club profiles"
           badgeText="Editorial Desk"
           viewAllHref="/news"
         />
@@ -201,25 +201,25 @@ export default async function HomePage() {
               </div>
 
               <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight font-sans">
-                Punya Analisis Sepak Bola? Terbitkan di Sini.
+                Have a Football Story or Tactical Breakdown? Publish Here.
               </h2>
 
               <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans font-normal">
-                Bagi perspektif taktik, liputan klub, atau rumor transfer Anda ke ribuan pembaca setia. Nikmati sistem bagi hasil royalti transparan dengan pencairan langsung ke rekening bank lokal Anda mulai dari <strong>RM 85,00</strong>.
+                Share your tactical perspectives, match reports, and transfer insights with thousands of dedicated football fans. Earn transparent revenue sharing with direct bank withdrawals starting at <strong>RM 85.00</strong>.
               </p>
 
               <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-1 text-xs font-sans text-slate-300">
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
-                  <span>Editor Blok Modern</span>
+                  <span>Modular Block Editor</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
-                  <span>Pencairan Cepat (Min. RM 85)</span>
+                  <span>Instant Payouts (Min. RM 85)</span>
                 </div>
                 <div className="flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
-                  <span>Statistik Pembaca Real-Time</span>
+                  <span>Real-time Readership Telemetry</span>
                 </div>
               </div>
             </div>
@@ -229,7 +229,7 @@ export default async function HomePage() {
                 href="/contributor/apply"
                 className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-xs font-bold text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-xl transition-all shadow-[0_0_20px_rgba(195,255,0,0.25)] hover:shadow-[0_0_25px_rgba(195,255,0,0.4)] active:scale-[0.98]"
               >
-                <span>Gabung Jadi Penulis</span>
+                <span>Become a Contributor</span>
                 <ArrowUpRight className="w-4 h-4 text-slate-950" />
               </Link>
               
@@ -237,7 +237,7 @@ export default async function HomePage() {
                 href="/contributor"
                 className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3.5 text-xs font-semibold text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-xl transition-colors"
               >
-                <span>Masuk Dashboard</span>
+                <span>Contributor Desk</span>
               </Link>
             </div>
           </div>

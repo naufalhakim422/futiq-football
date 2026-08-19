@@ -65,27 +65,27 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
 
   // Human-readable friendly league titles
   const getFriendlyTitle = (compName: string): { title: string; country: string } => {
-    const n = compName || "Turnamen Sepak Bola";
-    if (n.toLowerCase().includes("world cup")) return { title: "Kualifikasi Piala Dunia 2026", country: "🌍 Internasional / Timnas" };
-    if (n.toLowerCase().includes("nations league")) return { title: "UEFA Nations League", country: "🇪🇺 Eropa / Timnas" };
-    if (n.toLowerCase().includes("asean")) return { title: "Piala AFF / ASEAN Championship", country: "🌏 Asia Tenggara / Timnas" };
-    if (n.toLowerCase().includes("champions")) return { title: "UEFA Champions League", country: "🇪🇺 Antar-Klub Eropa" };
-    if (n.toLowerCase().includes("premier league")) return { title: "Premier League", country: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 Liga Utama Inggris" };
-    if (n.toLowerCase().includes("la liga")) return { title: "La Liga Spanyol", country: "🇪🇸 Liga Utama Spanyol" };
-    if (n.toLowerCase().includes("serie a")) return { title: "Serie A Italia", country: "🇮🇹 Liga Utama Italia" };
-    if (n.toLowerCase().includes("iii liga")) return { title: "III Liga (Divisi 3 Polandia)", country: "🇵🇱 Polandia" };
+    const n = compName || "Football Tournament";
+    if (n.toLowerCase().includes("world cup")) return { title: "FIFA World Cup 2026 Qualifiers", country: "🌍 International / National Teams" };
+    if (n.toLowerCase().includes("nations league")) return { title: "UEFA Nations League", country: "🇪🇺 Europe / National Teams" };
+    if (n.toLowerCase().includes("asean")) return { title: "AFF Championship / ASEAN Cup", country: "🌏 Southeast Asia" };
+    if (n.toLowerCase().includes("champions")) return { title: "UEFA Champions League", country: "🇪🇺 European Elite Club Tournament" };
+    if (n.toLowerCase().includes("premier league")) return { title: "Premier League", country: "🏴󠁧󠁢󠁥󠁮󠁧󠁿 English Top Flight" };
+    if (n.toLowerCase().includes("la liga")) return { title: "La Liga", country: "🇪🇸 Spanish Top Flight" };
+    if (n.toLowerCase().includes("serie a")) return { title: "Serie A", country: "🇮🇹 Italian Top Flight" };
+    if (n.toLowerCase().includes("iii liga")) return { title: "III Liga (Polish 3rd Tier)", country: "🇵🇱 Poland" };
     if (n.toLowerCase().includes("ligi kuu bara")) return { title: "Tanzania Premier League", country: "🇹🇿 Tanzania" };
     if (n.toLowerCase().includes("super league") && !n.toLowerCase().includes("premier")) return { title: "Uzbekistan Super League", country: "🇺🇿 Uzbekistan" };
     if (n.toLowerCase().includes("premier soccer league")) return { title: "Zimbabwe Premier Soccer League", country: "🇿🇼 Zimbabwe" };
-    if (n.toLowerCase().includes("cup")) return { title: n, country: "🏆 Turnamen Piala" };
-    return { title: n, country: "⚽ Kompetisi Domestik" };
+    if (n.toLowerCase().includes("cup")) return { title: n, country: "🏆 Cup Tournament" };
+    return { title: n, country: "⚽ Domestic League" };
   };
 
   // Group matches by friendly competition
   const groupsMap = new Map<string, LeagueGroup>();
 
   allMatches.forEach((m) => {
-    const rawName = m.competition.name || "Kompetisi";
+    const rawName = m.competition.name || "Competition";
     const category = getCategory(rawName, m.competition.code);
     const { title, country } = getFriendlyTitle(rawName);
 
@@ -136,7 +136,7 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
                 : "bg-pitch-950 text-slate-300 hover:text-white border border-pitch-800"
             )}
           >
-            Semua Pertandingan ({allMatches.length})
+            All Matches ({allMatches.length})
           </button>
 
           <button
@@ -149,7 +149,7 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
             )}
           >
             <span className="w-2 h-2 rounded-full bg-brand-red animate-ping" />
-            <span>Sedang Berlangsung ({liveTotalCount})</span>
+            <span>Live Now ({liveTotalCount})</span>
           </button>
 
           <button
@@ -161,7 +161,7 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
                 : "bg-pitch-950 text-slate-300 hover:text-white border border-pitch-800"
             )}
           >
-            <span>🌍 Tim Nasional & Piala Dunia</span>
+            <span>🌍 National Teams & World Cup</span>
           </button>
 
           <button
@@ -197,7 +197,7 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
                 : "bg-pitch-950 text-slate-300 hover:text-white border border-pitch-800"
             )}
           >
-            <span>⚽ Liga Lainnya</span>
+            <span>⚽ Other Leagues</span>
           </button>
         </div>
       </div>
@@ -205,7 +205,7 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
       {/* Grouped Matches by Clear Tournament Headings */}
       {filteredGroups.length === 0 ? (
         <div className="p-12 text-center bg-pitch-900 border border-pitch-800 rounded-2xl text-slate-500 font-mono">
-          Tidak ada pertandingan pada kategori ini saat ini.
+          No matches found in this category.
         </div>
       ) : (
         <div className="space-y-10">
@@ -236,7 +236,7 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
                   </div>
 
                   <span className="text-xs font-mono font-bold text-slate-400 bg-pitch-900 px-3 py-1 rounded-full border border-pitch-800">
-                    {matchesToDisplay.length} Laga
+                    {matchesToDisplay.length} Matches
                   </span>
                 </div>
 

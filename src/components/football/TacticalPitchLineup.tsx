@@ -267,7 +267,7 @@ export function TacticalPitchLineup({
                 : "bg-pitch-950 text-slate-300 hover:text-white border border-pitch-800"
             )}
           >
-            <span>🏟️ Kedua Tim Berhadapan (Full Pitch)</span>
+            <span>🏟️ Full Pitch Tactical View</span>
           </button>
 
           <button
@@ -303,7 +303,7 @@ export function TacticalPitchLineup({
                 : "bg-pitch-950 text-slate-300 hover:text-white border border-pitch-800"
             )}
           >
-            <span>📋 Tabel Rating Lengkap</span>
+            <span>📋 Full Ratings Table</span>
           </button>
         </div>
       </div>
@@ -343,7 +343,7 @@ export function TacticalPitchLineup({
               <span className="font-extrabold uppercase text-white text-sm tracking-tight">{awayTeamName}</span>
               <span className="text-cyan-300 font-bold">({awayLineup.formation})</span>
             </div>
-            <span className="text-[11px] text-slate-400 font-mono">Tim Tamu (Menghadap Bawah)</span>
+            <span className="text-[11px] text-slate-400 font-mono">Away Team</span>
           </div>
 
           {/* TOP HALF: AWAY TEAM FORMATION */}
@@ -358,7 +358,7 @@ export function TacticalPitchLineup({
           {/* CENTER PITCH BADGE */}
           <div className="relative z-10 flex items-center justify-center my-2 pointer-events-none">
             <span className="px-4 py-1 rounded-full bg-black/80 border border-white/15 text-[10px] font-mono font-bold text-slate-300 uppercase tracking-widest backdrop-blur-md">
-              Garis Tengah Lapangan
+              Halfway Line
             </span>
           </div>
 
@@ -380,7 +380,7 @@ export function TacticalPitchLineup({
               <span className="font-extrabold uppercase text-white text-sm tracking-tight">{homeTeamName}</span>
               <span className="text-[#c3ff00] font-bold">({homeLineup.formation})</span>
             </div>
-            <span className="text-[11px] text-slate-400 font-mono">Tuan Rumah (Menghadap Atas)</span>
+            <span className="text-[11px] text-slate-400 font-mono">Home Team</span>
           </div>
 
           {/* FOOTER COACH BAR (FotMob Style Coach Bar) */}
@@ -394,13 +394,13 @@ export function TacticalPitchLineup({
                   <User className="w-3 h-3 text-[#c3ff00]" />
                 )}
               </div>
-              <span className="font-bold text-slate-200">{homeLineup.manager?.name || `Pelatih ${homeTeamName}`}</span>
+              <span className="font-bold text-slate-200">{homeLineup.manager?.name || `Coach ${homeTeamName}`}</span>
             </div>
 
-            <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500">Pelatih Kepala</span>
+            <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500">Head Coach</span>
 
             <div className="flex items-center gap-2">
-              <span className="font-bold text-slate-200">{awayLineup.manager?.name || `Pelatih ${awayTeamName}`}</span>
+              <span className="font-bold text-slate-200">{awayLineup.manager?.name || `Coach ${awayTeamName}`}</span>
               <div className="w-6 h-6 rounded-full bg-pitch-900 border border-pitch-750 flex items-center justify-center overflow-hidden">
                 {awayLineup.manager?.photoUrl ? (
                   // eslint-disable-next-line @next/next/no-img-element
@@ -433,7 +433,7 @@ export function TacticalPitchLineup({
                 {viewMode === "home" ? homeTeamName : awayTeamName} ({viewMode === "home" ? homeLineup.formation : awayLineup.formation})
               </span>
             </div>
-            <span className="text-[10px] text-[#c3ff00]">Klik pemain untuk detail</span>
+            <span className="text-[10px] text-[#c3ff00]">Click player for details</span>
           </div>
 
           {/* Rows */}
@@ -469,7 +469,7 @@ export function TacticalPitchLineup({
                 <thead>
                   <tr className="border-b border-pitch-800 text-slate-400 uppercase font-mono text-[10px]">
                     <th className="py-2.5 px-2">No</th>
-                    <th className="py-2.5 px-2">Pemain</th>
+                    <th className="py-2.5 px-2">Player</th>
                     <th className="py-2.5 px-2">Pos</th>
                     <th className="py-2.5 px-2 text-right">Rating</th>
                   </tr>
@@ -534,7 +534,7 @@ export function TacticalPitchLineup({
                 <thead>
                   <tr className="border-b border-pitch-800 text-slate-400 uppercase font-mono text-[10px]">
                     <th className="py-2.5 px-2">No</th>
-                    <th className="py-2.5 px-2">Pemain</th>
+                    <th className="py-2.5 px-2">Player</th>
                     <th className="py-2.5 px-2">Pos</th>
                     <th className="py-2.5 px-2 text-right">Rating</th>
                   </tr>
@@ -591,10 +591,10 @@ export function TacticalPitchLineup({
           <div className="flex items-center justify-between pb-3 border-b border-pitch-800">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 font-mono flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-[#c3ff00]" />
-              <span>Cadangan: {homeTeamName}</span>
+              <span>Substitutes: {homeTeamName}</span>
             </h4>
             <span className="text-[11px] font-mono text-slate-400">
-              {homeLineup.bench?.length || 0} Pemain
+              {homeLineup.bench?.length || 0} Players
             </span>
           </div>
 
@@ -640,10 +640,10 @@ export function TacticalPitchLineup({
           <div className="flex items-center justify-between pb-3 border-b border-pitch-800">
             <h4 className="text-xs font-bold uppercase tracking-wider text-slate-200 font-mono flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-cyan-400" />
-              <span>Cadangan: {awayTeamName}</span>
+              <span>Substitutes: {awayTeamName}</span>
             </h4>
             <span className="text-[11px] font-mono text-slate-400">
-              {awayLineup.bench?.length || 0} Pemain
+              {awayLineup.bench?.length || 0} Players
             </span>
           </div>
 
@@ -731,7 +731,7 @@ export function TacticalPitchLineup({
             <div className="p-4 bg-pitch-950 rounded-2xl border border-pitch-800 flex items-center justify-between">
               <div>
                 <span className="text-[10px] uppercase font-mono text-slate-400 block">
-                  Rating Performa Opta
+                  Opta Performance Rating
                 </span>
                 <span className="text-2xl font-black font-mono text-slate-100">
                   {formatRating(selectedPlayer.player.rating)} / 10.0
@@ -749,30 +749,30 @@ export function TacticalPitchLineup({
             {/* In-Game Telemetry Stats */}
             <div className="grid grid-cols-2 gap-2.5 text-xs font-mono">
               <div className="p-3 bg-pitch-950 rounded-xl border border-pitch-800">
-                <span className="text-slate-500 block text-[10px]">Gol Dicetak</span>
+                <span className="text-slate-500 block text-[10px]">Goals Scored</span>
                 <span className="text-base font-bold text-slate-200">
                   {selectedPlayer.player.goals || 0}
                 </span>
               </div>
 
               <div className="p-3 bg-pitch-950 rounded-xl border border-pitch-800">
-                <span className="text-slate-500 block text-[10px]">Assist</span>
+                <span className="text-slate-500 block text-[10px]">Assists</span>
                 <span className="text-base font-bold text-slate-200">
                   {selectedPlayer.player.assists || 0}
                 </span>
               </div>
 
               <div className="p-3 bg-pitch-950 rounded-xl border border-pitch-800">
-                <span className="text-slate-500 block text-[10px]">Kartu Kuning</span>
+                <span className="text-slate-500 block text-[10px]">Yellow Cards</span>
                 <span className="text-base font-bold text-amber-400">
                   {selectedPlayer.player.yellowCards || 0}
                 </span>
               </div>
 
               <div className="p-3 bg-pitch-950 rounded-xl border border-pitch-800">
-                <span className="text-slate-500 block text-[10px]">Status Peran</span>
+                <span className="text-slate-500 block text-[10px]">Squad Role</span>
                 <span className="text-base font-bold text-[#c3ff00]">
-                  {selectedPlayer.player.isCaptain ? "Kapten (C)" : "Starter"}
+                  {selectedPlayer.player.isCaptain ? "Captain (C)" : "Starter"}
                 </span>
               </div>
             </div>
@@ -781,7 +781,7 @@ export function TacticalPitchLineup({
               onClick={() => setSelectedPlayer(null)}
               className="w-full py-3 rounded-xl bg-[#c3ff00] hover:bg-[#b0e600] text-slate-950 font-bold text-xs font-mono transition-colors shadow-md"
             >
-              Tutup Rincian
+              Close Details
             </button>
           </div>
         </div>

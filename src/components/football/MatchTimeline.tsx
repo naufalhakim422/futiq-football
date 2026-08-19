@@ -66,24 +66,24 @@ export function MatchTimeline({
     switch (ev.type) {
       case EventType.GOAL:
         return ev.assistPlayerName
-          ? `GOL! ${ev.playerName || "Pemain"} mencetak gol untuk ${teamName} (Assist: ${ev.assistPlayerName}).`
-          : `GOL! ${ev.playerName || "Pemain"} mencetak gol untuk ${teamName}.`;
+          ? `GOAL! ${ev.playerName || "Player"} scores for ${teamName} (Assist: ${ev.assistPlayerName}).`
+          : `GOAL! ${ev.playerName || "Player"} scores for ${teamName}.`;
       case EventType.OWN_GOAL:
-        return `GOL BUNUH DIRI! ${ev.playerName || "Pemain"} memasukkan bola ke gawang sendiri.`;
+        return `OWN GOAL! ${ev.playerName || "Player"} deflects into own net.`;
       case EventType.YELLOW_CARD:
-        return `Kartu Kuning untuk ${ev.playerName || "Pemain"} (${teamName}) atas pelanggaran.`;
+        return `Yellow Card shown to ${ev.playerName || "Player"} (${teamName}) for foul.`;
       case EventType.RED_CARD:
-        return `KARTU MERAH! ${ev.playerName || "Pemain"} (${teamName}) dikeluarkan dari lapangan.`;
+        return `RED CARD! ${ev.playerName || "Player"} (${teamName}) is sent off.`;
       case EventType.SUBSTITUTION:
         return ev.inPlayerName && ev.outPlayerName
-          ? `Pergantian Pemain (${teamName}): ${ev.inPlayerName} masuk menggantikan ${ev.outPlayerName}.`
-          : `Pergantian Pemain untuk ${teamName}.`;
+          ? `Substitution (${teamName}): ${ev.inPlayerName} replaces ${ev.outPlayerName}.`
+          : `Substitution for ${teamName}.`;
       case EventType.VAR:
-        return `Tinjauan VAR (${teamName}): ${ev.detail || "Pemeriksaan insiden pertandingan oleh Video Assistant Referee"}.`;
+        return `VAR Review (${teamName}): ${ev.detail || "Incident review by Video Assistant Referee"}.`;
       case EventType.PENALTY_MISSED:
-        return `Penalti Gagal! Eksekusi dari ${ev.playerName || "Pemain"} (${teamName}) tidak membuahkan gol.`;
+        return `Penalty Missed! Spot kick from ${ev.playerName || "Player"} (${teamName}) is saved or off-target.`;
       default:
-        return ev.detail || `${ev.playerName || "Aksi pertandingan"} (${teamName})`;
+        return ev.detail || `${ev.playerName || "Match event"} (${teamName})`;
     }
   };
 
@@ -141,7 +141,7 @@ export function MatchTimeline({
         <div className={cn("flex-1 text-xs", isHome ? "text-left" : "text-right sm:text-left")}>
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="font-extrabold text-slate-100">
-              {ev.playerName || ev.detail || "Insiden"}
+              {ev.playerName || ev.detail || "Event"}
             </span>
             <span className="text-[10px] font-mono text-slate-400">
               ({isHome ? homeTeamName : awayTeamName})
@@ -169,7 +169,7 @@ export function MatchTimeline({
         <div className="flex items-center gap-2">
           <Clock className="w-4 h-4 text-[#c3ff00]" />
           <h3 className="text-xs font-bold uppercase tracking-wider text-slate-200 font-mono">
-            Linimasa & Fakta Pertandingan Resmi
+            Official Match Timeline & Key Events
           </h3>
         </div>
         {isLive && (
@@ -184,10 +184,10 @@ export function MatchTimeline({
         <div className="py-12 text-center space-y-2">
           <Clock className="w-8 h-8 text-slate-600 mx-auto" />
           <p className="text-xs font-mono text-slate-400">
-            Belum ada insiden penting tercatat untuk pertandingan ini.
+            No match incidents recorded yet.
           </p>
           <span className="text-[11px] text-slate-500 block">
-            Fakta gol, kartu, dan pergantian pemain akan diperbarui secara real-time.
+            Goals, bookings, and substitutions will update in real time.
           </span>
         </div>
       ) : (
@@ -195,7 +195,7 @@ export function MatchTimeline({
           {/* Kickoff */}
           <div className="relative pl-11 flex items-center gap-2 text-xs font-mono text-slate-400">
             <div className="absolute left-4.5 w-3 h-3 rounded-full bg-[#c3ff00] border-2 border-pitch-900 -translate-x-1/2" />
-            <span className="font-bold text-slate-300">Kickoff Babak Pertama</span>
+            <span className="font-bold text-slate-300">First Half Kickoff</span>
             <span>(0&apos;)</span>
           </div>
 
@@ -207,7 +207,7 @@ export function MatchTimeline({
           {/* Halftime Divider */}
           <div className="relative pl-11 py-2 flex items-center justify-between text-xs font-mono text-slate-300 bg-pitch-950/80 rounded-xl px-4 border border-pitch-800">
             <div className="absolute left-4.5 w-3 h-3 rounded-full bg-slate-400 border-2 border-pitch-900 -translate-x-1/2" />
-            <span className="font-bold">ISTIRAHAT (HALF TIME)</span>
+            <span className="font-bold">HALF TIME (HT)</span>
             <span className="font-black text-[#c3ff00]">
               {htHomeScore !== undefined && htAwayScore !== undefined ? `${htHomeScore} - ${htAwayScore}` : "HT"}
             </span>
@@ -223,7 +223,7 @@ export function MatchTimeline({
             <>
               <div className="relative pl-11 py-2 flex items-center justify-between text-xs font-mono text-amber-300 bg-pitch-950/80 rounded-xl px-4 border border-pitch-800">
                 <div className="absolute left-4.5 w-3 h-3 rounded-full bg-amber-400 border-2 border-pitch-900 -translate-x-1/2" />
-                <span className="font-bold">BABAK TAMBAHAN (EXTRA TIME)</span>
+                <span className="font-bold">EXTRA TIME (ET)</span>
                 <span className="font-black">
                   {etHomeScore !== undefined && etAwayScore !== undefined ? `${etHomeScore} - ${etAwayScore}` : "ET"}
                 </span>
@@ -239,7 +239,7 @@ export function MatchTimeline({
             <>
               <div className="relative pl-11 py-2 flex items-center justify-between text-xs font-mono text-purple-300 bg-pitch-950/80 rounded-xl px-4 border border-pitch-800">
                 <div className="absolute left-4.5 w-3 h-3 rounded-full bg-purple-400 border-2 border-pitch-900 -translate-x-1/2" />
-                <span className="font-bold">ADU PENALTI (PENALTY SHOOTOUT)</span>
+                <span className="font-bold">PENALTY SHOOTOUT</span>
                 <span className="font-black">
                   {penaltyHomeScore !== undefined && penaltyAwayScore !== undefined ? `(${penaltyHomeScore} - ${penaltyAwayScore})` : "PEN"}
                 </span>
@@ -256,10 +256,10 @@ export function MatchTimeline({
               <div className="absolute left-4.5 w-3 h-3 rounded-full bg-cyan-400 border-2 border-pitch-900 -translate-x-1/2" />
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="font-bold">Pertandingan Selesai (Full Time)</span>
+                <span className="font-bold">Full Time (FT)</span>
               </div>
               <span className="font-black text-slate-100 text-sm">
-                Skor Akhir: {homeScore} - {awayScore}
+                Final Score: {homeScore} - {awayScore}
                 {penaltyHomeScore !== undefined && penaltyAwayScore !== undefined && (
                   <span className="text-purple-300 text-xs ml-1.5 font-bold">
                     (Pen: {penaltyHomeScore}-{penaltyAwayScore})

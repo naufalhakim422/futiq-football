@@ -21,23 +21,23 @@ export async function generateMetadata({ params }: MatchDetailPageProps): Promis
 
   if (!match) {
     return {
-      title: "Pertandingan Tidak Ditemukan | FUTIQ FOOTBALL",
+      title: "Match Not Found | FUTIQ FOOTBALL",
     };
   }
 
   const statusText =
     match.status === "FINISHED"
-      ? `Hasil Akhir ${match.homeScore} - ${match.awayScore}`
+      ? `Full Time ${match.homeScore} - ${match.awayScore}`
       : match.status.startsWith("LIVE")
-      ? `Skor Langsung ${match.homeScore} - ${match.awayScore} (${match.minute}')`
-      : "Jadwal & Susunan Pemain";
+      ? `Live Score ${match.homeScore} - ${match.awayScore} (${match.minute}')`
+      : "Fixtures & Official Lineups";
 
   return {
     title: `${match.homeTeam.name} vs ${match.awayTeam.name} — ${statusText} | ${match.competition.name} | FUTIQ`,
-    description: `Ikuti pertandingan sepak bola ${match.homeTeam.name} vs ${match.awayTeam.name} di ${match.competition.name}. Skor langsung, susunan pemain resmi, statistik Opta, rating pemain, dan linimasa pertandingan.`,
+    description: `Follow live football match ${match.homeTeam.name} vs ${match.awayTeam.name} in ${match.competition.name}. Real-time score, official tactical lineups, Opta statistics, player ratings, and timeline facts.`,
     openGraph: {
       title: `${match.homeTeam.name} vs ${match.awayTeam.name} — ${statusText}`,
-      description: `Live Match Center & Telemetri Sepak Bola: ${match.competition.name}`,
+      description: `Live Match Center & Telemetry: ${match.competition.name}`,
     },
   };
 }
@@ -67,10 +67,10 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
     startDate: match.matchDate,
     location: {
       "@type": "Place",
-      name: match.venue?.name || "Stadion Resmi",
+      name: match.venue?.name || "Official Stadium",
       address: {
         "@type": "PostalAddress",
-        addressLocality: match.venue?.city || "Kota Pertandingan",
+        addressLocality: match.venue?.city || "Match City",
       },
     },
     homeTeam: {
@@ -99,7 +99,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
             className="inline-flex items-center gap-1.5 text-xs font-mono text-slate-400 hover:text-slate-200 transition-colors"
           >
             <ChevronLeft className="w-4 h-4 text-[#c3ff00]" />
-            <span>Kembali ke Pusat Pertandingan</span>
+            <span>Back to Matches & Scores</span>
           </Link>
 
           <div className="flex items-center gap-2 text-xs font-mono text-slate-400">
@@ -135,7 +135,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
               {match.referee && (
                 <span className="flex items-center gap-1 text-slate-400">
                   <User className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Wasit: {match.referee}</span>
+                  <span>Referee: {match.referee}</span>
                 </span>
               )}
             </div>
@@ -150,7 +150,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
                   {match.homeTeam.name}
                 </h2>
                 <span className="text-xs text-[#c3ff00] font-mono uppercase font-bold">
-                  {match.homeTeam.isNationalTeam ? "Tim Nasional" : "Tuan Rumah"}
+                  {match.homeTeam.isNationalTeam ? "National Team" : "Home Team"}
                 </span>
               </div>
               <TeamBadge
@@ -174,7 +174,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
               {/* Extra Time or Penalty Shootout Result */}
               {match.penaltyHomeScore !== undefined && match.penaltyAwayScore !== undefined && (
                 <span className="mt-1 text-xs font-mono font-bold text-purple-300 bg-purple-950/80 px-2.5 py-0.5 rounded-full border border-purple-800">
-                  Adu Penalti: {match.penaltyHomeScore} - {match.penaltyAwayScore}
+                  Penalties: {match.penaltyHomeScore} - {match.penaltyAwayScore}
                 </span>
               )}
 
@@ -184,28 +184,28 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
                     <span className="w-2 h-2 rounded-full bg-brand-red animate-ping" />
                     <span>
                       {match.status === "HT"
-                        ? "Babak Pertama (HT)"
+                        ? "Half Time (HT)"
                         : match.status === "ET"
                         ? `Extra Time (${match.minute}')`
                         : match.status === "PENALTY"
-                        ? "Adu Penalti (LIVE)"
+                        ? "Penalties (LIVE)"
                         : `LIVE ${match.minute}'`}
                     </span>
                   </span>
                 )}
                 {isFinished && (
                   <span className="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-pitch-950 border border-pitch-750 text-slate-300">
-                    {match.etHomeScore !== undefined ? "Selesai (AET)" : "Selesai (Full Time)"}
+                    {match.etHomeScore !== undefined ? "Full Time (AET)" : "Full Time (FT)"}
                   </span>
                 )}
                 {match.status === "SCHEDULED" && (
                   <span className="text-xs font-mono text-slate-300 px-3 py-1 rounded bg-pitch-950 border border-pitch-800">
-                    {new Date(match.matchDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })} WIB
+                    {new Date(match.matchDate).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}
                   </span>
                 )}
                 {isPostponed && (
                   <span className="px-3 py-1 rounded-full text-xs font-mono font-bold uppercase tracking-wider bg-amber-950/80 text-amber-300 border border-amber-800">
-                    Ditunda (Postponed)
+                    Postponed
                   </span>
                 )}
               </div>
@@ -224,7 +224,7 @@ export default async function MatchDetailPage({ params }: MatchDetailPageProps) 
                   {match.awayTeam.name}
                 </h2>
                 <span className="text-xs text-cyan-400 font-mono uppercase font-bold">
-                  {match.awayTeam.isNationalTeam ? "Tim Nasional" : "Tim Tamu"}
+                  {match.awayTeam.isNationalTeam ? "National Team" : "Away Team"}
                 </span>
               </div>
             </div>
