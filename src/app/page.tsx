@@ -7,9 +7,12 @@ import { MatchCard } from "@/components/football/MatchCard";
 import { ArticleSummary } from "@/types/article";
 import { footballService } from "@/lib/football/football.service";
 import Link from "next/link";
-import { Flame, ArrowUpRight, Shield, Zap } from "lucide-react";
+import { Flame, ArrowUpRight, Shield, Zap, Sparkles, Trophy, ChevronRight, PenTool, CheckCircle2 } from "lucide-react";
 import { AdSlotBanner } from "@/components/ads/AdSlotBanner";
 import { AdPlacementPosition } from "@prisma/client";
+import { BreakingTickerBar } from "@/components/home/BreakingTickerBar";
+import { CategoryPillsBar } from "@/components/home/CategoryPillsBar";
+import { TacticalIntelligenceHub } from "@/components/home/TacticalIntelligenceHub";
 
 export const revalidate = 60; // 1 minute ISR
 
@@ -81,64 +84,74 @@ export default async function HomePage() {
   const displayMatches = liveMatches.length > 0 ? liveMatches : fixtures;
 
   return (
-    <div className="space-y-10 py-6">
-      {/* Top Billboard Sponsor Placement */}
+    <div className="space-y-8 pb-16 font-sans">
+      {/* 1. Live Breaking News Ticker Bar */}
+      <BreakingTickerBar />
+
+      {/* 2. Top Billboard Sponsor Placement */}
       <PageContainer>
-        <AdSlotBanner position={AdPlacementPosition.HOME_TOP} className="mb-6" />
+        <AdSlotBanner position={AdPlacementPosition.HOME_TOP} />
       </PageContainer>
 
-      {/* Editorial Lead Section */}
+      {/* 3. Category Filter Navigation Bar */}
+      <PageContainer>
+        <CategoryPillsBar />
+      </PageContainer>
+
+      {/* 4. Editorial Lead Section (Hero Showcase + Sidebar) */}
       <PageContainer>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          {/* Main Hero Story */}
+          {/* Main Hero Story + Sub-featured Card */}
           <div className="lg:col-span-8 space-y-6">
             <HeroArticle article={HERO_STORY} />
 
             {/* Sub-featured Horizontal Card */}
-            <div className="grid grid-cols-1 gap-4 pt-2">
-              <ArticleCard
-                article={FEATURED_STORIES[0]}
-                variant="horizontal"
-              />
-            </div>
+            <ArticleCard
+              article={FEATURED_STORIES[0]}
+              variant="horizontal"
+            />
           </div>
 
           {/* Right Editorial Sidebar / Trending Column */}
           <div className="lg:col-span-4 space-y-6">
             {/* Live Matchday Quick Board */}
-            <div className="bg-pitch-900 border border-pitch-800 p-4">
-              <div className="flex items-center justify-between pb-3 mb-3 border-b border-pitch-850">
+            <div className="bg-pitch-900 border border-pitch-800 rounded-2xl p-5 shadow-2xl space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-pitch-800">
                 <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-brand-green" />
-                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-100 font-sans">
+                  <div className="w-2.5 h-2.5 rounded-full bg-brand-red animate-ping" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-100 font-mono">
                     Match Center Live
                   </h3>
                 </div>
                 <Link
                   href="/matches"
-                  className="text-[11px] font-semibold text-brand-green hover:underline uppercase font-mono"
+                  className="text-[11px] font-bold text-[#c3ff00] hover:underline uppercase font-mono flex items-center gap-1"
                 >
-                  All Matches
+                  <span>Lihat Semua</span>
+                  <ChevronRight className="w-3 h-3" />
                 </Link>
               </div>
 
-              <div className="space-y-2.5">
+              <div className="space-y-3">
                 {displayMatches.slice(0, 3).map((match) => (
                   <MatchCard key={match.id} match={match} />
                 ))}
               </div>
             </div>
 
-            {/* Trending News Dispatch List */}
-            <div className="bg-pitch-900 border border-pitch-800 p-4">
-              <div className="flex items-center gap-2 pb-3 mb-3 border-b border-pitch-850">
-                <Flame className="w-4 h-4 text-brand-red" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-slate-100 font-sans">
-                  Breaking Dispatch
-                </h3>
+            {/* Trending Breaking Dispatch List */}
+            <div className="bg-pitch-900 border border-pitch-800 rounded-2xl p-5 shadow-2xl space-y-3">
+              <div className="flex items-center justify-between pb-3 border-b border-pitch-800">
+                <div className="flex items-center gap-2">
+                  <Flame className="w-4 h-4 text-brand-red" />
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-100 font-mono">
+                    Trending Dispatch
+                  </h3>
+                </div>
+                <span className="text-[10px] font-mono text-slate-500">Live 24h</span>
               </div>
 
-              <div className="divide-y divide-pitch-850">
+              <div className="divide-y divide-pitch-800/80">
                 <ArticleCard article={FEATURED_STORIES[1]} variant="compact" />
                 <ArticleCard article={FEATURED_STORIES[2]} variant="compact" />
                 <ArticleCard article={HERO_STORY} variant="compact" />
@@ -148,50 +161,86 @@ export default async function HomePage() {
         </div>
       </PageContainer>
 
-      {/* Mid-Feed In-Stream Ad Placement */}
+      {/* 5. Tactical & Data Intelligence Hub */}
+      <PageContainer>
+        <TacticalIntelligenceHub />
+      </PageContainer>
+
+      {/* 6. Mid-Feed Sponsor Placement */}
       <PageContainer>
         <AdSlotBanner position={AdPlacementPosition.HOME_MIDDLE} />
       </PageContainer>
 
-      {/* Primary Content Grid */}
+      {/* 7. Primary Grid: Tactical Intelligence & Long-Form Reports */}
       <PageContainer>
         <SectionHeader
-          title="Tactical Intelligence & Reports"
-          subtitle="Long-form journalism, match analytics, and tactical breakdowns"
+          title="Analisis Taktik & Laporan Mendalam"
+          subtitle="Jurnalisme sepak bola investigatif, analitik data taktis, dan profil klub terkini"
           badgeText="Editorial Desk"
           viewAllHref="/news"
         />
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
           {FEATURED_STORIES.map((article) => (
             <ArticleCard key={article.id} article={article} variant="standard" />
           ))}
         </div>
       </PageContainer>
 
-      {/* Contributor Platform Callout Strip */}
+      {/* 8. Contributor VIP Creator Studio Callout Banner */}
       <PageContainer>
-        <div className="bg-gradient-to-r from-pitch-900 to-pitch-850 border border-pitch-750 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
-          <div className="space-y-2 max-w-2xl text-center md:text-left">
-            <div className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-pitch-800 text-brand-green text-[10px] font-bold uppercase tracking-wider border border-pitch-700">
-              <Shield className="w-3 h-3" />
-              <span>Independent Football Writers</span>
-            </div>
-            <h3 className="text-lg sm:text-xl font-bold text-slate-100 font-sans">
-              Write for FUTIQ FOOTBALL
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed">
-              Publish original sports journalism, tactical analysis, and local club reports. Earn transparent revenue rewards backed by genuine readership engagement metrics.
-            </p>
-          </div>
+        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-pitch-950 via-pitch-900 to-pitch-950 border border-[#c3ff00]/40 p-8 sm:p-10 shadow-2xl">
+          {/* Subtle Ambient Glow */}
+          <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-[#c3ff00]/10 rounded-full blur-3xl pointer-events-none" />
+          
+          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div className="space-y-4 max-w-2xl text-center lg:text-left">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#c3ff00]/10 text-[#c3ff00] text-[10px] font-mono font-bold uppercase tracking-widest border border-[#c3ff00]/30 rounded-full">
+                <Sparkles className="w-3.5 h-3.5" />
+                <span>Program Jurnalis & Kontributor FUTIQ</span>
+              </div>
 
-          <Link
-            href="/contributor"
-            className="shrink-0 inline-flex items-center gap-2 px-5 py-2.5 text-xs font-bold uppercase tracking-wider text-slate-950 bg-brand-green hover:bg-brand-green-hover transition-colors"
-          >
-            <span>Apply as Contributor</span>
-            <ArrowUpRight className="w-4 h-4" />
-          </Link>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight font-sans">
+                Tulis Berita Sepak Bola & Dapatkan Royalti Nyata
+              </h2>
+
+              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
+                Bergabunglah dengan meja redaksi independen terbesar. Publikasikan artikel analisis taktik, investigasi transfer, dan laporan pertandingan. Dapatkan royalti transparan dengan penarikan instan mulai dari <strong>RM 85,00</strong>.
+              </p>
+
+              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-1 text-xs font-mono text-slate-300">
+                <div className="flex items-center gap-1.5 text-slate-200">
+                  <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
+                  <span>Editor Blok Modular</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-200">
+                  <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
+                  <span>Penarikan Bank Lokal (RM 85+)</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-slate-200">
+                  <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
+                  <span>Audit Integritas AI Otomatis</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="shrink-0 flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+              <Link
+                href="/contributor/apply"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-4 text-xs font-bold uppercase tracking-wider text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-xl transition-all shadow-[0_0_20px_rgba(195,255,0,0.3)] active:scale-[0.99]"
+              >
+                <PenTool className="w-4 h-4 text-slate-950" />
+                <span>Daftar Menjadi Penulis</span>
+              </Link>
+              
+              <Link
+                href="/contributor"
+                className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-4 text-xs font-bold text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-xl transition-colors"
+              >
+                <span>Masuk Meja Kerja</span>
+              </Link>
+            </div>
+          </div>
         </div>
       </PageContainer>
     </div>
