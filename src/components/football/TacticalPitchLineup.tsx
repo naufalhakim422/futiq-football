@@ -21,62 +21,41 @@ interface TacticalPitchLineupProps {
   awayScore?: number;
 }
 
-// Robust Player Avatar component with automatic seamless fallback
+import { getPlayerFacePhoto } from "@/lib/football/player-face.helper";
+
+// Robust Player Avatar component with real player face photos
 function PlayerAvatar({
   photoUrl,
   name,
   number,
+  playerId,
   position,
   team = "home",
 }: {
   photoUrl?: string;
   name: string;
   number: number;
+  playerId?: string;
   position?: string;
   team?: "home" | "away";
 }) {
   const [imgError, setImgError] = useState(false);
-  const isGk = position?.toUpperCase() === "GK";
-  const isHome = team === "home";
-
-  if (photoUrl && !imgError) {
-    return (
-      <div className="w-full h-full relative overflow-hidden bg-pitch-950 flex items-center justify-center">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={photoUrl}
-          alt=""
-          className="w-full h-full object-cover select-none"
-          onError={() => setImgError(true)}
-        />
-        {/* Number mini-tag */}
-        <div className="absolute bottom-0 right-0 bg-black/90 text-white font-mono font-bold text-[8px] px-1 rounded-tl">
-          #{number}
-        </div>
-      </div>
-    );
-  }
-
-  // Crisp, high-contrast 3D Jersey Avatar with shirt number
-  const gradientColor = isGk
-    ? "from-amber-400 via-amber-500 to-amber-600 text-slate-950 border-amber-300"
-    : isHome
-    ? "from-[#c3ff00] via-[#a6db00] to-[#88b800] text-slate-950 border-[#d8ff4d]"
-    : "from-[#00d4ff] via-[#00a6e6] to-[#0077b3] text-slate-950 border-[#80e5ff]";
+  const resolvedPhoto = (!photoUrl || imgError) ? getPlayerFacePhoto(name, number, playerId) : photoUrl;
 
   return (
-    <div
-      className={cn(
-        "w-full h-full bg-gradient-to-b flex flex-col items-center justify-center border shadow-inner select-none relative",
-        gradientColor
-      )}
-    >
-      <span className="font-mono font-black text-xs sm:text-sm leading-none drop-shadow-sm">
-        {number}
-      </span>
-      <span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-tighter font-extrabold leading-none mt-0.5 opacity-90">
-        {position || (isGk ? "GK" : "MF")}
-      </span>
+    <div className="w-full h-full relative overflow-hidden bg-pitch-950 flex items-center justify-center">
+      {/* Real Player Face Headshot */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={resolvedPhoto}
+        alt={name}
+        className="w-full h-full object-cover select-none group-hover:scale-110 transition-transform duration-200"
+        onError={() => setImgError(true)}
+      />
+      {/* Number mini-tag */}
+      <div className="absolute bottom-0 right-0 bg-black/90 text-white font-mono font-bold text-[8px] px-1 rounded-tl shadow">
+        #{number}
+      </div>
     </div>
   );
 }
@@ -529,18 +508,30 @@ export function TacticalPitchLineup({
               <div
                 key={b.number}
                 onClick={() => setSelectedPlayer({ player: b, teamName: homeTeamName })}
-                className="flex items-center justify-between p-2 rounded-xl bg-pitch-950 border border-pitch-800/80 hover:border-pitch-700 transition-colors cursor-pointer"
+                className="flex items-center justify-between p-2.5 rounded-xl bg-pitch-950 border border-pitch-800/80 hover:border-pitch-700 transition-colors cursor-pointer"
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-mono text-slate-500 text-[11px] w-4 font-bold">
-                    #{b.number}
-                  </span>
-                  <span className="font-semibold text-slate-200 truncate">
-                    {b.name}
-                  </span>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-pitch-900 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
+                    <PlayerAvatar
+                      photoUrl={b.photoUrl}
+                      name={b.name}
+                      number={b.number}
+                      playerId={b.playerId}
+                      position={b.position}
+                      team="home"
+                    />
+                  </div>
+                  <div className="truncate">
+                    <span className="font-semibold text-slate-200 block truncate">
+                      {b.name}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono uppercase">
+                      #{b.number} • {b.position}
+                    </span>
+                  </div>
                 </div>
                 {b.rating && (
-                  <span className="font-mono text-xs font-bold text-[#c3ff00] px-1.5 py-0.5 rounded bg-pitch-900 border border-pitch-750">
+                  <span className="font-mono text-xs font-bold text-[#c3ff00] px-2 py-0.5 rounded bg-pitch-900 border border-pitch-750">
                     {formatRating(b.rating)}
                   </span>
                 )}
@@ -566,18 +557,30 @@ export function TacticalPitchLineup({
               <div
                 key={b.number}
                 onClick={() => setSelectedPlayer({ player: b, teamName: awayTeamName })}
-                className="flex items-center justify-between p-2 rounded-xl bg-pitch-950 border border-pitch-800/80 hover:border-pitch-700 transition-colors cursor-pointer"
+                className="flex items-center justify-between p-2.5 rounded-xl bg-pitch-950 border border-pitch-800/80 hover:border-pitch-700 transition-colors cursor-pointer"
               >
-                <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-mono text-slate-500 text-[11px] w-4 font-bold">
-                    #{b.number}
-                  </span>
-                  <span className="font-semibold text-slate-200 truncate">
-                    {b.name}
-                  </span>
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-8 h-8 rounded-full bg-pitch-900 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
+                    <PlayerAvatar
+                      photoUrl={b.photoUrl}
+                      name={b.name}
+                      number={b.number}
+                      playerId={b.playerId}
+                      position={b.position}
+                      team="away"
+                    />
+                  </div>
+                  <div className="truncate">
+                    <span className="font-semibold text-slate-200 block truncate">
+                      {b.name}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono uppercase">
+                      #{b.number} • {b.position}
+                    </span>
+                  </div>
                 </div>
                 {b.rating && (
-                  <span className="font-mono text-xs font-bold text-cyan-400 px-1.5 py-0.5 rounded bg-pitch-900 border border-pitch-750">
+                  <span className="font-mono text-xs font-bold text-cyan-400 px-2 py-0.5 rounded bg-pitch-900 border border-pitch-750">
                     {formatRating(b.rating)}
                   </span>
                 )}
