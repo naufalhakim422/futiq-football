@@ -21,6 +21,8 @@ import {
   ArrowRight,
   CreditCard,
   Check,
+  Info,
+  ShieldAlert,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import {
@@ -376,8 +378,8 @@ export function EarningsConsole({
               </div>
             )}
           </div>
-          <p className="pt-2 text-[11px] text-slate-400 border-t border-pitch-800">
-            Pending bi-weekly settlement (5th & 20th)
+          <p className="pt-2 text-[11px] text-slate-400 border-t border-pitch-800 font-mono">
+            Bi-weekly settlement (5th & 20th)
           </p>
         </div>
 
@@ -401,8 +403,8 @@ export function EarningsConsole({
               </div>
             )}
           </div>
-          <p className="pt-2 text-[11px] text-slate-400 border-t border-pitch-800">
-            Cumulative 70% reader revenue & bonuses
+          <p className="pt-2 text-[11px] text-slate-400 border-t border-pitch-800 font-mono">
+            Cumulative 70% reader share
           </p>
         </div>
 
@@ -426,9 +428,54 @@ export function EarningsConsole({
               </div>
             )}
           </div>
-          <p className="pt-2 text-[11px] text-slate-400 border-t border-pitch-800">
-            Successfully paid out to your registered destination
+          <p className="pt-2 text-[11px] text-slate-400 border-t border-pitch-800 font-mono">
+            Successfully paid to bank/PayPal
           </p>
+        </div>
+      </div>
+
+      {/* OFFICIAL CONTRIBUTOR NOTICE & PAYOUT POLICY (IMPORTANT NOTICE BANNER) */}
+      <div className="bg-pitch-900 border border-pitch-800 rounded-2xl p-5 shadow-xl space-y-3">
+        <div className="flex items-center gap-2 text-slate-100 font-bold text-sm">
+          <Info className="w-4 h-4 text-emerald-500 shrink-0" />
+          <span>Official Contributor Policy & Settlement Guidelines</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+          <div className="p-3.5 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1">
+            <div className="font-bold text-emerald-500 flex items-center gap-1.5">
+              <DollarSign className="w-3.5 h-3.5" /> 70% Revenue Share
+            </div>
+            <p className="text-slate-400 text-[11px] leading-relaxed">
+              Earn 70% of verified ad revenue based on server-validated Qualified Reader Views.
+            </p>
+          </div>
+
+          <div className="p-3.5 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1">
+            <div className="font-bold text-amber-500 flex items-center gap-1.5">
+              <Clock className="w-3.5 h-3.5" /> Bi-Weekly Settlement
+            </div>
+            <p className="text-slate-400 text-[11px] leading-relaxed">
+              Payouts are disbursed twice monthly on the <strong className="text-slate-200">5th and 20th</strong> following ad partner verification.
+            </p>
+          </div>
+
+          <div className="p-3.5 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1">
+            <div className="font-bold text-blue-400 flex items-center gap-1.5">
+              <Building className="w-3.5 h-3.5" /> $10.00 USD Minimum
+            </div>
+            <p className="text-slate-400 text-[11px] leading-relaxed">
+              Low withdrawal threshold (≈ Rp 160.000 / RM 45.00 / €9.20) direct to Bank/PayPal.
+            </p>
+          </div>
+
+          <div className="p-3.5 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1">
+            <div className="font-bold text-purple-400 flex items-center gap-1.5">
+              <ShieldAlert className="w-3.5 h-3.5" /> Strict Integrity Policy
+            </div>
+            <p className="text-slate-400 text-[11px] leading-relaxed">
+              Zero plagiarism and authentic traffic only. AI Gate disqualifies bot views and unverified images.
+            </p>
+          </div>
         </div>
       </div>
 
