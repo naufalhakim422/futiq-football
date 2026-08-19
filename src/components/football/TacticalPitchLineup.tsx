@@ -9,8 +9,11 @@ import {
   Activity,
   X,
   Sparkles,
+  ArrowRight,
+  TrendingUp,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getPlayerFacePhoto } from "@/lib/football/player-face.helper";
 
 interface TacticalPitchLineupProps {
   homeLineup: ProviderMatchLineup;
@@ -21,9 +24,43 @@ interface TacticalPitchLineupProps {
   awayScore?: number;
 }
 
-import { getPlayerFacePhoto } from "@/lib/football/player-face.helper";
+// 3D Jersey Avatar fallback for players without photo in database
+function JerseyAvatar({
+  number,
+  position,
+  team = "home",
+}: {
+  number: number;
+  position?: string;
+  team?: "home" | "away";
+}) {
+  const isGk = position?.toUpperCase() === "GK";
+  const isHome = team === "home";
 
-// Robust Player Avatar component with official photo and clean jersey fallback
+  const jerseyColor = isGk
+    ? "from-amber-400 via-amber-500 to-amber-600 text-slate-950 border-amber-300"
+    : isHome
+    ? "from-[#c3ff00] via-[#a2db00] to-[#7fae00] text-slate-950 border-[#d8ff4d]"
+    : "from-[#00d4ff] via-[#00a6e6] to-[#0077b3] text-slate-950 border-[#80e5ff]";
+
+  return (
+    <div
+      className={cn(
+        "w-full h-full rounded-full bg-gradient-to-b flex flex-col items-center justify-center border shadow-inner select-none relative",
+        jerseyColor
+      )}
+    >
+      <span className="font-mono font-black text-xs sm:text-sm leading-none drop-shadow-sm">
+        {number}
+      </span>
+      <span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-tighter font-black leading-none mt-0.5 opacity-90">
+        {position || (isGk ? "GK" : "MF")}
+      </span>
+    </div>
+  );
+}
+
+// FotMob / Google Style Player Avatar
 function PlayerAvatar({
   photoUrl,
   name,
@@ -40,18 +77,20 @@ function PlayerAvatar({
   team?: "home" | "away";
 }) {
   const [imgError, setImgError] = useState(false);
-  const isGk = position?.toUpperCase() === "GK";
-  const isHome = team === "home";
 
-  // Check verified photo if photoUrl is missing or errored
-  const activePhoto = (!imgError && photoUrl) ? photoUrl : getPlayerFacePhoto(name, number, playerId);
+  // 1. Direct photo URL (API-Football proxy or high-res match photo)
+  // 2. Fallback to clean 3D Jersey with number & position
+  const cleanPlayerId = playerId ? playerId.replace(/^ply_/, "") : "";
+  const proxyUrl = photoUrl || (cleanPlayerId && !cleanPlayerId.startsWith("gen_") ? `/api/football/player-image?id=${cleanPlayerId}` : undefined);
+  const verifiedStarPhoto = getPlayerFacePhoto(name, number, playerId);
+  const targetPhoto = proxyUrl || verifiedStarPhoto;
 
-  if (activePhoto && !imgError) {
+  if (targetPhoto && !imgError) {
     return (
       <div className="w-full h-full relative overflow-hidden bg-pitch-950 flex items-center justify-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={activePhoto}
+          src={targetPhoto}
           alt={name}
           className="w-full h-full object-cover select-none group-hover:scale-110 transition-transform duration-200"
           onError={() => setImgError(true)}
@@ -64,28 +103,7 @@ function PlayerAvatar({
     );
   }
 
-  // Official 3D Jersey Avatar with shirt number and position
-  const gradientColor = isGk
-    ? "from-amber-400 via-amber-500 to-amber-600 text-slate-950 border-amber-300"
-    : isHome
-    ? "from-[#c3ff00] via-[#a6db00] to-[#88b800] text-slate-950 border-[#d8ff4d]"
-    : "from-[#00d4ff] via-[#00a6e6] to-[#0077b3] text-slate-950 border-[#80e5ff]";
-
-  return (
-    <div
-      className={cn(
-        "w-full h-full bg-gradient-to-b flex flex-col items-center justify-center border shadow-inner select-none relative",
-        gradientColor
-      )}
-    >
-      <span className="font-mono font-black text-xs sm:text-sm leading-none drop-shadow-sm">
-        {number}
-      </span>
-      <span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-tighter font-extrabold leading-none mt-0.5 opacity-90">
-        {position || (isGk ? "GK" : "MF")}
-      </span>
-    </div>
-  );
+  return <JerseyAvatar number={number} position={position} team={team} />;
 }
 
 export function TacticalPitchLineup({
@@ -102,22 +120,36 @@ export function TacticalPitchLineup({
     teamName: string;
   } | null>(null);
 
+  // Compute team average ratings like FotMob
+  const calcTeamAvg = (lineup: ProviderMatchLineup) => {
+    if (!lineup.starters || lineup.starters.length === 0) return "7.0";
+    const sum = lineup.starters.reduce((acc, p) => acc + (typeof p.rating === "number" ? p.rating : parseFloat(String(p.rating || 7.0))), 0);
+    return (sum / lineup.starters.length).toFixed(1);
+  };
+
+  const homeTeamAvg = calcTeamAvg(homeLineup);
+  const awayTeamAvg = calcTeamAvg(awayLineup);
+
   const formatRating = (rating?: number | string) => {
     if (!rating) return "7.0";
     const num = typeof rating === "string" ? parseFloat(rating) : rating;
     return num.toFixed(1);
   };
 
-  const getRatingBadgeClass = (rating?: number | string) => {
-    if (!rating) return "bg-pitch-900 text-slate-300 border-pitch-700";
+  // FotMob Exact Color Palette for Player Ratings
+  const getRatingBadgeClass = (rating?: number | string, isMotm?: boolean) => {
+    if (isMotm) {
+      return "bg-[#0091ea] text-white border-[#00b0ff] shadow-[0_0_12px_rgba(0,145,234,0.6)]";
+    }
+    if (!rating) return "bg-[#ff9100] text-slate-950 border-[#ffaa33]";
     const num = typeof rating === "string" ? parseFloat(rating) : rating;
-    if (num >= 8.5) return "bg-emerald-950 text-emerald-400 border-emerald-500 shadow-[0_0_12px_rgba(52,211,153,0.4)]";
-    if (num >= 7.5) return "bg-cyan-950 text-cyan-300 border-cyan-500 shadow-[0_0_8px_rgba(34,211,238,0.3)]";
-    if (num >= 6.5) return "bg-pitch-900 text-slate-200 border-pitch-700";
-    return "bg-amber-950 text-amber-400 border-amber-800";
+    if (num >= 7.5) return "bg-[#00c853] text-slate-950 border-[#69f0ae] shadow-[0_0_10px_rgba(0,200,83,0.4)]";
+    if (num >= 7.0) return "bg-[#64dd17] text-slate-950 border-[#b2ff59]";
+    if (num >= 6.0) return "bg-[#ff9100] text-slate-950 border-[#ffb74d]";
+    return "bg-[#ff3d00] text-white border-[#ff6e40]";
   };
 
-  // Helper to split starters into tactical formation rows
+  // Helper to organize formation into tactical lines
   const organizeFormation = (starters: LineupPlayer[], formation: string, reverse = false) => {
     if (!starters || starters.length === 0) return [];
     const parts = (formation || "4-3-3").split("-").map((n) => parseInt(n, 10)).filter((n) => !isNaN(n));
@@ -144,29 +176,30 @@ export function TacticalPitchLineup({
   const awayRows = organizeFormation(awayLineup.starters || [], awayLineup.formation || "4-2-3-1", false);
   const homeRows = organizeFormation(homeLineup.starters || [], homeLineup.formation || "4-3-3", true);
 
-  // Render player node on pitch
+  // Render individual FotMob / Google Style Player Node on Pitch
   const renderPlayerNode = (player: LineupPlayer, team: "home" | "away", teamName: string) => {
     const ratingStr = formatRating(player.rating);
-    const ratingBadgeClass = getRatingBadgeClass(player.rating);
+    const ratingBadgeClass = getRatingBadgeClass(player.rating, player.isMotm);
+    const surname = player.name.split(" ").slice(-1)[0];
 
     return (
       <button
         key={player.number}
         onClick={() => setSelectedPlayer({ player, teamName })}
-        className="group relative flex flex-col items-center focus:outline-none transition-transform hover:scale-110 active:scale-95"
+        className="group relative flex flex-col items-center focus:outline-none transition-transform hover:scale-110 active:scale-95 z-20"
       >
-        {/* Rating Badge on Top */}
-        <div className="mb-1">
+        {/* Floating FotMob-style Rating Pill on Top Right of Head */}
+        <div className="absolute -top-1.5 -right-2 z-30">
           <span
             className={cn(
-              "px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] font-mono font-black border shadow-lg flex items-center gap-1",
+              "px-1.5 py-0.5 rounded-md text-[10px] sm:text-[11px] font-mono font-black border shadow-md flex items-center gap-0.5 leading-none",
               ratingBadgeClass
             )}
           >
-            {player.isMotm && (
-              <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-300" />
-            )}
             <span>{ratingStr}</span>
+            {player.isMotm && (
+              <Star className="w-2.5 h-2.5 fill-white text-white" />
+            )}
           </span>
         </div>
 
@@ -175,8 +208,8 @@ export function TacticalPitchLineup({
           className={cn(
             "relative w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 transition-all shadow-2xl flex items-center justify-center overflow-hidden bg-pitch-950",
             team === "home"
-              ? "border-[#c3ff00] group-hover:border-white shadow-[0_0_18px_rgba(195,255,0,0.4)] ring-2 ring-[#c3ff00]/20"
-              : "border-cyan-400 group-hover:border-white shadow-[0_0_18px_rgba(34,211,238,0.4)] ring-2 ring-cyan-400/20"
+              ? "border-[#c3ff00] group-hover:border-white shadow-[0_0_16px_rgba(195,255,0,0.3)] ring-2 ring-[#c3ff00]/20"
+              : "border-cyan-400 group-hover:border-white shadow-[0_0_16px_rgba(34,211,238,0.3)] ring-2 ring-cyan-400/20"
           )}
         >
           <PlayerAvatar
@@ -189,16 +222,17 @@ export function TacticalPitchLineup({
           />
         </div>
 
-        {/* Player Name Tag */}
-        <div className="mt-1.5 text-center max-w-[90px] sm:max-w-[110px]">
-          <span className="font-bold text-white text-[10px] sm:text-[11px] leading-tight block truncate drop-shadow-[0_2px_4px_rgba(0,0,0,1)] bg-slate-950/85 backdrop-blur-sm border border-white/10 px-2 py-0.5 rounded-full">
-            {player.name.split(" ").slice(-1)[0]}
+        {/* Player Number + Surname Badge (FotMob Style) */}
+        <div className="mt-1.5 text-center max-w-[95px] sm:max-w-[115px]">
+          <span className="font-bold text-white text-[10px] sm:text-[11px] leading-tight block truncate drop-shadow-[0_2px_4px_rgba(0,0,0,1)] bg-slate-950/90 backdrop-blur-sm border border-white/10 px-2 py-0.5 rounded-md">
+            <span className="text-slate-400 font-mono text-[9px] mr-1">#{player.number}</span>
+            <span>{surname}</span>
           </span>
 
-          {/* Event Badges */}
+          {/* Event Icons (Goals, Assists, Cards, Captain) */}
           <div className="flex items-center justify-center gap-1 mt-0.5">
             {Boolean(player.isCaptain) && (
-              <span className="text-[9px] font-mono font-bold text-[#c3ff00] bg-black/70 px-1 rounded">
+              <span className="text-[8px] font-mono font-bold text-[#c3ff00] bg-black/80 px-1 rounded border border-[#c3ff00]/30">
                 (C)
               </span>
             )}
@@ -279,96 +313,130 @@ export function TacticalPitchLineup({
       </div>
 
       {/* =========================================================
-         1. UNIFIED FULL PITCH (KEDUA TIM BERHADAPAN ALA GOOGLE)
+         1. FOTMOB / GOOGLE FULL PITCH TACTICAL VIEW
          ========================================================= */}
       {viewMode === "dual" && (
-        <div className="relative overflow-hidden rounded-3xl border-2 border-pitch-750 bg-gradient-to-b from-[#0b3317] via-[#072410] to-[#0b3317] p-4 sm:p-8 shadow-2xl min-h-[920px] flex flex-col justify-between select-none">
+        <div className="relative overflow-hidden rounded-3xl border-2 border-pitch-750 bg-gradient-to-b from-[#121c15] via-[#0d1610] to-[#121c15] p-4 sm:p-8 shadow-2xl min-h-[960px] flex flex-col justify-between select-none">
           {/* Subtle Turf Stripes */}
-          <div className="absolute inset-0 opacity-15 pointer-events-none bg-[repeating-linear-gradient(0deg,#000,#000_45px,#fff_45px,#fff_90px)]" />
+          <div className="absolute inset-0 opacity-10 pointer-events-none bg-[repeating-linear-gradient(0deg,#000,#000_50px,#fff_50px,#fff_100px)]" />
 
           {/* White Chalk Pitch Markings */}
           {/* Outer Boundary */}
-          <div className="absolute inset-4 sm:inset-6 border-2 border-white/30 rounded-2xl pointer-events-none" />
+          <div className="absolute inset-4 sm:inset-6 border-2 border-white/20 rounded-2xl pointer-events-none" />
           
           {/* Halfway Line & Center Circle */}
-          <div className="absolute top-1/2 left-4 sm:left-6 right-4 sm:right-6 h-0.5 bg-white/35 -translate-y-1/2 pointer-events-none" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 sm:w-44 sm:h-44 rounded-full border-2 border-white/35 pointer-events-none flex items-center justify-center">
-            <div className="w-2.5 h-2.5 rounded-full bg-white/50" />
+          <div className="absolute top-1/2 left-4 sm:left-6 right-4 sm:right-6 h-0.5 bg-white/25 -translate-y-1/2 pointer-events-none" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-32 h-32 sm:w-44 sm:h-44 rounded-full border-2 border-white/25 pointer-events-none flex items-center justify-center">
+            <div className="w-2.5 h-2.5 rounded-full bg-white/40" />
           </div>
 
           {/* Top Goal Box (Away side) */}
-          <div className="absolute top-4 sm:top-6 left-1/2 -translate-x-1/2 w-48 sm:w-72 h-20 sm:h-28 border-2 border-t-0 border-white/30 rounded-b-2xl pointer-events-none" />
-          <div className="absolute top-4 sm:top-6 left-1/2 -translate-x-1/2 w-24 sm:w-36 h-10 border-2 border-t-0 border-white/30 rounded-b pointer-events-none" />
+          <div className="absolute top-4 sm:top-6 left-1/2 -translate-x-1/2 w-48 sm:w-72 h-20 sm:h-28 border-2 border-t-0 border-white/20 rounded-b-2xl pointer-events-none" />
+          <div className="absolute top-4 sm:top-6 left-1/2 -translate-x-1/2 w-24 sm:w-36 h-10 border-2 border-t-0 border-white/20 rounded-b pointer-events-none" />
 
           {/* Bottom Goal Box (Home side) */}
-          <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-48 sm:w-72 h-20 sm:h-28 border-2 border-b-0 border-white/30 rounded-t-2xl pointer-events-none" />
-          <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-24 sm:w-36 h-10 border-2 border-b-0 border-white/30 rounded-t pointer-events-none" />
+          <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-48 sm:w-72 h-20 sm:h-28 border-2 border-b-0 border-white/20 rounded-t-2xl pointer-events-none" />
+          <div className="absolute bottom-4 sm:bottom-6 left-1/2 -translate-x-1/2 w-24 sm:w-36 h-10 border-2 border-b-0 border-white/20 rounded-t pointer-events-none" />
 
-          {/* TOP HALF: AWAY TEAM (BLUE) */}
-          <div className="relative z-10 space-y-4 pb-6">
-            <div className="flex items-center justify-between text-xs font-mono text-cyan-200 bg-black/40 backdrop-blur-sm px-4 py-2 rounded-2xl border border-cyan-500/30">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-cyan-400 shadow-[0_0_8px_#00d4ff]" />
-                <span className="font-extrabold uppercase text-white">{awayTeamName}</span>
-                <span className="text-cyan-300">({awayLineup.formation})</span>
+          {/* TOP TEAM HEADER (FotMob Style Header) */}
+          <div className="relative z-10 flex items-center justify-between text-xs font-mono px-4 py-3 rounded-2xl bg-black/60 backdrop-blur-md border border-pitch-750">
+            <div className="flex items-center gap-2.5">
+              <span className={cn("px-2 py-0.5 rounded-md font-black text-xs font-mono", getRatingBadgeClass(awayTeamAvg))}>
+                {awayTeamAvg}
+              </span>
+              <span className="font-extrabold uppercase text-white text-sm tracking-tight">{awayTeamName}</span>
+              <span className="text-cyan-300 font-bold">({awayLineup.formation})</span>
+            </div>
+            <span className="text-[11px] text-slate-400 font-mono">Tim Tamu (Menghadap Bawah)</span>
+          </div>
+
+          {/* TOP HALF: AWAY TEAM FORMATION */}
+          <div className="relative z-10 flex flex-col justify-around gap-6 py-4">
+            {awayRows.map((row, idx) => (
+              <div key={idx} className="flex items-center justify-around w-full px-2 sm:px-8">
+                {row.map((p) => renderPlayerNode(p, "away", awayTeamName))}
               </div>
-              <span className="text-[10px] text-slate-300 font-normal">Tim Tamu (Menghadap Bawah)</span>
-            </div>
-
-            {/* Away Formation Rows */}
-            <div className="flex flex-col justify-around gap-6 py-2">
-              {awayRows.map((row, idx) => (
-                <div key={idx} className="flex items-center justify-around w-full px-2 sm:px-8">
-                  {row.map((p) => renderPlayerNode(p, "away", awayTeamName))}
-                </div>
-              ))}
-            </div>
+            ))}
           </div>
 
           {/* CENTER PITCH BADGE */}
           <div className="relative z-10 flex items-center justify-center my-2 pointer-events-none">
-            <span className="px-4 py-1 rounded-full bg-black/70 border border-white/20 text-[10px] font-mono font-bold text-slate-300 uppercase tracking-widest backdrop-blur-md">
+            <span className="px-4 py-1 rounded-full bg-black/80 border border-white/15 text-[10px] font-mono font-bold text-slate-300 uppercase tracking-widest backdrop-blur-md">
               Garis Tengah Lapangan
             </span>
           </div>
 
-          {/* BOTTOM HALF: HOME TEAM (NEON GREEN) */}
-          <div className="relative z-10 space-y-4 pt-6">
-            {/* Home Formation Rows */}
-            <div className="flex flex-col justify-around gap-6 py-2">
-              {homeRows.map((row, idx) => (
-                <div key={idx} className="flex items-center justify-around w-full px-2 sm:px-8">
-                  {row.map((p) => renderPlayerNode(p, "home", homeTeamName))}
-                </div>
-              ))}
+          {/* BOTTOM HALF: HOME TEAM FORMATION */}
+          <div className="relative z-10 flex flex-col justify-around gap-6 py-4">
+            {homeRows.map((row, idx) => (
+              <div key={idx} className="flex items-center justify-around w-full px-2 sm:px-8">
+                {row.map((p) => renderPlayerNode(p, "home", homeTeamName))}
+              </div>
+            ))}
+          </div>
+
+          {/* BOTTOM TEAM HEADER (FotMob Style Header) */}
+          <div className="relative z-10 flex items-center justify-between text-xs font-mono px-4 py-3 rounded-2xl bg-black/60 backdrop-blur-md border border-pitch-750">
+            <div className="flex items-center gap-2.5">
+              <span className={cn("px-2 py-0.5 rounded-md font-black text-xs font-mono", getRatingBadgeClass(homeTeamAvg))}>
+                {homeTeamAvg}
+              </span>
+              <span className="font-extrabold uppercase text-white text-sm tracking-tight">{homeTeamName}</span>
+              <span className="text-[#c3ff00] font-bold">({homeLineup.formation})</span>
+            </div>
+            <span className="text-[11px] text-slate-400 font-mono">Tuan Rumah (Menghadap Atas)</span>
+          </div>
+
+          {/* FOOTER COACH BAR (FotMob Style Coach Bar) */}
+          <div className="relative z-10 mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-mono text-slate-300">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full bg-pitch-900 border border-pitch-750 flex items-center justify-center overflow-hidden">
+                {homeLineup.manager?.photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={homeLineup.manager.photoUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-3 h-3 text-[#c3ff00]" />
+                )}
+              </div>
+              <span className="font-bold text-slate-200">{homeLineup.manager?.name || `Pelatih ${homeTeamName}`}</span>
             </div>
 
-            <div className="flex items-center justify-between text-xs font-mono text-emerald-200 bg-black/40 backdrop-blur-sm px-4 py-2 rounded-2xl border border-[#c3ff00]/30">
-              <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-[#c3ff00] shadow-[0_0_8px_#c3ff00]" />
-                <span className="font-extrabold uppercase text-white">{homeTeamName}</span>
-                <span className="text-[#c3ff00]">({homeLineup.formation})</span>
+            <span className="text-[10px] uppercase font-bold tracking-widest text-slate-500">Pelatih Kepala</span>
+
+            <div className="flex items-center gap-2">
+              <span className="font-bold text-slate-200">{awayLineup.manager?.name || `Pelatih ${awayTeamName}`}</span>
+              <div className="w-6 h-6 rounded-full bg-pitch-900 border border-pitch-750 flex items-center justify-center overflow-hidden">
+                {awayLineup.manager?.photoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={awayLineup.manager.photoUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  <User className="w-3 h-3 text-cyan-400" />
+                )}
               </div>
-              <span className="text-[10px] text-slate-300 font-normal">Tuan Rumah (Menghadap Atas)</span>
             </div>
           </div>
         </div>
       )}
 
       {/* =========================================================
-         2. SINGLE TEAM HALF PITCH ZOOM VIEW (HOME ATAU AWAY)
+         2. SINGLE TEAM HALF PITCH ZOOM VIEW
          ========================================================= */}
       {(viewMode === "home" || viewMode === "away") && (
-        <div className="relative overflow-hidden rounded-3xl border-2 border-pitch-750 bg-gradient-to-b from-[#0b3317] via-[#072410] to-[#0b3317] p-4 sm:p-8 shadow-2xl min-h-[580px] flex flex-col justify-between select-none">
-          <div className="absolute inset-0 opacity-15 pointer-events-none bg-[repeating-linear-gradient(0deg,#000,#000_40px,#fff_40px,#fff_80px)]" />
-          <div className="absolute inset-4 sm:inset-6 border-2 border-white/30 rounded-2xl pointer-events-none" />
-          <div className="absolute top-1/2 left-4 sm:left-6 right-4 sm:right-6 h-0.5 bg-white/35 -translate-y-1/2 pointer-events-none" />
+        <div className="relative overflow-hidden rounded-3xl border-2 border-pitch-750 bg-gradient-to-b from-[#121c15] via-[#0d1610] to-[#121c15] p-4 sm:p-8 shadow-2xl min-h-[600px] flex flex-col justify-between select-none">
+          <div className="absolute inset-0 opacity-10 pointer-events-none bg-[repeating-linear-gradient(0deg,#000,#000_40px,#fff_40px,#fff_80px)]" />
+          <div className="absolute inset-4 sm:inset-6 border-2 border-white/20 rounded-2xl pointer-events-none" />
+          <div className="absolute top-1/2 left-4 sm:left-6 right-4 sm:right-6 h-0.5 bg-white/25 -translate-y-1/2 pointer-events-none" />
 
           {/* Team Label */}
-          <div className="relative z-10 flex items-center justify-between text-xs font-mono text-white bg-black/50 px-4 py-2 rounded-2xl border border-pitch-750">
-            <span className="font-extrabold uppercase">
-              {viewMode === "home" ? homeTeamName : awayTeamName} ({viewMode === "home" ? homeLineup.formation : awayLineup.formation})
-            </span>
+          <div className="relative z-10 flex items-center justify-between text-xs font-mono text-white bg-black/60 px-4 py-2.5 rounded-2xl border border-pitch-750">
+            <div className="flex items-center gap-2">
+              <span className={cn("px-2 py-0.5 rounded-md font-black text-xs font-mono", getRatingBadgeClass(viewMode === "home" ? homeTeamAvg : awayTeamAvg))}>
+                {viewMode === "home" ? homeTeamAvg : awayTeamAvg}
+              </span>
+              <span className="font-extrabold uppercase">
+                {viewMode === "home" ? homeTeamName : awayTeamName} ({viewMode === "home" ? homeLineup.formation : awayLineup.formation})
+              </span>
+            </div>
             <span className="text-[10px] text-[#c3ff00]">Klik pemain untuk detail</span>
           </div>
 
@@ -384,7 +452,7 @@ export function TacticalPitchLineup({
       )}
 
       {/* =========================================================
-         3. DETAILED STATS TABLE (TABEL RATING LENGKAP KEDUA TIM)
+         3. DETAILED STATS TABLE
          ========================================================= */}
       {viewMode === "table" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
@@ -422,7 +490,7 @@ export function TacticalPitchLineup({
                       </td>
                       <td className="py-2.5 px-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-pitch-950 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-pitch-950 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
                             <PlayerAvatar
                               photoUrl={p.photoUrl}
                               name={p.name}
@@ -441,8 +509,8 @@ export function TacticalPitchLineup({
                         {p.position}
                       </td>
                       <td className="py-2.5 px-2 text-right">
-                        <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-mono font-black border", getRatingBadgeClass(p.rating))}>
-                          {p.isMotm && <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-300" />}
+                        <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-mono font-black border", getRatingBadgeClass(p.rating, p.isMotm))}>
+                          {p.isMotm && <Star className="w-2.5 h-2.5 fill-white text-white" />}
                           <span>{formatRating(p.rating)}</span>
                         </span>
                       </td>
@@ -487,7 +555,7 @@ export function TacticalPitchLineup({
                       </td>
                       <td className="py-2.5 px-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-7 h-7 rounded-full bg-pitch-950 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
+                          <div className="w-8 h-8 rounded-full bg-pitch-950 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
                             <PlayerAvatar
                               photoUrl={p.photoUrl}
                               name={p.name}
@@ -506,8 +574,8 @@ export function TacticalPitchLineup({
                         {p.position}
                       </td>
                       <td className="py-2.5 px-2 text-right">
-                        <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-xs font-mono font-black border", getRatingBadgeClass(p.rating))}>
-                          {p.isMotm && <Star className="w-2.5 h-2.5 fill-amber-400 text-amber-300" />}
+                        <span className={cn("inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-mono font-black border", getRatingBadgeClass(p.rating, p.isMotm))}>
+                          {p.isMotm && <Star className="w-2.5 h-2.5 fill-white text-white" />}
                           <span>{formatRating(p.rating)}</span>
                         </span>
                       </td>
@@ -562,7 +630,7 @@ export function TacticalPitchLineup({
                   </div>
                 </div>
                 {b.rating && (
-                  <span className="font-mono text-xs font-bold text-[#c3ff00] px-2 py-0.5 rounded bg-pitch-900 border border-pitch-750">
+                  <span className={cn("font-mono text-xs font-black px-2 py-0.5 rounded-md border", getRatingBadgeClass(b.rating))}>
                     {formatRating(b.rating)}
                   </span>
                 )}
@@ -611,7 +679,7 @@ export function TacticalPitchLineup({
                   </div>
                 </div>
                 {b.rating && (
-                  <span className="font-mono text-xs font-bold text-cyan-400 px-2 py-0.5 rounded bg-pitch-900 border border-pitch-750">
+                  <span className={cn("font-mono text-xs font-black px-2 py-0.5 rounded-md border", getRatingBadgeClass(b.rating))}>
                     {formatRating(b.rating)}
                   </span>
                 )}
@@ -675,8 +743,8 @@ export function TacticalPitchLineup({
               </div>
 
               {selectedPlayer.player.isMotm && (
-                <div className="px-3 py-1.5 rounded-xl bg-amber-950 border border-amber-700 text-amber-300 text-xs font-mono font-bold flex items-center gap-1.5">
-                  <Star className="w-4 h-4 fill-amber-400" />
+                <div className="px-3 py-1.5 rounded-xl bg-[#0091ea] text-white text-xs font-mono font-bold flex items-center gap-1.5 shadow">
+                  <Star className="w-4 h-4 fill-white" />
                   <span>Man of the Match</span>
                 </div>
               )}
