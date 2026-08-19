@@ -7,6 +7,7 @@ import { UserNav } from "./UserNav";
 import { Search, Globe, PenTool } from "lucide-react";
 import { footballService } from "@/lib/football/football.service";
 import { getCurrentUser } from "@/lib/auth/session";
+import { ThemeToggle } from "@/components/theme/ThemeToggle";
 
 export async function Header() {
   const [liveMatches, user] = await Promise.all([
@@ -48,8 +49,11 @@ export async function Header() {
           </Link>
         </div>
 
-        {/* Right Action Icons & User Session */}
-        <div className="flex items-center gap-2.5">
+        {/* Right Action Icons, Theme Toggle & User Session */}
+        <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Light / Dark Mode Switcher */}
+          <ThemeToggle />
+
           <Link
             href="/search"
             aria-label="Search football content"

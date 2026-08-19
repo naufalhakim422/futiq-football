@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 const config: Config = {
+  darkMode: "class",
   content: [
     "./src/pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./src/components/**/*.{js,ts,jsx,tsx,mdx}",
@@ -14,6 +15,7 @@ const config: Config = {
           900: "#0B1017", // Primary surface
           850: "#101722", // Card / Panel background
           800: "#172131", // Elevated container
+          750: "#1C283B", // Secondary container
           700: "#223147", // Hover state
           600: "#324663", // Interactive border
         },

@@ -3,6 +3,7 @@ import { Inter, Newsreader, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { ThemeProvider } from "@/components/theme/ThemeProvider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -52,11 +53,35 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${inter.variable} ${newsreader.variable} ${jetbrains.variable}`}
+      suppressHydrationWarning
     >
-      <body className="min-h-screen flex flex-col bg-pitch-950 text-slate-100 antialiased font-sans selection:bg-brand-green selection:text-slate-950">
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  var saved = localStorage.getItem('futiq_theme');
+                  var pref = saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
+                  if (pref === 'light') {
+                    document.documentElement.classList.add('light');
+                    document.documentElement.classList.remove('dark');
+                  } else {
+                    document.documentElement.classList.add('dark');
+                    document.documentElement.classList.remove('light');
+                  }
+                } catch(e) {}
+              })();
+            `,
+          }}
+        />
+      </head>
+      <body className="min-h-screen flex flex-col bg-pitch-950 text-slate-100 antialiased font-sans selection:bg-[#c3ff00] selection:text-slate-950">
+        <ThemeProvider>
+          <Header />
+          <main className="flex-1">{children}</main>
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );
