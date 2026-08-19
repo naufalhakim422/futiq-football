@@ -1,63 +1,74 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import {
   X,
   ShieldCheck,
   FileText,
   Copyright,
-  Coins,
   CheckCircle2,
   AlertCircle,
   ExternalLink,
   BookOpen,
   Scale,
   Sparkles,
+  Lock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
-export type GuidelineSection = "code-of-conduct" | "originality" | "image-rights" | "rewards" | "all";
+export type GuidelineSection = "code-of-conduct" | "originality" | "image-rights";
 
 interface GuidelinesModalProps {
   isOpen: boolean;
   onClose: () => void;
-  initialSection?: GuidelineSection;
+  section: GuidelineSection;
+  onAccept?: (section: GuidelineSection) => void;
 }
 
 export function GuidelinesModal({
   isOpen,
   onClose,
-  initialSection = "all",
+  section,
+  onAccept,
 }: GuidelinesModalProps) {
-  const [activeTab, setActiveTab] = useState<GuidelineSection>(initialSection);
-
   if (!isOpen) return null;
 
+  const handleAccept = () => {
+    if (onAccept) {
+      onAccept(section);
+    }
+    onClose();
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-10 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 md:p-10 bg-slate-950/85 backdrop-blur-md animate-in fade-in duration-200"
+      onClick={onClose}
+    >
       <div
-        className="relative w-full max-w-4xl max-h-[90vh] bg-pitch-900 border border-pitch-750 rounded-2xl shadow-2xl flex flex-col overflow-hidden text-slate-100 font-sans"
+        className="relative w-full max-w-2xl max-h-[85vh] bg-pitch-900 border border-pitch-750 rounded-2xl shadow-2xl flex flex-col overflow-hidden text-slate-100 font-sans"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Modal Header */}
         <div className="p-5 sm:p-6 bg-pitch-950 border-b border-pitch-800 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-pitch-900 border border-[#c3ff00]/40 flex items-center justify-center text-[#c3ff00]">
-              <BookOpen className="w-5 h-5" />
+              {section === "code-of-conduct" && <ShieldCheck className="w-5 h-5" />}
+              {section === "originality" && <FileText className="w-5 h-5" />}
+              {section === "image-rights" && <Copyright className="w-5 h-5" />}
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base sm:text-lg font-bold text-slate-100 font-sans">
-                  FUTIQ Editorial Handbook & Contributor Terms
+                  {section === "code-of-conduct" && "Contributor Code of Conduct & Guidelines"}
+                  {section === "originality" && "Declaration of Original Authorship & Citations"}
+                  {section === "image-rights" && "Intellectual Property & Image Rights Compliance"}
                 </h2>
-                <span className="px-2 py-0.5 rounded text-[10px] font-mono font-bold bg-[#c3ff00]/10 text-[#c3ff00] border border-[#c3ff00]/30 uppercase">
-                  Official Policy v2.0
-                </span>
               </div>
-              <p className="text-xs text-slate-400 font-sans mt-0.5">
-                Official accreditation criteria, editorial code of conduct, and revenue share guidelines.
-              </p>
+              <span className="text-[10px] font-mono text-slate-400">
+                FUTIQ Official Contributor Terms • Mandatory Accreditation Requirement
+              </span>
             </div>
           </div>
 
@@ -70,240 +81,156 @@ export function GuidelinesModal({
           </button>
         </div>
 
-        {/* Tab Navigation */}
-        <div className="flex items-center gap-1.5 p-2 bg-pitch-950/60 border-b border-pitch-800 overflow-x-auto text-xs font-mono shrink-0">
-          <button
-            onClick={() => setActiveTab("all")}
-            className={cn(
-              "px-3 py-1.5 rounded-lg font-bold transition-colors shrink-0",
-              activeTab === "all"
-                ? "bg-[#c3ff00] text-slate-950 shadow"
-                : "text-slate-400 hover:text-slate-200 hover:bg-pitch-850"
-            )}
-          >
-            📋 Full Overview
-          </button>
-          <button
-            onClick={() => setActiveTab("code-of-conduct")}
-            className={cn(
-              "px-3 py-1.5 rounded-lg font-bold transition-colors shrink-0 flex items-center gap-1.5",
-              activeTab === "code-of-conduct"
-                ? "bg-[#c3ff00] text-slate-950 shadow"
-                : "text-slate-400 hover:text-slate-200 hover:bg-pitch-850"
-            )}
-          >
-            <ShieldCheck className="w-3.5 h-3.5" />
-            <span>Code of Conduct</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("originality")}
-            className={cn(
-              "px-3 py-1.5 rounded-lg font-bold transition-colors shrink-0 flex items-center gap-1.5",
-              activeTab === "originality"
-                ? "bg-[#c3ff00] text-slate-950 shadow"
-                : "text-slate-400 hover:text-slate-200 hover:bg-pitch-850"
-            )}
-          >
-            <FileText className="w-3.5 h-3.5" />
-            <span>Originality & Sources</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("image-rights")}
-            className={cn(
-              "px-3 py-1.5 rounded-lg font-bold transition-colors shrink-0 flex items-center gap-1.5",
-              activeTab === "image-rights"
-                ? "bg-[#c3ff00] text-slate-950 shadow"
-                : "text-slate-400 hover:text-slate-200 hover:bg-pitch-850"
-            )}
-          >
-            <Copyright className="w-3.5 h-3.5" />
-            <span>Image Rights & IP</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("rewards")}
-            className={cn(
-              "px-3 py-1.5 rounded-lg font-bold transition-colors shrink-0 flex items-center gap-1.5",
-              activeTab === "rewards"
-                ? "bg-[#c3ff00] text-slate-950 shadow"
-                : "text-slate-400 hover:text-slate-200 hover:bg-pitch-850"
-            )}
-          >
-            <Coins className="w-3.5 h-3.5" />
-            <span>Rewards & Payouts</span>
-          </button>
-        </div>
-
-        {/* Scrollable Content Body */}
-        <div className="p-6 sm:p-8 overflow-y-auto space-y-8 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
-          {/* Section 1: Contributor Qualifications & Code of Conduct */}
-          {(activeTab === "all" || activeTab === "code-of-conduct") && (
+        {/* Scrollable Single Focused Document */}
+        <div className="p-6 sm:p-7 overflow-y-auto space-y-6 text-xs sm:text-sm text-slate-300 leading-relaxed font-sans">
+          {/* SECTION 1: CODE OF CONDUCT ONLY */}
+          {section === "code-of-conduct" && (
             <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-pitch-800">
-                <ShieldCheck className="w-5 h-5 text-[#c3ff00]" />
-                <h3 className="text-base font-bold text-slate-100 uppercase font-sans tracking-wide">
-                  1. Contributor Code of Conduct & Editorial Guidelines
-                </h3>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
-                <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-2">
-                  <h4 className="font-bold text-slate-100 flex items-center gap-2 text-xs uppercase font-mono">
-                    <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
-                    <span>Fact-Checking & Objectivity</span>
-                  </h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    All articles must be founded on verifiable facts, tactical match events, or confirmed club announcements. Pure rumors must be explicitly flagged with the &ldquo;Rumor&rdquo; tier and sourced with credible journalists.
-                  </p>
-                </div>
-
-                <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-2">
-                  <h4 className="font-bold text-slate-100 flex items-center gap-2 text-xs uppercase font-mono">
-                    <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
-                    <span>Analytical Depth Standards</span>
-                  </h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Manuscripts must offer actionable tactical breakdowns, statistical metrics (e.g. xG, passing networks, pressing triggers), or unique narrative perspectives rather than simple scoreline recaps.
-                  </p>
-                </div>
-
-                <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-2">
-                  <h4 className="font-bold text-slate-100 flex items-center gap-2 text-xs uppercase font-mono">
-                    <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
-                    <span>Zero Hate Speech & Neutral Tone</span>
-                  </h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Tribal insults, defamatory attacks against players/managers, discriminatory language, or incitement of violence result in immediate, permanent revocation of contributor credentials.
-                  </p>
-                </div>
-
-                <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-2">
-                  <h4 className="font-bold text-slate-100 flex items-center gap-2 text-xs uppercase font-mono">
-                    <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
-                    <span>Editorial Review Cycle</span>
-                  </h4>
-                  <p className="text-xs text-slate-400 leading-relaxed">
-                    Every submitted draft is evaluated through our AI Editorial Gate and Senior Editors before public release. Authors are expected to promptly address requested revisions.
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Section 2: Declaration of Original Authorship & Citations */}
-          {(activeTab === "all" || activeTab === "originality") && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-pitch-800">
-                <FileText className="w-5 h-5 text-[#c3ff00]" />
-                <h3 className="text-base font-bold text-slate-100 uppercase font-sans tracking-wide">
-                  2. Declaration of Original Authorship & Citations
-                </h3>
-              </div>
-
-              <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-3">
-                <div className="flex items-center gap-2 text-[#c3ff00] font-mono font-bold text-xs">
-                  <Scale className="w-4 h-4" />
-                  <span>Strict Plagiarism Invariant (0% Tolerated)</span>
-                </div>
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  All manuscripts must be authored directly by the accredited writer. Direct copying from other media outlets, uncredited translations of foreign articles, or automated scraper outputs will result in immediate disqualification and frozen balances.
+              <div className="p-3.5 bg-pitch-950 border border-pitch-800 rounded-xl text-xs space-y-1">
+                <span className="font-mono font-bold text-[#c3ff00] uppercase text-[11px]">
+                  📌 Overview:
+                </span>
+                <p className="text-slate-300">
+                  Every contributor represents the editorial integrity of FUTIQ FOOTBALL. All published articles must maintain strict professional objectivity, tactical depth, and zero harassment.
                 </p>
-                <ul className="space-y-2 pt-1 text-xs text-slate-400">
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#c3ff00] shrink-0 mt-0.5" />
-                    <span><strong>Mandatory Source Citations:</strong> At least 1 verified primary source (press conference, official club website, Opta feed, or accredited broadcast) must be attached to the manuscript docket.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#c3ff00] shrink-0 mt-0.5" />
-                    <span><strong>Quotes & Interviews:</strong> Quotes from players or managers must clearly specify the interviewer, press conference date, or broadcasting network.</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#c3ff00] shrink-0 mt-0.5" />
-                    <span><strong>AI Assistance Policy:</strong> AI tools may only be utilized for grammar refinement or research assistance. Pure automated synthetic generation without human editorial analysis will be rejected at the AI Editorial Gate.</span>
-                  </li>
-                </ul>
-              </div>
-            </div>
-          )}
-
-          {/* Section 3: Intellectual Property & Image Rights Compliance */}
-          {(activeTab === "all" || activeTab === "image-rights") && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-pitch-800">
-                <Copyright className="w-5 h-5 text-[#c3ff00]" />
-                <h3 className="text-base font-bold text-slate-100 uppercase font-sans tracking-wide">
-                  3. Intellectual Property & Image Rights Compliance
-                </h3>
-              </div>
-
-              <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-3">
-                <p className="text-xs text-slate-300 leading-relaxed">
-                  FUTIQ FOOTBALL strictly upholds international copyright treaties (Berne Convention & DMCA). All media embedded into articles must have verified rights status:
-                </p>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-xs font-mono">
-                  <div className="p-3 bg-pitch-900 border border-pitch-800 rounded-lg">
-                    <div className="text-emerald-400 font-bold text-xs uppercase">✅ Permitted Image Sources</div>
-                    <ul className="space-y-1 mt-1 text-slate-400 text-[11px] font-sans">
-                      <li>• Unsplash / Pexels licensed sports photography</li>
-                      <li>• Official Club Media Kits & Press Releases</li>
-                      <li>• Author-owned original tactical diagrams & charts</li>
-                      <li>• Verified Public Domain imagery</li>
-                    </ul>
-                  </div>
-
-                  <div className="p-3 bg-pitch-900 border border-pitch-800 rounded-lg">
-                    <div className="text-red-400 font-bold text-xs uppercase">❌ Prohibited Image Sources</div>
-                    <ul className="space-y-1 mt-1 text-slate-400 text-[11px] font-sans">
-                      <li>• Watermarked Getty / Reuters / AP images without license</li>
-                      <li>• Screenshots of paywalled broadcasts (Sky, TNT, beIN)</li>
-                      <li>• Uncredited social media scrapes (Twitter/IG photos)</li>
-                      <li>• Random search engine thumbnail scrapes</li>
-                    </ul>
-                  </div>
-                </div>
-
-                <p className="text-[11px] text-slate-400 pt-1">
-                  Every image must include an accurate caption and explicit attribution credit (e.g. <em>Photo: Unsplash / John Doe</em>).
-                </p>
-              </div>
-            </div>
-          )}
-
-          {/* Section 4: Contributor Rewards, Qualified Views & Payout Rules */}
-          {(activeTab === "all" || activeTab === "rewards") && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 pb-2 border-b border-pitch-800">
-                <Coins className="w-5 h-5 text-[#c3ff00]" />
-                <h3 className="text-base font-bold text-slate-100 uppercase font-sans tracking-wide">
-                  4. Contributor Rewards, Revenue Share & Payout Policy
-                </h3>
               </div>
 
               <div className="space-y-3">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 font-mono text-center">
-                  <div className="p-3 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1">
-                    <span className="text-[10px] text-slate-500 uppercase">Min. Payout Threshold</span>
-                    <div className="text-lg font-bold text-[#c3ff00]">RM 85.00</div>
-                    <span className="text-[9px] text-slate-500">8,500 minor units</span>
+                <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1.5">
+                  <h4 className="font-bold text-slate-100 flex items-center gap-2 text-xs uppercase font-mono">
+                    <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
+                    <span>1. Fact-Checking & Factual Precision</span>
+                  </h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    All reports, statistics, and tactical statements must be grounded in verified match events, official announcements, or reputable sports journalism outlets. Unverified gossip or fabricated quotes will result in instant rejection.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1.5">
+                  <h4 className="font-bold text-slate-100 flex items-center gap-2 text-xs uppercase font-mono">
+                    <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
+                    <span>2. Tactical Analytical Depth</span>
+                  </h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    FUTIQ readers expect insightful deconstructions (pressing schemes, xG delta, passing networks, positional rotations) rather than simple superficial scoreline summaries.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1.5">
+                  <h4 className="font-bold text-slate-100 flex items-center gap-2 text-xs uppercase font-mono">
+                    <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
+                    <span>3. Respectful & Neutral Editorial Tone</span>
+                  </h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Constructive criticism of tactical systems, manager setups, and player performance is encouraged. However, abusive remarks, personal defamation, tribal hatred, and discrimination are strictly prohibited.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1.5">
+                  <h4 className="font-bold text-slate-100 flex items-center gap-2 text-xs uppercase font-mono">
+                    <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
+                    <span>4. Editorial Review & Revisions</span>
+                  </h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Submitted manuscripts pass through Senior Editors and our automated AI Editorial Gate. Contributors agree to cooperate with editorial revision notes when requested.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 2: ORIGINALITY & CITATIONS ONLY */}
+          {section === "originality" && (
+            <div className="space-y-4">
+              <div className="p-3.5 bg-pitch-950 border border-pitch-800 rounded-xl text-xs space-y-1">
+                <span className="font-mono font-bold text-[#c3ff00] uppercase text-[11px]">
+                  📌 Overview:
+                </span>
+                <p className="text-slate-300">
+                  FUTIQ FOOTBALL maintains a zero-tolerance policy against plagiarism and AI content generation without human analysis.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1.5">
+                  <h4 className="font-bold text-slate-100 flex items-center gap-2 text-xs uppercase font-mono">
+                    <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
+                    <span>1. 100% Original Authorship</span>
+                  </h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    You affirm that every article submitted under your byline is your own original creative and analytical work. Copy-pasting, unauthorized translations, or scraping other sports publications leads to immediate account ban.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1.5">
+                  <h4 className="font-bold text-slate-100 flex items-center gap-2 text-xs uppercase font-mono">
+                    <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
+                    <span>2. Mandatory Primary Source Citations</span>
+                  </h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Every article draft must include at least 1 verified primary source URL (e.g. official press conference, Opta/FotMob statistical log, club press release, or accredited broadcast interview) in the editor&apos;s source manager.
+                  </p>
+                </div>
+
+                <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1.5">
+                  <h4 className="font-bold text-slate-100 flex items-center gap-2 text-xs uppercase font-mono">
+                    <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
+                    <span>3. AI Tool Usage Policy</span>
+                  </h4>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    AI may only be used as a research assistant or grammar checker. Pure synthetic AI generation without human editorial expertise will be flagged and rejected by the AI Editorial Gate.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SECTION 3: IMAGE RIGHTS & IP ONLY */}
+          {section === "image-rights" && (
+            <div className="space-y-4">
+              <div className="p-3.5 bg-pitch-950 border border-pitch-800 rounded-xl text-xs space-y-1">
+                <span className="font-mono font-bold text-[#c3ff00] uppercase text-[11px]">
+                  📌 Overview:
+                </span>
+                <p className="text-slate-300">
+                  To protect writers and the platform against legal copyright infringements, all images embedded into articles must adhere strictly to verified media licensing.
+                </p>
+              </div>
+
+              <div className="space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+                  <div className="p-3 bg-pitch-950 border border-emerald-800/50 rounded-xl space-y-1">
+                    <span className="font-bold text-emerald-400 uppercase font-mono text-[11px]">
+                      ✅ Permitted Image Assets:
+                    </span>
+                    <ul className="space-y-1 text-slate-300 text-[11px]">
+                      <li>• Unsplash / Pexels licensed photography</li>
+                      <li>• Official Club Press Kits & Releases</li>
+                      <li>• Original diagrams / charts created by you</li>
+                      <li>• Public domain sports imagery</li>
+                    </ul>
                   </div>
-                  <div className="p-3 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1">
-                    <span className="text-[10px] text-slate-500 uppercase">Bank Cooldown</span>
-                    <div className="text-lg font-bold text-cyan-400">48 Hours</div>
-                    <span className="text-[9px] text-slate-500">Post account edit</span>
-                  </div>
-                  <div className="p-3 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1">
-                    <span className="text-[10px] text-slate-500 uppercase">Ledger Precision</span>
-                    <div className="text-lg font-bold text-emerald-400">Server-Auth</div>
-                    <span className="text-[9px] text-slate-500">Double-entry integer ledger</span>
+
+                  <div className="p-3 bg-pitch-950 border border-red-800/50 rounded-xl space-y-1">
+                    <span className="font-bold text-red-400 uppercase font-mono text-[11px]">
+                      ❌ Strictly Prohibited:
+                    </span>
+                    <ul className="space-y-1 text-slate-300 text-[11px]">
+                      <li>• Watermarked Getty / Reuters / AP photos</li>
+                      <li>• TV broadcast screen captures (Sky, beIN)</li>
+                      <li>• Uncredited social media photos</li>
+                      <li>• Google / Bing image search scraping</li>
+                    </ul>
                   </div>
                 </div>
 
-                <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-2 text-xs">
-                  <h4 className="font-bold text-slate-100 font-mono text-xs uppercase">
-                    Qualified Views & Bot Defense:
+                <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-1.5">
+                  <h4 className="font-bold text-slate-100 flex items-center gap-2 text-xs uppercase font-mono">
+                    <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
+                    <span>Mandatory Caption & Photo Credit</span>
                   </h4>
-                  <p className="text-slate-400 leading-relaxed">
-                    Rewards are calculated solely from <strong>Qualified Organic Views</strong> (readers maintaining real dwell time &gt; 30 seconds, non-bot user agents, verified IP diversity). Automated traffic, click farms, or artificial refresh schemes trigger immediate ledger holds and account ban.
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    Every image must include an accurate caption describing the moment and a clear attribution credit (e.g. <em>Photo: Unsplash / John Doe</em>).
                   </p>
                 </div>
               </div>
@@ -311,22 +238,24 @@ export function GuidelinesModal({
           )}
         </div>
 
-        {/* Modal Footer CTA */}
+        {/* Modal Footer with Single Action Button */}
         <div className="p-4 sm:p-5 bg-pitch-950 border-t border-pitch-800 flex flex-col sm:flex-row items-center justify-between gap-3 shrink-0">
           <Link
             href="/editorial-guidelines"
             target="_blank"
-            className="text-xs font-mono text-[#c3ff00] hover:underline inline-flex items-center gap-1.5"
+            className="text-xs font-mono text-slate-400 hover:text-[#c3ff00] hover:underline inline-flex items-center gap-1.5"
           >
-            <span>Open Standalone Guidelines Page</span>
+            <span>Read Complete Handbook Page</span>
             <ExternalLink className="w-3.5 h-3.5" />
           </Link>
 
           <button
-            onClick={onClose}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-[#c3ff00] hover:bg-[#b0e600] text-slate-950 font-bold uppercase tracking-wider text-xs transition-colors shadow-lg active:scale-[0.99]"
+            type="button"
+            onClick={handleAccept}
+            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-[#c3ff00] hover:bg-[#b0e600] text-slate-950 font-bold uppercase tracking-wider text-xs transition-colors shadow-lg active:scale-[0.99] flex items-center justify-center gap-2"
           >
-            I Understand & Agree
+            <CheckCircle2 className="w-4 h-4 text-slate-950" />
+            <span>I Have Read & Accept This Policy</span>
           </button>
         </div>
       </div>

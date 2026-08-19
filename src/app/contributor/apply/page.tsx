@@ -16,6 +16,7 @@ import {
   BookOpen,
   ExternalLink,
   Info,
+  Check,
 } from "lucide-react";
 import Link from "next/link";
 import { GuidelinesModal, GuidelineSection } from "@/components/contributor/GuidelinesModal";
@@ -46,11 +47,21 @@ export default function ContributorApplyPage() {
 
   // Guidelines Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [modalSection, setModalSection] = useState<GuidelineSection>("all");
+  const [modalSection, setModalSection] = useState<GuidelineSection>("code-of-conduct");
 
-  const openGuidelines = (section: GuidelineSection = "all") => {
+  const openGuidelines = (section: GuidelineSection) => {
     setModalSection(section);
     setIsModalOpen(true);
+  };
+
+  const handleModalAccept = (section: GuidelineSection) => {
+    if (section === "code-of-conduct") {
+      setFormData((prev) => ({ ...prev, agreementAccepted: true }));
+    } else if (section === "originality") {
+      setFormData((prev) => ({ ...prev, originalityDeclared: true }));
+    } else if (section === "image-rights") {
+      setFormData((prev) => ({ ...prev, copyrightDeclared: true }));
+    }
   };
 
   const handleChange = (
@@ -78,6 +89,27 @@ export default function ContributorApplyPage() {
 
     if (formData.password !== formData.confirmPassword) {
       setError("Password confirmation does not match password.");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.agreementAccepted) {
+      setError("Please read and accept the Contributor Code of Conduct before proceeding.");
+      openGuidelines("code-of-conduct");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.originalityDeclared) {
+      setError("Please read and accept the Declaration of Original Authorship before proceeding.");
+      openGuidelines("originality");
+      setLoading(false);
+      return;
+    }
+
+    if (!formData.copyrightDeclared) {
+      setError("Please read and accept the Intellectual Property & Image Rights Compliance before proceeding.");
+      openGuidelines("image-rights");
       setLoading(false);
       return;
     }
@@ -163,11 +195,12 @@ export default function ContributorApplyPage() {
 
   return (
     <div className="py-8 space-y-8">
-      {/* Interactive Modal for Reading Guidelines & Standards */}
+      {/* Interactive Modal for Reading Single Specific Guideline */}
       <GuidelinesModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        initialSection={modalSection}
+        section={modalSection}
+        onAccept={handleModalAccept}
       />
 
       <PageContainer>
@@ -178,7 +211,7 @@ export default function ContributorApplyPage() {
         />
 
         <div className="max-w-3xl mx-auto space-y-6">
-          {/* Trust & Quality Banner with Read Guidelines Trigger */}
+          {/* Trust & Quality Banner */}
           <div className="p-4 bg-pitch-900 border border-pitch-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-xl">
             <div className="flex items-start sm:items-center gap-3 text-xs text-slate-300">
               <ShieldCheck className="w-5 h-5 text-[#c3ff00] shrink-0 mt-0.5 sm:mt-0" />
@@ -187,14 +220,14 @@ export default function ContributorApplyPage() {
               </p>
             </div>
             
-            <button
-              type="button"
-              onClick={() => openGuidelines("all")}
+            <Link
+              href="/editorial-guidelines"
+              target="_blank"
               className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 text-[#c3ff00] font-mono text-[11px] font-bold tracking-wider uppercase transition-colors shrink-0 self-start sm:self-auto"
             >
               <BookOpen className="w-3.5 h-3.5" />
-              <span>Read Handbook</span>
-            </button>
+              <span>Full Handbook ↗</span>
+            </Link>
           </div>
 
           {error && (
@@ -464,7 +497,7 @@ export default function ContributorApplyPage() {
               </div>
             </div>
 
-            {/* Section 04: Legal & Standards Declarations */}
+            {/* Section 04: Legal & Standards Declarations (1-to-1 Interactive Modal Policy Enforcement) */}
             <div className="space-y-4 pt-2">
               <div className="flex items-center justify-between pb-2 border-b border-pitch-800">
                 <div className="flex items-center gap-2">
@@ -476,120 +509,151 @@ export default function ContributorApplyPage() {
                   </h3>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => openGuidelines("all")}
-                  className="text-[11px] font-mono text-[#c3ff00] hover:underline flex items-center gap-1 font-bold"
-                >
-                  <span>Click to Read All Terms</span>
-                  <ExternalLink className="w-3 h-3" />
-                </button>
+                <span className="text-[10px] font-mono text-slate-400">
+                  (Must read and accept each policy before submitting)
+                </span>
               </div>
 
               <div className="space-y-3">
-                {/* Checkbox 1 */}
-                <div className="p-3.5 bg-pitch-950 border border-pitch-800 hover:border-pitch-700 rounded-xl transition-colors space-y-2">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="agreementAccepted"
-                      checked={formData.agreementAccepted}
-                      onChange={handleChange}
-                      required
-                      className="mt-0.5 rounded border-pitch-700 bg-pitch-900 text-[#c3ff00] focus:ring-0 w-4 h-4 accent-[#c3ff00]"
-                    />
-                    <div className="space-y-0.5">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-bold text-slate-100 block text-xs">
-                          Contributor Code of Conduct & Editorial Guidelines
-                        </span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            openGuidelines("code-of-conduct");
-                          }}
-                          className="text-[10px] font-mono text-[#c3ff00] hover:underline inline-flex items-center gap-1 font-bold bg-[#c3ff00]/10 px-2 py-0.5 rounded border border-[#c3ff00]/30"
-                        >
-                          <span>Read Guidelines</span>
-                          <ExternalLink className="w-2.5 h-2.5" />
-                        </button>
+                {/* 1. Code of Conduct */}
+                <div
+                  className={`p-4 bg-pitch-950 border rounded-xl transition-all ${
+                    formData.agreementAccepted
+                      ? "border-[#c3ff00]/50 bg-[#c3ff00]/5"
+                      : "border-pitch-800 hover:border-slate-600"
+                  }`}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <button
+                        type="button"
+                        onClick={() => openGuidelines("code-of-conduct")}
+                        className={`w-5 h-5 rounded flex items-center justify-center shrink-0 mt-0.5 border transition-colors ${
+                          formData.agreementAccepted
+                            ? "bg-[#c3ff00] border-[#c3ff00] text-slate-950 font-bold"
+                            : "bg-pitch-900 border-pitch-700 hover:border-[#c3ff00]"
+                        }`}
+                      >
+                        {formData.agreementAccepted && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </button>
+
+                      <div className="space-y-0.5">
+                        <div className="font-bold text-slate-100 text-xs flex items-center gap-2">
+                          <span>1. Contributor Code of Conduct & Editorial Guidelines</span>
+                        </div>
+                        <p className="text-slate-400 text-[11px] leading-relaxed">
+                          Factual precision, tactical objectivity, sports journalism standards, and neutral editorial tone.
+                        </p>
                       </div>
-                      <p className="text-slate-400 text-[11px] leading-relaxed">
-                        I agree to maintain factual precision, professional sports journalism standards, and editorial independence.
-                      </p>
                     </div>
-                  </label>
+
+                    <button
+                      type="button"
+                      onClick={() => openGuidelines("code-of-conduct")}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider shrink-0 transition-colors flex items-center gap-1.5 ${
+                        formData.agreementAccepted
+                          ? "bg-pitch-900 text-[#c3ff00] border border-[#c3ff00]/40 hover:bg-pitch-850"
+                          : "bg-[#c3ff00] text-slate-950 hover:bg-[#b0e600] shadow-md animate-pulse"
+                      }`}
+                    >
+                      <BookOpen className="w-3 h-3" />
+                      <span>{formData.agreementAccepted ? "Review Terms ✓" : "Read & Accept"}</span>
+                    </button>
+                  </div>
                 </div>
 
-                {/* Checkbox 2 */}
-                <div className="p-3.5 bg-pitch-950 border border-pitch-800 hover:border-pitch-700 rounded-xl transition-colors space-y-2">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="originalityDeclared"
-                      checked={formData.originalityDeclared}
-                      onChange={handleChange}
-                      required
-                      className="mt-0.5 rounded border-pitch-700 bg-pitch-900 text-[#c3ff00] focus:ring-0 w-4 h-4 accent-[#c3ff00]"
-                    />
-                    <div className="space-y-0.5">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-bold text-slate-100 block text-xs">
-                          Declaration of Original Authorship
-                        </span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            openGuidelines("originality");
-                          }}
-                          className="text-[10px] font-mono text-[#c3ff00] hover:underline inline-flex items-center gap-1 font-bold bg-[#c3ff00]/10 px-2 py-0.5 rounded border border-[#c3ff00]/30"
-                        >
-                          <span>Read Originality Rules</span>
-                          <ExternalLink className="w-2.5 h-2.5" />
-                        </button>
+                {/* 2. Originality */}
+                <div
+                  className={`p-4 bg-pitch-950 border rounded-xl transition-all ${
+                    formData.originalityDeclared
+                      ? "border-[#c3ff00]/50 bg-[#c3ff00]/5"
+                      : "border-pitch-800 hover:border-slate-600"
+                  }`}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <button
+                        type="button"
+                        onClick={() => openGuidelines("originality")}
+                        className={`w-5 h-5 rounded flex items-center justify-center shrink-0 mt-0.5 border transition-colors ${
+                          formData.originalityDeclared
+                            ? "bg-[#c3ff00] border-[#c3ff00] text-slate-950 font-bold"
+                            : "bg-pitch-900 border-pitch-700 hover:border-[#c3ff00]"
+                        }`}
+                      >
+                        {formData.originalityDeclared && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </button>
+
+                      <div className="space-y-0.5">
+                        <div className="font-bold text-slate-100 text-xs flex items-center gap-2">
+                          <span>2. Declaration of Original Authorship & Citations</span>
+                        </div>
+                        <p className="text-slate-400 text-[11px] leading-relaxed">
+                          100% original human analysis, zero plagiarism, and mandatory primary source citations.
+                        </p>
                       </div>
-                      <p className="text-slate-400 text-[11px] leading-relaxed">
-                        I affirm that all submitted articles will be 100% original work with verifiable citations and primary sources.
-                      </p>
                     </div>
-                  </label>
+
+                    <button
+                      type="button"
+                      onClick={() => openGuidelines("originality")}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider shrink-0 transition-colors flex items-center gap-1.5 ${
+                        formData.originalityDeclared
+                          ? "bg-pitch-900 text-[#c3ff00] border border-[#c3ff00]/40 hover:bg-pitch-850"
+                          : "bg-[#c3ff00] text-slate-950 hover:bg-[#b0e600] shadow-md animate-pulse"
+                      }`}
+                    >
+                      <BookOpen className="w-3 h-3" />
+                      <span>{formData.originalityDeclared ? "Review Terms ✓" : "Read & Accept"}</span>
+                    </button>
+                  </div>
                 </div>
 
-                {/* Checkbox 3 */}
-                <div className="p-3.5 bg-pitch-950 border border-pitch-800 hover:border-pitch-700 rounded-xl transition-colors space-y-2">
-                  <label className="flex items-start gap-3 cursor-pointer">
-                    <input
-                      type="checkbox"
-                      name="copyrightDeclared"
-                      checked={formData.copyrightDeclared}
-                      onChange={handleChange}
-                      required
-                      className="mt-0.5 rounded border-pitch-700 bg-pitch-900 text-[#c3ff00] focus:ring-0 w-4 h-4 accent-[#c3ff00]"
-                    />
-                    <div className="space-y-0.5">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <span className="font-bold text-slate-100 block text-xs">
-                          Intellectual Property & Image Rights Compliance
-                        </span>
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            openGuidelines("image-rights");
-                          }}
-                          className="text-[10px] font-mono text-[#c3ff00] hover:underline inline-flex items-center gap-1 font-bold bg-[#c3ff00]/10 px-2 py-0.5 rounded border border-[#c3ff00]/30"
-                        >
-                          <span>Read IP & Image Policy</span>
-                          <ExternalLink className="w-2.5 h-2.5" />
-                        </button>
+                {/* 3. Image Rights */}
+                <div
+                  className={`p-4 bg-pitch-950 border rounded-xl transition-all ${
+                    formData.copyrightDeclared
+                      ? "border-[#c3ff00]/50 bg-[#c3ff00]/5"
+                      : "border-pitch-800 hover:border-slate-600"
+                  }`}
+                >
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex items-start gap-3">
+                      <button
+                        type="button"
+                        onClick={() => openGuidelines("image-rights")}
+                        className={`w-5 h-5 rounded flex items-center justify-center shrink-0 mt-0.5 border transition-colors ${
+                          formData.copyrightDeclared
+                            ? "bg-[#c3ff00] border-[#c3ff00] text-slate-950 font-bold"
+                            : "bg-pitch-900 border-pitch-700 hover:border-[#c3ff00]"
+                        }`}
+                      >
+                        {formData.copyrightDeclared && <Check className="w-3.5 h-3.5 stroke-[3]" />}
+                      </button>
+
+                      <div className="space-y-0.5">
+                        <div className="font-bold text-slate-100 text-xs flex items-center gap-2">
+                          <span>3. Intellectual Property & Image Rights Compliance</span>
+                        </div>
+                        <p className="text-slate-400 text-[11px] leading-relaxed">
+                          Authorized media licensing (Unsplash, official press kits, owned photography), proper credit lines.
+                        </p>
                       </div>
-                      <p className="text-slate-400 text-[11px] leading-relaxed">
-                        I will strictly utilize authorized media (Owned, Licensed, Official Press Kits, or Public Domain) with proper attribution.
-                      </p>
                     </div>
-                  </label>
+
+                    <button
+                      type="button"
+                      onClick={() => openGuidelines("image-rights")}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-mono font-bold uppercase tracking-wider shrink-0 transition-colors flex items-center gap-1.5 ${
+                        formData.copyrightDeclared
+                          ? "bg-pitch-900 text-[#c3ff00] border border-[#c3ff00]/40 hover:bg-pitch-850"
+                          : "bg-[#c3ff00] text-slate-950 hover:bg-[#b0e600] shadow-md animate-pulse"
+                      }`}
+                    >
+                      <BookOpen className="w-3 h-3" />
+                      <span>{formData.copyrightDeclared ? "Review Terms ✓" : "Read & Accept"}</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
