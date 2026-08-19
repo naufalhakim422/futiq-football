@@ -14,6 +14,8 @@ import {
   ChevronDown,
   Sparkles,
   Settings,
+  RefreshCw,
+  Zap,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -110,6 +112,31 @@ export function UserNav({ user }: UserNavProps) {
             </div>
           </div>
 
+          {/* Quick Simulation Role Switcher (POV Toggle) */}
+          <div className="p-2 bg-pitch-950/40 border-b border-pitch-800">
+            <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-400 px-2 mb-1 flex items-center justify-between">
+              <span>Simulation Mode POV</span>
+              <Zap className="w-3 h-3 text-amber-400" />
+            </div>
+            {isAdmin ? (
+              <a
+                href="/api/auth/dev-session?role=CONTRIBUTOR&redirect=/contributor/earnings"
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 transition-all font-semibold text-[11px]"
+              >
+                <RefreshCw className="w-3.5 h-3.5 shrink-0" />
+                <span>Switch to Pure Contributor ($100)</span>
+              </a>
+            ) : (
+              <a
+                href="/api/auth/dev-session?role=SUPER_ADMIN&redirect=/admin/finance"
+                className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/20 transition-all font-semibold text-[11px]"
+              >
+                <RefreshCw className="w-3.5 h-3.5 shrink-0" />
+                <span>Switch to Super Admin / Finance</span>
+              </a>
+            )}
+          </div>
+
           {/* Nav Links */}
           <div className="p-1.5 space-y-0.5">
             {isAdmin && (
@@ -121,6 +148,15 @@ export function UserNav({ user }: UserNavProps) {
                 >
                   <Shield className="w-4 h-4 text-[#c3ff00]" />
                   <span className="font-semibold">Admin Portal Control</span>
+                </Link>
+
+                <Link
+                  href="/admin/finance"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-pitch-800 transition-colors"
+                >
+                  <Coins className="w-4 h-4 text-emerald-400" />
+                  <span>Finance & Treasury Operations</span>
                 </Link>
 
                 <Link
