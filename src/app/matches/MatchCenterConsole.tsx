@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { MatchCardData, MatchCard } from "@/components/football/MatchCard";
 import {
   Trophy,
@@ -12,6 +12,9 @@ import {
   Filter,
   Flame,
   Shield,
+  Search,
+  X,
+  Clock,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -31,6 +34,8 @@ interface LeagueGroup {
 
 export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterConsoleProps) {
   const [activeFilter, setActiveFilter] = useState<string>("ALL");
+  const [searchQuery, setSearchQuery] = useState<string>("");
+  const [dateFilter, setDateFilter] = useState<"ALL" | "YESTERDAY" | "TODAY" | "TOMORROW">("ALL");
 
   // Combine and deduplicate
   const allMatchesMap = new Map<string, MatchCardData>();
@@ -51,8 +56,10 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
       n.includes("euro") ||
       n.includes("afc") ||
       n.includes("conmebol") ||
+      n.includes("friendly") ||
       c === "WCQ" ||
-      c === "UNL"
+      c === "UNL" ||
+      c === "FRIENDLY"
     ) {
       return "INTERNATIONAL";
     }
@@ -77,14 +84,52 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
     if (n.toLowerCase().includes("ligi kuu bara")) return { title: "Tanzania Premier League", country: "🇹🇿 Tanzania" };
     if (n.toLowerCase().includes("super league") && !n.toLowerCase().includes("premier")) return { title: "Uzbekistan Super League", country: "🇺🇿 Uzbekistan" };
     if (n.toLowerCase().includes("premier soccer league")) return { title: "Zimbabwe Premier Soccer League", country: "🇿🇼 Zimbabwe" };
+    if (n.toLowerCase().includes("friendly")) return { title: "International Friendlies", country: "🤝 Exhibition Match" };
     if (n.toLowerCase().includes("cup")) return { title: n, country: "🏆 Cup Tournament" };
     return { title: n, country: "⚽ Domestic League" };
   };
 
+  // Filter matches by Search & Date
+  const searchedMatches = useMemo(() => {
+    return allMatches.filter((m) => {
+      // 1. Search Query Filter (Google-like team/competition search)
+      if (searchQuery.trim().length > 0) {
+        const q = searchQuery.toLowerCase().trim();
+        const home = (m.homeTeam.name || "").toLowerCase();
+        const away = (m.awayTeam.name || "").toLowerCase();
+        const comp = (m.competition.name || "").toLowerCase();
+        const venue = (m.venue?.name || "").toLowerCase();
+        const matchesSearch = home.includes(q) || away.includes(q) || comp.includes(q) || venue.includes(q);
+        if (!matchesSearch) return false;
+      }
+
+      // 2. Date Quick Filter
+      if (dateFilter !== "ALL") {
+        const matchDate = new Date(m.matchDate);
+        const today = new Date();
+        const isToday = matchDate.toDateString() === today.toDateString();
+
+        const yest = new Date();
+        yest.setDate(today.getDate() - 1);
+        const isYesterday = matchDate.toDateString() === yest.toDateString();
+
+        const tom = new Date();
+        tom.setDate(today.getDate() + 1);
+        const isTomorrow = matchDate.toDateString() === tom.toDateString();
+
+        if (dateFilter === "TODAY" && !isToday && !m.status.toString().includes("LIVE")) return false;
+        if (dateFilter === "YESTERDAY" && !isYesterday && m.status !== "FINISHED") return false;
+        if (dateFilter === "TOMORROW" && !isTomorrow && m.status !== "SCHEDULED") return false;
+      }
+
+      return true;
+    });
+  }, [allMatches, searchQuery, dateFilter]);
+
   // Group matches by friendly competition
   const groupsMap = new Map<string, LeagueGroup>();
 
-  allMatches.forEach((m) => {
+  searchedMatches.forEach((m) => {
     const rawName = m.competition.name || "Competition";
     const category = getCategory(rawName, m.competition.code);
     const { title, country } = getFriendlyTitle(rawName);
@@ -111,7 +156,7 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
     return pA - pB;
   });
 
-  // Filtered groups
+  // Filtered groups by category tab
   const filteredGroups = sortedGroups.filter((g) => {
     if (activeFilter === "ALL") return true;
     if (activeFilter === "LIVE") return g.matches.some((m) => m.status.toString().includes("LIVE") || m.status === "HT");
@@ -123,33 +168,54 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
   ).length;
 
   return (
-    <div className="space-y-8 font-sans">
-      {/* Category Filter Navigation Bar */}
-      <div className="bg-pitch-900 border border-pitch-800 p-3 sm:p-4 rounded-2xl shadow-xl flex flex-wrap items-center justify-between gap-3">
-        <div className="flex flex-wrap items-center gap-2 text-xs font-mono font-bold">
+    <div className="space-y-6 font-sans">
+      {/* GOOGLE-LIKE INSTANT FIXTURE SEARCH BAR */}
+      <div className="relative">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search fixtures, national teams (Indonesia, Brazil), clubs (Arsenal, Real Madrid), or competitions..."
+          className="w-full pl-11 pr-10 py-3.5 bg-pitch-900 border border-pitch-800 focus:border-[#c3ff00] focus:ring-1 focus:ring-[#c3ff00] rounded-2xl text-xs sm:text-sm text-slate-100 placeholder:text-slate-500 font-mono transition-all outline-none shadow-xl"
+        />
+        {searchQuery && (
+          <button
+            onClick={() => setSearchQuery("")}
+            className="absolute right-3.5 top-1/2 -translate-y-1/2 p-1 text-slate-400 hover:text-white rounded-full bg-pitch-950 transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        )}
+      </div>
+
+      {/* CATEGORY & DATE FILTER CONTROLS */}
+      <div className="bg-pitch-900 border border-pitch-800 p-3 sm:p-4 rounded-2xl shadow-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+        {/* Main Competition Filters */}
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 text-xs font-mono font-bold">
           <button
             onClick={() => setActiveFilter("ALL")}
             className={cn(
-              "px-4 py-2 rounded-xl transition-all",
+              "px-3.5 py-2 rounded-xl transition-all",
               activeFilter === "ALL"
                 ? "bg-[#c3ff00] text-slate-950 shadow-md"
                 : "bg-pitch-950 text-slate-300 hover:text-white border border-pitch-800"
             )}
           >
-            All Matches ({allMatches.length})
+            All ({allMatches.length})
           </button>
 
           <button
             onClick={() => setActiveFilter("LIVE")}
             className={cn(
-              "px-4 py-2 rounded-xl transition-all flex items-center gap-1.5",
+              "px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5",
               activeFilter === "LIVE"
                 ? "bg-brand-red text-white shadow-md"
                 : "bg-pitch-950 text-slate-300 hover:text-white border border-pitch-800"
             )}
           >
-            <span className="w-2 h-2 rounded-full bg-brand-red animate-ping" />
-            <span>Live Now ({liveTotalCount})</span>
+            <span className={cn("w-2 h-2 rounded-full", activeFilter === "LIVE" ? "bg-white animate-ping" : "bg-brand-red")} />
+            <span>Live ({liveTotalCount})</span>
           </button>
 
           <button
@@ -157,98 +223,148 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
             className={cn(
               "px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5",
               activeFilter === "INTERNATIONAL"
-                ? "bg-[#c3ff00] text-slate-950 shadow-md"
+                ? "bg-cyan-400 text-slate-950 shadow-md"
                 : "bg-pitch-950 text-slate-300 hover:text-white border border-pitch-800"
             )}
           >
-            <span>🌍 National Teams & World Cup</span>
+            <Globe2 className="w-3.5 h-3.5" />
+            <span>National Teams</span>
+          </button>
+
+          <button
+            onClick={() => setActiveFilter("UCL")}
+            className={cn(
+              "px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5",
+              activeFilter === "UCL"
+                ? "bg-purple-400 text-slate-950 shadow-md"
+                : "bg-pitch-950 text-slate-300 hover:text-white border border-pitch-800"
+            )}
+          >
+            <span>Champions League</span>
           </button>
 
           <button
             onClick={() => setActiveFilter("PREMIER_LEAGUE")}
             className={cn(
-              "px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5",
+              "px-3.5 py-2 rounded-xl transition-all",
               activeFilter === "PREMIER_LEAGUE"
-                ? "bg-[#c3ff00] text-slate-950 shadow-md"
+                ? "bg-emerald-400 text-slate-950 shadow-md"
                 : "bg-pitch-950 text-slate-300 hover:text-white border border-pitch-800"
             )}
           >
-            <span>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</span>
+            Premier League
           </button>
 
           <button
             onClick={() => setActiveFilter("LA_LIGA")}
             className={cn(
-              "px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5",
+              "px-3.5 py-2 rounded-xl transition-all",
               activeFilter === "LA_LIGA"
-                ? "bg-[#c3ff00] text-slate-950 shadow-md"
+                ? "bg-amber-400 text-slate-950 shadow-md"
                 : "bg-pitch-950 text-slate-300 hover:text-white border border-pitch-800"
             )}
           >
-            <span>🇪🇸 La Liga</span>
+            La Liga
           </button>
 
           <button
-            onClick={() => setActiveFilter("OTHER")}
+            onClick={() => setActiveFilter("SERIE_A")}
             className={cn(
-              "px-3.5 py-2 rounded-xl transition-all flex items-center gap-1.5",
-              activeFilter === "OTHER"
-                ? "bg-[#c3ff00] text-slate-950 shadow-md"
+              "px-3.5 py-2 rounded-xl transition-all",
+              activeFilter === "SERIE_A"
+                ? "bg-blue-400 text-slate-950 shadow-md"
                 : "bg-pitch-950 text-slate-300 hover:text-white border border-pitch-800"
             )}
           >
-            <span>⚽ Other Leagues</span>
+            Serie A
+          </button>
+        </div>
+
+        {/* Date Quick Filter Pills */}
+        <div className="flex items-center gap-1 p-1 bg-pitch-950 border border-pitch-800 rounded-xl font-mono text-[11px] font-bold">
+          <button
+            onClick={() => setDateFilter("YESTERDAY")}
+            className={cn(
+              "px-2.5 py-1 rounded-lg transition-colors",
+              dateFilter === "YESTERDAY" ? "bg-slate-700 text-white shadow" : "text-slate-400 hover:text-white"
+            )}
+          >
+            Yesterday
+          </button>
+          <button
+            onClick={() => setDateFilter("TODAY")}
+            className={cn(
+              "px-2.5 py-1 rounded-lg transition-colors",
+              dateFilter === "TODAY" ? "bg-[#c3ff00] text-slate-950 shadow" : "text-slate-400 hover:text-white"
+            )}
+          >
+            Today
+          </button>
+          <button
+            onClick={() => setDateFilter("TOMORROW")}
+            className={cn(
+              "px-2.5 py-1 rounded-lg transition-colors",
+              dateFilter === "TOMORROW" ? "bg-cyan-400 text-slate-950 shadow" : "text-slate-400 hover:text-white"
+            )}
+          >
+            Tomorrow
+          </button>
+          <button
+            onClick={() => setDateFilter("ALL")}
+            className={cn(
+              "px-2.5 py-1 rounded-lg transition-colors",
+              dateFilter === "ALL" ? "bg-pitch-800 text-slate-200" : "text-slate-400 hover:text-white"
+            )}
+          >
+            All Dates
           </button>
         </div>
       </div>
 
-      {/* Grouped Matches by Clear Tournament Headings */}
+      {/* MATCH GROUPS LIST */}
       {filteredGroups.length === 0 ? (
-        <div className="p-12 text-center bg-pitch-900 border border-pitch-800 rounded-2xl text-slate-500 font-mono">
-          No matches found in this category.
+        <div className="bg-pitch-900 border border-pitch-800 rounded-3xl p-12 text-center space-y-3 shadow-xl">
+          <Calendar className="w-10 h-10 text-slate-600 mx-auto" />
+          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300 font-mono">
+            No Fixtures Found
+          </h3>
+          <p className="text-xs text-slate-500 font-sans max-w-sm mx-auto">
+            {searchQuery
+              ? `No matches matched your search "${searchQuery}". Try searching for another team or league.`
+              : "No fixtures currently active under this filter category."}
+          </p>
         </div>
       ) : (
-        <div className="space-y-10">
-          {filteredGroups.map((group) => {
-            const matchesToDisplay =
-              activeFilter === "LIVE"
-                ? group.matches.filter((m) => m.status.toString().includes("LIVE") || m.status === "HT")
-                : group.matches;
-
-            if (matchesToDisplay.length === 0) return null;
-
-            return (
-              <section key={group.id} className="space-y-4">
-                {/* Clear, Recognizable League Section Header */}
-                <div className="flex items-center justify-between pb-3 border-b border-pitch-800">
-                  <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-xl bg-pitch-950 border border-pitch-750 flex items-center justify-center text-base shadow-sm">
-                      {group.icon || "⚽"}
-                    </div>
-                    <div>
-                      <h2 className="text-base sm:text-lg font-black text-slate-100 uppercase tracking-tight font-sans">
-                        {group.name}
-                      </h2>
-                      <span className="text-[11px] font-mono text-[#c3ff00] font-semibold">
-                        {group.country}
-                      </span>
-                    </div>
+        <div className="space-y-8">
+          {filteredGroups.map((group) => (
+            <div key={group.id} className="space-y-4">
+              {/* Competition Header Badge */}
+              <div className="flex items-center justify-between px-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="text-base">{group.icon}</span>
+                  <div>
+                    <h2 className="text-sm sm:text-base font-extrabold text-slate-100 uppercase tracking-tight font-sans">
+                      {group.name}
+                    </h2>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      {group.country}
+                    </span>
                   </div>
-
-                  <span className="text-xs font-mono font-bold text-slate-400 bg-pitch-900 px-3 py-1 rounded-full border border-pitch-800">
-                    {matchesToDisplay.length} Matches
-                  </span>
                 </div>
 
-                {/* Match Cards Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {matchesToDisplay.map((match) => (
-                    <MatchCard key={match.id} match={match} />
-                  ))}
-                </div>
-              </section>
-            );
-          })}
+                <span className="text-xs font-mono font-bold text-slate-400 px-2.5 py-1 rounded-lg bg-pitch-900 border border-pitch-800">
+                  {group.matches.length} Matches
+                </span>
+              </div>
+
+              {/* Fixture Cards Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+                {group.matches.map((match) => (
+                  <MatchCard key={match.id} match={match} />
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       )}
     </div>

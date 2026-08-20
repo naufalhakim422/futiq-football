@@ -108,4 +108,24 @@ describe("Sprint Match Center 2.0 — Google & FotMob Level Football Engine Suit
       assert.strictEqual(typeof match.stats.xgAway, "number");
     });
   });
+
+  describe("6. H2H & Form Guide", () => {
+    test("should provide historical H2H meetings and team form", async () => {
+      const match = await provider.getMatch("match_ina_aus");
+      assert.ok(match?.h2h, "H2H data should exist");
+      assert.ok(match.h2h.totalMatches >= 3, "Should have historical meetings");
+      assert.ok(match.homeForm && match.homeForm.length > 0, "Home form should exist");
+      assert.ok(match.awayForm && match.awayForm.length > 0, "Away form should exist");
+    });
+  });
+
+  describe("7. Standings Context & Zero Fake Data on Friendlies", () => {
+    test("should supply standings for tournament/qualifier matches and empty for friendlies", async () => {
+      const tourneyMatch = await provider.getMatch("match_ina_aus");
+      assert.ok(tourneyMatch?.standing && tourneyMatch.standing.length > 0, "Tournament should have standings");
+
+      const friendlyMatch = await provider.getMatch("match_ina_mas_fr");
+      assert.strictEqual(friendlyMatch?.standing, undefined, "Friendly match should not have league standings");
+    });
+  });
 });
