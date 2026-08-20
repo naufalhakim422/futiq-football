@@ -55,27 +55,6 @@ export default function RootLayout({
       className={`${inter.variable} ${newsreader.variable} ${jetbrains.variable}`}
       suppressHydrationWarning
     >
-      <head>
-        <script
-          dangerouslySetInnerHTML={{
-            __html: `
-              (function() {
-                try {
-                  var saved = localStorage.getItem('futiq_theme');
-                  var pref = saved || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-                  if (pref === 'light') {
-                    document.documentElement.classList.add('light');
-                    document.documentElement.classList.remove('dark');
-                  } else {
-                    document.documentElement.classList.add('dark');
-                    document.documentElement.classList.remove('light');
-                  }
-                } catch(e) {}
-              })();
-            `,
-          }}
-        />
-      </head>
       <body className="min-h-screen flex flex-col bg-pitch-950 text-slate-100 antialiased font-sans selection:bg-[#c3ff00] selection:text-slate-950">
         <ThemeProvider>
           <Header />
