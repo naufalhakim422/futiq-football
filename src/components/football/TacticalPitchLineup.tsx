@@ -13,6 +13,8 @@ import {
   TrendingUp,
   ExternalLink,
   Zap,
+  ArrowDownLeft,
+  ArrowUpRight,
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
@@ -27,18 +29,29 @@ interface TacticalPitchLineupProps {
   awayScore?: number;
 }
 
-// 3D Jersey Avatar fallback for players without photo in database
+// 3D Jersey Avatar fallback with player initials for players without photo
 function JerseyAvatar({
   number,
+  name,
   position,
   team = "home",
 }: {
   number: number;
+  name?: string;
   position?: string;
   team?: "home" | "away";
 }) {
   const isGk = position?.toUpperCase() === "GK";
   const isHome = team === "home";
+
+  const initials = name
+    ? name
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : `${number}`;
 
   const jerseyColor = isGk
     ? "from-amber-400 via-amber-500 to-amber-600 text-slate-950 border-amber-300"
@@ -53,17 +66,17 @@ function JerseyAvatar({
         jerseyColor
       )}
     >
-      <span className="font-mono font-black text-xs sm:text-sm leading-none drop-shadow-sm">
-        {number}
+      <span className="font-mono font-black text-[11px] sm:text-xs leading-none drop-shadow-sm tracking-tight">
+        {initials}
       </span>
       <span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-tighter font-black leading-none mt-0.5 opacity-90">
-        {position || (isGk ? "GK" : "MF")}
+        #{number}
       </span>
     </div>
   );
 }
 
-// FotMob / Google Style Player Avatar
+// FotMob / Google Style Canonical Player Avatar
 function PlayerAvatar({
   photoUrl,
   name,
@@ -102,7 +115,7 @@ function PlayerAvatar({
     );
   }
 
-  return <JerseyAvatar number={number} position={position} team={team} />;
+  return <JerseyAvatar number={number} name={name} position={position} team={team} />;
 }
 
 export function TacticalPitchLineup({
@@ -229,31 +242,45 @@ export function TacticalPitchLineup({
             <span>{surname}</span>
           </span>
 
-          {/* Event Icons (Goals, Assists, Cards, Captain) */}
-          <div className="flex items-center justify-center gap-1 mt-0.5">
+          {/* Event Icons (Goals, Assists, Cards, Sub In/Out, Captain) */}
+          <div className="flex items-center justify-center gap-1 mt-0.5 flex-wrap">
             {Boolean(player.isCaptain) && (
-              <span className="text-[8px] font-mono font-bold text-[#c3ff00] bg-black/80 px-1 rounded border border-[#c3ff00]/30">
+              <span className="text-[8px] font-mono font-bold text-[#c3ff00] bg-black/80 px-1 rounded border border-[#c3ff00]/30" title="Team Captain">
                 (C)
               </span>
             )}
             {Boolean(player.goals && player.goals > 0) && (
-              <span className="text-[10px]" title={`${player.goals} Goals`}>
-                ⚽{player.goals! > 1 ? `x${player.goals}` : ""}
+              <span className="text-[9px] font-mono font-bold bg-pitch-950 text-white px-1 rounded border border-white/20 flex items-center gap-0.5" title={`${player.goals} Goals`}>
+                <span>⚽</span>
+                <span>{player.goals}</span>
               </span>
             )}
             {Boolean(player.assists && player.assists > 0) && (
-              <span className="text-[10px]" title="Assist">
-                👟
+              <span className="text-[9px] font-mono font-bold bg-cyan-950 text-cyan-300 px-1 rounded border border-cyan-700/50 flex items-center gap-0.5" title={`${player.assists} Assists`}>
+                <span>🅰</span>
+                <span>{player.assists}</span>
               </span>
             )}
             {Boolean(player.yellowCards && player.yellowCards > 0) && (
-              <span className="text-[8px] bg-amber-400 text-black px-1 font-bold rounded">
+              <span className="text-[8px] bg-amber-400 text-black px-1 font-bold rounded" title="Yellow Card">
                 🟨
               </span>
             )}
             {Boolean(player.redCards && player.redCards > 0) && (
-              <span className="text-[8px] bg-brand-red text-white px-1 font-bold rounded">
+              <span className="text-[8px] bg-brand-red text-white px-1 font-bold rounded" title="Red Card">
                 🟥
+              </span>
+            )}
+            {Boolean(player.subOutMinute) && (
+              <span className="text-[8px] font-mono font-bold bg-rose-950/90 text-rose-300 px-1 rounded border border-rose-800 flex items-center gap-0.5" title={`Substituted Out at ${player.subOutMinute}'`}>
+                <ArrowUpRight className="w-2.5 h-2.5 text-rose-400" />
+                <span>{player.subOutMinute}&apos;</span>
+              </span>
+            )}
+            {Boolean(player.subInMinute) && (
+              <span className="text-[8px] font-mono font-bold bg-emerald-950/90 text-emerald-300 px-1 rounded border border-emerald-800 flex items-center gap-0.5" title={`Substituted In at ${player.subInMinute}'`}>
+                <ArrowDownLeft className="w-2.5 h-2.5 text-emerald-400" />
+                <span>{player.subInMinute}&apos;</span>
               </span>
             )}
           </div>
@@ -517,7 +544,7 @@ export function TacticalPitchLineup({
         </div>
       )}
 
-      {/* Substitutes / Bench Section */}
+      {/* Substitutes / Bench Section with minute IN / OUT badges */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Home Bench */}
         <div className="bg-pitch-900 border border-pitch-800 rounded-3xl p-5 sm:p-6 shadow-xl space-y-4">
@@ -553,8 +580,11 @@ export function TacticalPitchLineup({
                     <span className="font-semibold text-slate-200 block truncate">
                       {b.name}
                     </span>
-                    <span className="text-[10px] text-slate-500 font-mono uppercase">
-                      #{b.number} • {b.position}
+                    <span className="text-[10px] text-slate-500 font-mono uppercase flex items-center gap-1">
+                      <span>#{b.number} • {b.position}</span>
+                      {b.subInMinute && (
+                        <span className="text-emerald-400 font-bold">IN {b.subInMinute}&apos;</span>
+                      )}
                     </span>
                   </div>
                 </div>
@@ -602,8 +632,11 @@ export function TacticalPitchLineup({
                     <span className="font-semibold text-slate-200 block truncate">
                       {b.name}
                     </span>
-                    <span className="text-[10px] text-slate-500 font-mono uppercase">
-                      #{b.number} • {b.position}
+                    <span className="text-[10px] text-slate-500 font-mono uppercase flex items-center gap-1">
+                      <span>#{b.number} • {b.position}</span>
+                      {b.subInMinute && (
+                        <span className="text-emerald-400 font-bold">IN {b.subInMinute}&apos;</span>
+                      )}
                     </span>
                   </div>
                 </div>

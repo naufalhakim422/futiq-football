@@ -14,6 +14,62 @@ interface PlayerRatingsTableProps {
   awayTeamName: string;
 }
 
+function PlayerAvatarItem({
+  photoUrl,
+  playerId,
+  name,
+  number,
+  position,
+  isHome,
+}: {
+  photoUrl?: string;
+  playerId?: string;
+  name: string;
+  number: number;
+  position: string;
+  isHome: boolean;
+}) {
+  const [error, setError] = useState(false);
+  const verifiedPhoto = playerIdentityResolver.resolvePlayerPhoto(playerId, photoUrl);
+
+  const initials = name
+    ? name
+        .split(" ")
+        .map((n) => n[0])
+        .slice(0, 2)
+        .join("")
+        .toUpperCase()
+    : `${number}`;
+
+  if (verifiedPhoto && !error) {
+    return (
+      <div className="w-7 h-7 rounded-full bg-pitch-950 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={verifiedPhoto}
+          alt={name}
+          className="w-full h-full object-cover"
+          onError={() => setError(true)}
+        />
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className={cn(
+        "w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-mono font-bold shrink-0 border select-none",
+        isHome
+          ? "bg-[#c3ff00]/15 border-[#c3ff00]/40 text-[#c3ff00]"
+          : "bg-cyan-400/15 border-cyan-400/40 text-cyan-300"
+      )}
+      title={`${name} (#${number} - ${position})`}
+    >
+      {initials}
+    </div>
+  );
+}
+
 export function PlayerRatingsTable({
   homeLineup,
   awayLineup,
@@ -91,67 +147,69 @@ export function PlayerRatingsTable({
               </tr>
             </thead>
             <tbody className="divide-y divide-pitch-850">
-              {allPlayers.map((p, idx) => {
-                const verifiedPhoto = playerIdentityResolver.resolvePlayerPhoto(p.playerId, p.photoUrl);
-
-                return (
-                  <tr
-                    key={`${p.number}_${idx}`}
-                    onClick={() => setSelectedPlayer({ player: p, teamName })}
-                    className="hover:bg-pitch-850/60 transition-colors cursor-pointer"
-                  >
-                    <td className="py-2.5 px-2 text-center font-mono font-bold text-slate-400">
-                      #{p.number}
-                    </td>
-                    <td className="py-2.5 px-3">
-                      <div className="flex items-center gap-2.5">
-                        <div className="w-7 h-7 rounded-full bg-pitch-950 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
-                          {verifiedPhoto ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img src={verifiedPhoto} alt={p.name} className="w-full h-full object-cover" />
-                          ) : (
-                            <span className="font-mono text-[9px] font-bold text-slate-400">{p.position}</span>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-1.5">
-                          <span className="font-semibold text-slate-200">
-                            {p.name}
+              {allPlayers.map((p, idx) => (
+                <tr
+                  key={`${p.number}_${idx}`}
+                  onClick={() => setSelectedPlayer({ player: p, teamName })}
+                  className="hover:bg-pitch-850/60 transition-colors cursor-pointer"
+                >
+                  <td className="py-2.5 px-2 text-center font-mono font-bold text-slate-400">
+                    #{p.number}
+                  </td>
+                  <td className="py-2.5 px-3">
+                    <div className="flex items-center gap-2.5">
+                      <PlayerAvatarItem
+                        photoUrl={p.photoUrl}
+                        playerId={p.playerId}
+                        name={p.name}
+                        number={p.number}
+                        position={p.position}
+                        isHome={isHome}
+                      />
+                      <div className="flex items-center gap-1.5">
+                        <span className="font-semibold text-slate-200">
+                          {p.name}
+                        </span>
+                        {p.isCaptain && (
+                          <span className="text-[8px] font-mono font-bold text-[#c3ff00] bg-black/80 px-1 rounded border border-[#c3ff00]/30" title="Captain">
+                            (C)
                           </span>
-                          {p.isCaptain && (
-                            <span className="text-[8px] font-mono font-bold text-[#c3ff00] bg-black/80 px-1 rounded border border-[#c3ff00]/30">
-                              (C)
-                            </span>
-                          )}
-                          {p.isMotm && (
-                            <span className="text-[9px] font-mono font-bold text-white bg-[#0091ea] px-1.5 py-0.2 rounded">
-                              MOTM
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </td>
-                    <td className="py-2.5 px-2 text-center font-mono text-slate-400 uppercase font-semibold">
-                      {p.position}
-                    </td>
-                    <td className="py-2.5 px-2 text-center">
-                      <span className={cn("text-[10px] font-mono px-1.5 py-0.5 rounded", p.isStarter ? "bg-pitch-950 text-slate-300" : "bg-pitch-950/50 text-slate-500")}>
-                        {p.isStarter ? "Starter" : "Sub"}
-                      </span>
-                    </td>
-                    <td className="py-2.5 px-2 text-right">
-                      <span
-                        className={cn(
-                          "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-mono font-black border",
-                          getRatingBadgeClass(p.rating, p.isMotm)
                         )}
-                      >
-                        {p.isMotm && <Star className="w-2.5 h-2.5 fill-white text-white" />}
-                        <span>{formatRating(p.rating)}</span>
-                      </span>
-                    </td>
-                  </tr>
-                );
-              })}
+                        {p.isMotm && (
+                          <span className="text-[9px] font-mono font-bold text-white bg-[#0091ea] px-1.5 py-0.2 rounded" title="Man of the Match">
+                            MOTM
+                          </span>
+                        )}
+                        {Boolean(p.goals && p.goals > 0) && (
+                          <span className="text-[10px]" title={`${p.goals} Goals`}>⚽</span>
+                        )}
+                        {Boolean(p.assists && p.assists > 0) && (
+                          <span className="text-[10px]" title={`${p.assists} Assists`}>🅰</span>
+                        )}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-2.5 px-2 text-center font-mono text-slate-400 uppercase font-semibold">
+                    {p.position}
+                  </td>
+                  <td className="py-2.5 px-2 text-center">
+                    <span className={cn("text-[10px] font-mono px-1.5 py-0.5 rounded", p.isStarter ? "bg-pitch-950 text-slate-300" : "bg-pitch-950/50 text-slate-500")}>
+                      {p.isStarter ? "Starter" : "Sub"}
+                    </span>
+                  </td>
+                  <td className="py-2.5 px-2 text-right">
+                    <span
+                      className={cn(
+                        "inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-xs font-mono font-black border",
+                        getRatingBadgeClass(p.rating, p.isMotm)
+                      )}
+                    >
+                      {p.isMotm && <Star className="w-2.5 h-2.5 fill-white text-white" />}
+                      <span>{formatRating(p.rating)}</span>
+                    </span>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>

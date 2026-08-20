@@ -149,6 +149,10 @@ export interface LineupPlayer {
   dribbles?: number;
   duelsWon?: number;
   minutesPlayed?: number;
+  subInMinute?: number;
+  subOutMinute?: number;
+  isSubstitutedIn?: boolean;
+  isSubstitutedOut?: boolean;
 }
 
 export interface ProviderMatchLineup {
