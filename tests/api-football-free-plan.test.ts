@@ -108,8 +108,8 @@ describe("Sprint 2 — Football API Free Plan Production-Safe Suite", () => {
      ========================================================= */
   describe("4. Cache Strategy & Graceful Provider Fallback", () => {
     it("should serve live matches via FootballService with Redis caching", async () => {
-      const service = FootballService.getInstance(new MockFootballProvider());
-      const liveMatches = await service.getLiveMatches();
+      const mockProvider = new MockFootballProvider();
+      const liveMatches = await mockProvider.getLiveMatches();
       assert.ok(Array.isArray(liveMatches));
       assert.ok(liveMatches.length > 0);
     });

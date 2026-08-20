@@ -12,6 +12,7 @@ import {
   MinusCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PlayerAvatar } from "./PlayerAvatar";
 
 interface MatchTimelineProps {
   events: ProviderMatchEvent[];
@@ -132,9 +133,19 @@ export function MatchTimeline({
           </span>
         </div>
 
-        {/* Icon */}
-        <div className="shrink-0 w-7 h-7 rounded-full bg-pitch-950 border border-pitch-800 flex items-center justify-center shadow-inner mt-0.5">
-          {getEventIcon(ev.type)}
+        {/* Icon & Player Avatar */}
+        <div className="flex items-center gap-1.5 shrink-0 mt-0.5">
+          <div className="w-7 h-7 rounded-full bg-pitch-950 border border-pitch-800 flex items-center justify-center shadow-inner">
+            {getEventIcon(ev.type)}
+          </div>
+          {ev.playerName && (
+            <PlayerAvatar
+              playerId={ev.playerId}
+              playerName={ev.playerName}
+              size="sm"
+              team={isHome ? "home" : "away"}
+            />
+          )}
         </div>
 
         {/* Content */}
@@ -241,7 +252,7 @@ export function MatchTimeline({
                 <div className="absolute left-4.5 w-3 h-3 rounded-full bg-purple-400 border-2 border-pitch-900 -translate-x-1/2" />
                 <span className="font-bold">PENALTY SHOOTOUT</span>
                 <span className="font-black">
-                  {penaltyHomeScore !== undefined && penaltyAwayScore !== undefined ? `(${penaltyHomeScore} - ${penaltyAwayScore})` : "PEN"}
+                  {penaltyHomeScore !== undefined && penaltyAwayScore !== undefined ? `${penaltyHomeScore} - ${penaltyAwayScore}` : "PEN"}
                 </span>
               </div>
               <div className="space-y-2">
@@ -250,22 +261,12 @@ export function MatchTimeline({
             </>
           )}
 
-          {/* Fulltime / Match Concluded */}
+          {/* Match Conclusion (if finished) */}
           {status === "FINISHED" && (
-            <div className="relative pl-11 flex items-center justify-between text-xs font-mono text-slate-300">
-              <div className="absolute left-4.5 w-3 h-3 rounded-full bg-cyan-400 border-2 border-pitch-900 -translate-x-1/2" />
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-3.5 h-3.5 text-cyan-400" />
-                <span className="font-bold">Full Time (FT)</span>
-              </div>
-              <span className="font-black text-slate-100 text-sm">
-                Final Score: {homeScore} - {awayScore}
-                {penaltyHomeScore !== undefined && penaltyAwayScore !== undefined && (
-                  <span className="text-purple-300 text-xs ml-1.5 font-bold">
-                    (Pen: {penaltyHomeScore}-{penaltyAwayScore})
-                  </span>
-                )}
-              </span>
+            <div className="relative pl-11 flex items-center gap-2 text-xs font-mono text-slate-400">
+              <div className="absolute left-4.5 w-3 h-3 rounded-full bg-slate-500 border-2 border-pitch-900 -translate-x-1/2" />
+              <span className="font-bold text-slate-300">Full Time / Match Concluded</span>
+              <span className="text-[#c3ff00] font-black">({homeScore} - {awayScore})</span>
             </div>
           )}
         </div>

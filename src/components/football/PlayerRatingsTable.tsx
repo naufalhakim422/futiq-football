@@ -6,68 +6,13 @@ import { Star, Shield, User, X, Sparkles, ExternalLink, TrendingUp, Award } from
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { playerIdentityResolver } from "@/lib/football/player-identity.resolver";
+import { PlayerAvatar } from "./PlayerAvatar";
 
 interface PlayerRatingsTableProps {
   homeLineup: ProviderMatchLineup;
   awayLineup: ProviderMatchLineup;
   homeTeamName: string;
   awayTeamName: string;
-}
-
-function PlayerAvatarItem({
-  photoUrl,
-  playerId,
-  name,
-  number,
-  position,
-  isHome,
-}: {
-  photoUrl?: string;
-  playerId?: string;
-  name: string;
-  number: number;
-  position: string;
-  isHome: boolean;
-}) {
-  const [error, setError] = useState(false);
-  const verifiedPhoto = playerIdentityResolver.resolvePlayerPhoto(playerId, photoUrl);
-
-  const initials = name
-    ? name
-        .split(" ")
-        .map((n) => n[0])
-        .slice(0, 2)
-        .join("")
-        .toUpperCase()
-    : `${number}`;
-
-  if (verifiedPhoto && !error) {
-    return (
-      <div className="w-7 h-7 rounded-full bg-pitch-950 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={verifiedPhoto}
-          alt={name}
-          className="w-full h-full object-cover"
-          onError={() => setError(true)}
-        />
-      </div>
-    );
-  }
-
-  return (
-    <div
-      className={cn(
-        "w-7 h-7 rounded-full flex items-center justify-center text-[9px] font-mono font-bold shrink-0 border select-none",
-        isHome
-          ? "bg-[#c3ff00]/15 border-[#c3ff00]/40 text-[#c3ff00]"
-          : "bg-cyan-400/15 border-cyan-400/40 text-cyan-300"
-      )}
-      title={`${name} (#${number} - ${position})`}
-    >
-      {initials}
-    </div>
-  );
 }
 
 export function PlayerRatingsTable({
@@ -109,9 +54,6 @@ export function PlayerRatingsTable({
     [...allHome, ...allAway].sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0))[0];
 
   const motmTeam = motmCandidate && allHome.includes(motmCandidate) ? homeTeamName : awayTeamName;
-  const motmPhoto = motmCandidate
-    ? playerIdentityResolver.resolvePlayerPhoto(motmCandidate.playerId, motmCandidate.photoUrl)
-    : null;
 
   const renderTeamSection = (lineup: ProviderMatchLineup, teamName: string, isHome: boolean) => {
     const allPlayers = [
@@ -158,13 +100,14 @@ export function PlayerRatingsTable({
                   </td>
                   <td className="py-2.5 px-3">
                     <div className="flex items-center gap-2.5">
-                      <PlayerAvatarItem
+                      <PlayerAvatar
                         photoUrl={p.photoUrl}
                         playerId={p.playerId}
-                        name={p.name}
+                        playerName={p.name}
                         number={p.number}
                         position={p.position}
-                        isHome={isHome}
+                        size="sm"
+                        team={isHome ? "home" : "away"}
                       />
                       <div className="flex items-center gap-1.5">
                         <span className="font-semibold text-slate-200">
@@ -225,14 +168,15 @@ export function PlayerRatingsTable({
           <div className="absolute top-0 right-0 w-64 h-32 bg-[#0091ea]/10 rounded-full blur-3xl pointer-events-none" />
 
           <div className="flex items-center gap-5 relative z-10">
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-pitch-950 border-2 border-[#0091ea] overflow-hidden flex items-center justify-center shadow-[0_0_20px_rgba(0,145,234,0.4)] shrink-0">
-              {motmPhoto ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img src={motmPhoto} alt={motmCandidate.name} className="w-full h-full object-cover" />
-              ) : (
-                <Award className="w-8 h-8 text-[#0091ea]" />
-              )}
-            </div>
+            <PlayerAvatar
+              photoUrl={motmCandidate.photoUrl}
+              playerId={motmCandidate.playerId}
+              playerName={motmCandidate.name}
+              number={motmCandidate.number}
+              position={motmCandidate.position}
+              size="xl"
+              className="border-2 border-[#0091ea] shadow-[0_0_20px_rgba(0,145,234,0.4)]"
+            />
 
             <div className="space-y-1">
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#0091ea]/20 text-[#00b0ff] border border-[#0091ea]/40 text-[10px] font-mono font-bold uppercase tracking-wider">

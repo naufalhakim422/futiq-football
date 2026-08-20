@@ -18,7 +18,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { playerIdentityResolver } from "@/lib/football/player-identity.resolver";
+import { PlayerAvatar } from "./PlayerAvatar";
 
 interface TacticalPitchLineupProps {
   homeLineup: ProviderMatchLineup;
@@ -27,95 +27,6 @@ interface TacticalPitchLineupProps {
   awayTeamName: string;
   homeScore?: number;
   awayScore?: number;
-}
-
-// 3D Jersey Avatar fallback with player initials for players without photo
-function JerseyAvatar({
-  number,
-  name,
-  position,
-  team = "home",
-}: {
-  number: number;
-  name?: string;
-  position?: string;
-  team?: "home" | "away";
-}) {
-  const isGk = position?.toUpperCase() === "GK";
-  const isHome = team === "home";
-
-  const initials = name
-    ? name
-        .split(" ")
-        .map((n) => n[0])
-        .slice(0, 2)
-        .join("")
-        .toUpperCase()
-    : `${number}`;
-
-  const jerseyColor = isGk
-    ? "from-amber-400 via-amber-500 to-amber-600 text-slate-950 border-amber-300"
-    : isHome
-    ? "from-[#c3ff00] via-[#a2db00] to-[#7fae00] text-slate-950 border-[#d8ff4d]"
-    : "from-[#00d4ff] via-[#00a6e6] to-[#0077b3] text-slate-950 border-[#80e5ff]";
-
-  return (
-    <div
-      className={cn(
-        "w-full h-full rounded-full bg-gradient-to-b flex flex-col items-center justify-center border shadow-inner select-none relative",
-        jerseyColor
-      )}
-    >
-      <span className="font-mono font-black text-[11px] sm:text-xs leading-none drop-shadow-sm tracking-tight">
-        {initials}
-      </span>
-      <span className="font-mono text-[7px] sm:text-[8px] uppercase tracking-tighter font-black leading-none mt-0.5 opacity-90">
-        #{number}
-      </span>
-    </div>
-  );
-}
-
-// FotMob / Google Style Canonical Player Avatar
-function PlayerAvatar({
-  photoUrl,
-  name,
-  number,
-  playerId,
-  position,
-  team = "home",
-}: {
-  photoUrl?: string;
-  name: string;
-  number: number;
-  playerId?: string;
-  position?: string;
-  team?: "home" | "away";
-}) {
-  const [imgError, setImgError] = useState(false);
-
-  // Use centralized PlayerIdentityResolver with canonical provider ID validation
-  const targetPhoto = playerIdentityResolver.resolvePlayerPhoto(playerId, photoUrl);
-
-  if (targetPhoto && !imgError) {
-    return (
-      <div className="w-full h-full relative overflow-hidden bg-pitch-950 flex items-center justify-center">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={targetPhoto}
-          alt={name}
-          className="w-full h-full object-cover select-none group-hover:scale-110 transition-transform duration-200"
-          onError={() => setImgError(true)}
-        />
-        {/* Number mini-tag */}
-        <div className="absolute bottom-0 right-0 bg-black/90 text-white font-mono font-bold text-[8px] px-1 rounded-tl shadow">
-          #{number}
-        </div>
-      </div>
-    );
-  }
-
-  return <JerseyAvatar number={number} name={name} position={position} team={team} />;
 }
 
 export function TacticalPitchLineup({
@@ -227,11 +138,12 @@ export function TacticalPitchLineup({
         >
           <PlayerAvatar
             photoUrl={player.photoUrl}
-            name={player.name}
+            playerName={player.name}
             number={player.number}
             playerId={player.playerId}
             position={player.position}
             team={team}
+            size="lg"
           />
         </div>
 
@@ -456,16 +368,15 @@ export function TacticalPitchLineup({
                       </td>
                       <td className="py-2.5 px-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-pitch-950 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
-                            <PlayerAvatar
-                              photoUrl={p.photoUrl}
-                              name={p.name}
-                              number={p.number}
-                              playerId={p.playerId}
-                              position={p.position}
-                              team="home"
-                            />
-                          </div>
+                          <PlayerAvatar
+                            photoUrl={p.photoUrl}
+                            playerName={p.name}
+                            number={p.number}
+                            playerId={p.playerId}
+                            position={p.position}
+                            team="home"
+                            size="sm"
+                          />
                           <span className="font-bold text-slate-100 truncate max-w-[120px]">
                             {p.name} {p.isCaptain && <strong className="text-[#c3ff00] text-[9px] font-mono">(C)</strong>}
                           </span>
@@ -511,16 +422,15 @@ export function TacticalPitchLineup({
                       </td>
                       <td className="py-2.5 px-2">
                         <div className="flex items-center gap-2">
-                          <div className="w-8 h-8 rounded-full bg-pitch-950 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
-                            <PlayerAvatar
-                              photoUrl={p.photoUrl}
-                              name={p.name}
-                              number={p.number}
-                              playerId={p.playerId}
-                              position={p.position}
-                              team="away"
-                            />
-                          </div>
+                          <PlayerAvatar
+                            photoUrl={p.photoUrl}
+                            playerName={p.name}
+                            number={p.number}
+                            playerId={p.playerId}
+                            position={p.position}
+                            team="away"
+                            size="sm"
+                          />
                           <span className="font-bold text-slate-100 truncate max-w-[120px]">
                             {p.name} {p.isCaptain && <strong className="text-cyan-400 text-[9px] font-mono">(C)</strong>}
                           </span>
@@ -566,16 +476,15 @@ export function TacticalPitchLineup({
                 className="flex items-center justify-between p-2.5 rounded-xl bg-pitch-950 border border-pitch-800/80 hover:border-pitch-700 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-pitch-900 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
-                    <PlayerAvatar
-                      photoUrl={b.photoUrl}
-                      name={b.name}
-                      number={b.number}
-                      playerId={b.playerId}
-                      position={b.position}
-                      team="home"
-                    />
-                  </div>
+                  <PlayerAvatar
+                    photoUrl={b.photoUrl}
+                    playerName={b.name}
+                    number={b.number}
+                    playerId={b.playerId}
+                    position={b.position}
+                    team="home"
+                    size="sm"
+                  />
                   <div className="truncate">
                     <span className="font-semibold text-slate-200 block truncate">
                       {b.name}
@@ -618,16 +527,15 @@ export function TacticalPitchLineup({
                 className="flex items-center justify-between p-2.5 rounded-xl bg-pitch-950 border border-pitch-800/80 hover:border-pitch-700 transition-colors cursor-pointer"
               >
                 <div className="flex items-center gap-2.5 min-w-0">
-                  <div className="w-8 h-8 rounded-full bg-pitch-900 border border-pitch-750 flex items-center justify-center overflow-hidden shrink-0">
-                    <PlayerAvatar
-                      photoUrl={b.photoUrl}
-                      name={b.name}
-                      number={b.number}
-                      playerId={b.playerId}
-                      position={b.position}
-                      team="away"
-                    />
-                  </div>
+                  <PlayerAvatar
+                    photoUrl={b.photoUrl}
+                    playerName={b.name}
+                    number={b.number}
+                    playerId={b.playerId}
+                    position={b.position}
+                    team="away"
+                    size="sm"
+                  />
                   <div className="truncate">
                     <span className="font-semibold text-slate-200 block truncate">
                       {b.name}
@@ -664,16 +572,15 @@ export function TacticalPitchLineup({
 
             {/* Modal Header */}
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-2xl bg-pitch-950 border-2 border-[#c3ff00] overflow-hidden flex items-center justify-center shadow-lg shrink-0">
-                <PlayerAvatar
-                  photoUrl={selectedPlayer.player.photoUrl}
-                  name={selectedPlayer.player.name}
-                  number={selectedPlayer.player.number}
-                  playerId={selectedPlayer.player.playerId}
-                  position={selectedPlayer.player.position}
-                  team={selectedPlayer.teamName === homeTeamName ? "home" : "away"}
-                />
-              </div>
+              <PlayerAvatar
+                photoUrl={selectedPlayer.player.photoUrl}
+                playerName={selectedPlayer.player.name}
+                number={selectedPlayer.player.number}
+                playerId={selectedPlayer.player.playerId}
+                position={selectedPlayer.player.position}
+                size="xl"
+                className="border-2 border-[#c3ff00] shadow-lg"
+              />
 
               <div className="space-y-1 min-w-0">
                 <div className="flex items-center gap-2">

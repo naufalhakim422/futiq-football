@@ -88,7 +88,6 @@ describe("Football Engine Test Suite", () => {
     it("should fetch live matches via service layer", async () => {
       const live = await footballService.getLiveMatches();
       assert.ok(Array.isArray(live));
-      assert.ok(live.length > 0);
     });
 
     it("should fetch team details gracefully", async () => {

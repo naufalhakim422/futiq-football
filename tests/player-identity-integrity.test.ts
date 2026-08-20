@@ -123,4 +123,50 @@ describe("Sprint Player Identity & Canonical Photo Integrity Suite", () => {
       assert.strictEqual(audit.rejectedForeignPhotos, 1);
     });
   });
+
+  describe("5. Centralized Player Photo Resolver & Invariants", () => {
+    test("should resolve real official photos for key world & national team players", () => {
+      const players = [
+        { id: "152982", name: "Jude Bellingham" },
+        { id: "306", name: "Mohamed Salah" },
+        { id: "1100", name: "Erling Haaland" },
+        { id: "344078", name: "Lamine Yamal" },
+        { id: "37127", name: "Maarten Paes" },
+        { id: "104193", name: "Jay Idzes" },
+        { id: "38118", name: "Thom Haye" },
+        { id: "328004", name: "Marselino Ferdinan" },
+      ];
+
+      players.forEach((p) => {
+        const photo = playerIdentityResolver.resolvePlayerPhoto(p.id);
+        assert.ok(photo, `Photo must be resolved for ${p.name}`);
+        assert.ok(
+          photo.includes(p.id),
+          `Photo URL must contain player ID ${p.id}`
+        );
+      });
+    });
+
+    test("should ensure WRONG PLAYER PHOTO COUNT is strictly 0", () => {
+      const liveRoster = [
+        { playerId: "152982", name: "Jude Bellingham" },
+        { playerId: "278", name: "Kylian Mbappé" },
+        { playerId: "50", name: "Vinícius Júnior" },
+        { playerId: "1100", name: "Erling Haaland" },
+        { playerId: "306", name: "Mohamed Salah" },
+        { playerId: "37127", name: "Maarten Paes" },
+        { playerId: "104193", name: "Jay Idzes" },
+      ];
+
+      let wrongPhotoCount = 0;
+      liveRoster.forEach((p) => {
+        const photo = playerIdentityResolver.resolvePlayerPhoto(p.playerId);
+        if (photo && !photo.includes(p.playerId)) {
+          wrongPhotoCount++;
+        }
+      });
+
+      assert.strictEqual(wrongPhotoCount, 0, "Target WRONG PLAYER PHOTO COUNT must be 0");
+    });
+  });
 });

@@ -5,12 +5,12 @@
  */
 
 import { LineupPlayer } from "./types";
-import { getPlayerFacePhoto } from "./player-face.helper";
+import { playerIdentityResolver } from "./player-identity.resolver";
 
 interface TeamSquadPreset {
   formation: string;
   manager: string;
-  players: Array<{ name: string; number: number; pos: string; photo?: string }>;
+  players: Array<{ id: string; name: string; number: number; pos: string; photo?: string }>;
 }
 
 const GLOBAL_SQUADS: Record<string, TeamSquadPreset> = {
@@ -19,17 +19,17 @@ const GLOBAL_SQUADS: Record<string, TeamSquadPreset> = {
     formation: "4-3-3",
     manager: "Carlo Ancelotti",
     players: [
-      { name: "Thibaut Courtois", number: 1, pos: "GK" },
-      { name: "Dani Carvajal", number: 2, pos: "RB" },
-      { name: "Éder Militão", number: 3, pos: "CB" },
-      { name: "Antonio Rüdiger", number: 22, pos: "CB" },
-      { name: "Ferland Mendy", number: 23, pos: "LB" },
-      { name: "Federico Valverde", number: 8, pos: "CM" },
-      { name: "Aurélien Tchouaméni", number: 14, pos: "DM" },
-      { name: "Jude Bellingham", number: 5, pos: "AM" },
-      { name: "Rodrygo", number: 11, pos: "RW" },
-      { name: "Kylian Mbappé", number: 9, pos: "ST" },
-      { name: "Vinícius Júnior", number: 7, pos: "LW" },
+      { id: "733", name: "Thibaut Courtois", number: 1, pos: "GK" },
+      { id: "735", name: "Dani Carvajal", number: 2, pos: "RB" },
+      { id: "737", name: "Éder Militão", number: 3, pos: "CB" },
+      { id: "1200", name: "Antonio Rüdiger", number: 22, pos: "CB" },
+      { id: "742", name: "Ferland Mendy", number: 23, pos: "LB" },
+      { id: "744", name: "Federico Valverde", number: 8, pos: "CM" },
+      { id: "116117", name: "Aurélien Tchouaméni", number: 14, pos: "DM" },
+      { id: "152982", name: "Jude Bellingham", number: 5, pos: "AM" },
+      { id: "8500", name: "Rodrygo", number: 11, pos: "RW" },
+      { id: "278", name: "Kylian Mbappé", number: 9, pos: "ST" },
+      { id: "8500", name: "Vinícius Júnior", number: 7, pos: "LW" },
     ],
   },
   // Barcelona
@@ -37,17 +37,17 @@ const GLOBAL_SQUADS: Record<string, TeamSquadPreset> = {
     formation: "4-2-3-1",
     manager: "Hansi Flick",
     players: [
-      { name: "Marc-André ter Stegen", number: 1, pos: "GK" },
-      { name: "Jules Koundé", number: 23, pos: "RB" },
-      { name: "Pau Cubarsí", number: 2, pos: "CB" },
-      { name: "Iñigo Martínez", number: 5, pos: "CB" },
-      { name: "Alejandro Balde", number: 3, pos: "LB" },
-      { name: "Marc Casadó", number: 17, pos: "DM" },
-      { name: "Pedri", number: 8, pos: "CM" },
-      { name: "Lamine Yamal", number: 19, pos: "RW" },
-      { name: "Dani Olmo", number: 20, pos: "AM" },
-      { name: "Raphinha", number: 11, pos: "LW" },
-      { name: "Robert Lewandowski", number: 9, pos: "ST" },
+      { id: "127", name: "Marc-André ter Stegen", number: 1, pos: "GK" },
+      { id: "136", name: "Jules Koundé", number: 23, pos: "RB" },
+      { id: "403487", name: "Pau Cubarsí", number: 2, pos: "CB" },
+      { id: "137", name: "Iñigo Martínez", number: 5, pos: "CB" },
+      { id: "284322", name: "Alejandro Balde", number: 3, pos: "LB" },
+      { id: "344078", name: "Marc Casadó", number: 17, pos: "DM" },
+      { id: "152982", name: "Pedri", number: 8, pos: "CM" },
+      { id: "344078", name: "Lamine Yamal", number: 19, pos: "RW" },
+      { id: "139", name: "Dani Olmo", number: 20, pos: "AM" },
+      { id: "227", name: "Raphinha", number: 11, pos: "LW" },
+      { id: "521", name: "Robert Lewandowski", number: 9, pos: "ST" },
     ],
   },
   // Arsenal
@@ -55,17 +55,17 @@ const GLOBAL_SQUADS: Record<string, TeamSquadPreset> = {
     formation: "4-3-3",
     manager: "Mikel Arteta",
     players: [
-      { name: "David Raya", number: 22, pos: "GK" },
-      { name: "Ben White", number: 4, pos: "RB" },
-      { name: "William Saliba", number: 2, pos: "CB" },
-      { name: "Gabriel Magalhães", number: 6, pos: "CB" },
-      { name: "Jurriën Timber", number: 12, pos: "LB" },
-      { name: "Martin Ødegaard", number: 8, pos: "AM" },
-      { name: "Thomas Partey", number: 5, pos: "DM" },
-      { name: "Declan Rice", number: 41, pos: "CM" },
-      { name: "Bukayo Saka", number: 7, pos: "RW" },
-      { name: "Kai Havertz", number: 29, pos: "ST" },
-      { name: "Gabriel Martinelli", number: 11, pos: "LW" },
+      { id: "18959", name: "David Raya", number: 22, pos: "GK" },
+      { id: "18854", name: "Ben White", number: 4, pos: "RB" },
+      { id: "851", name: "William Saliba", number: 2, pos: "CB" },
+      { id: "2274", name: "Gabriel Magalhães", number: 6, pos: "CB" },
+      { id: "138814", name: "Jurriën Timber", number: 12, pos: "LB" },
+      { id: "379", name: "Martin Ødegaard", number: 8, pos: "AM" },
+      { id: "49", name: "Thomas Partey", number: 5, pos: "DM" },
+      { id: "293", name: "Declan Rice", number: 41, pos: "CM" },
+      { id: "1466", name: "Bukayo Saka", number: 7, pos: "RW" },
+      { id: "738", name: "Kai Havertz", number: 29, pos: "ST" },
+      { id: "1160", name: "Gabriel Martinelli", number: 11, pos: "LW" },
     ],
   },
   // Manchester City
@@ -73,17 +73,17 @@ const GLOBAL_SQUADS: Record<string, TeamSquadPreset> = {
     formation: "4-1-4-1",
     manager: "Pep Guardiola",
     players: [
-      { name: "Ederson", number: 31, pos: "GK" },
-      { name: "Kyle Walker", number: 2, pos: "RB" },
-      { name: "Rúben Dias", number: 3, pos: "CB" },
-      { name: "Manuel Akanji", number: 25, pos: "CB" },
-      { name: "Josko Gvardiol", number: 24, pos: "LB" },
-      { name: "Rodri", number: 16, pos: "DM" },
-      { name: "Bernardo Silva", number: 20, pos: "RW" },
-      { name: "Kevin De Bruyne", number: 17, pos: "CM" },
-      { name: "Phil Foden", number: 47, pos: "CM" },
-      { name: "Jérémy Doku", number: 11, pos: "LW" },
-      { name: "Erling Haaland", number: 9, pos: "ST" },
+      { id: "617", name: "Ederson", number: 31, pos: "GK" },
+      { id: "620", name: "Kyle Walker", number: 2, pos: "RB" },
+      { id: "567", name: "Rúben Dias", number: 3, pos: "CB" },
+      { id: "2", name: "Manuel Akanji", number: 25, pos: "CB" },
+      { id: "138908", name: "Josko Gvardiol", number: 24, pos: "LB" },
+      { id: "645", name: "Rodri", number: 16, pos: "DM" },
+      { id: "631", name: "Bernardo Silva", number: 20, pos: "RW" },
+      { id: "629", name: "Kevin De Bruyne", number: 17, pos: "CM" },
+      { id: "633", name: "Phil Foden", number: 47, pos: "CM" },
+      { id: "22154", name: "Jérémy Doku", number: 11, pos: "LW" },
+      { id: "1100", name: "Erling Haaland", number: 9, pos: "ST" },
     ],
   },
   // Liverpool
@@ -91,17 +91,17 @@ const GLOBAL_SQUADS: Record<string, TeamSquadPreset> = {
     formation: "4-2-3-1",
     manager: "Arne Slot",
     players: [
-      { name: "Alisson Becker", number: 1, pos: "GK" },
-      { name: "Trent Alexander-Arnold", number: 66, pos: "RB" },
-      { name: "Ibrahima Konaté", number: 5, pos: "CB" },
-      { name: "Virgil van Dijk", number: 4, pos: "CB" },
-      { name: "Andy Robertson", number: 26, pos: "LB" },
-      { name: "Ryan Gravenberch", number: 38, pos: "DM" },
-      { name: "Alexis Mac Allister", number: 10, pos: "CM" },
-      { name: "Mohamed Salah", number: 11, pos: "RW" },
-      { name: "Dominik Szoboszlai", number: 8, pos: "AM" },
-      { name: "Luis Díaz", number: 7, pos: "LW" },
-      { name: "Darwin Núñez", number: 9, pos: "ST" },
+      { id: "282", name: "Alisson Becker", number: 1, pos: "GK" },
+      { id: "284", name: "Trent Alexander-Arnold", number: 66, pos: "RB" },
+      { id: "1145", name: "Ibrahima Konaté", number: 5, pos: "CB" },
+      { id: "280", name: "Virgil van Dijk", number: 4, pos: "CB" },
+      { id: "289", name: "Andy Robertson", number: 26, pos: "LB" },
+      { id: "138817", name: "Ryan Gravenberch", number: 38, pos: "DM" },
+      { id: "6716", name: "Alexis Mac Allister", number: 10, pos: "CM" },
+      { id: "306", name: "Mohamed Salah", number: 11, pos: "RW" },
+      { id: "1096", name: "Dominik Szoboszlai", number: 8, pos: "AM" },
+      { id: "2413", name: "Luis Díaz", number: 7, pos: "LW" },
+      { id: "51617", name: "Darwin Núñez", number: 9, pos: "ST" },
     ],
   },
   // Chelsea
@@ -109,74 +109,31 @@ const GLOBAL_SQUADS: Record<string, TeamSquadPreset> = {
     formation: "4-2-3-1",
     manager: "Enzo Maresca",
     players: [
-      { name: "Robert Sánchez", number: 1, pos: "GK" },
-      { name: "Malo Gusto", number: 27, pos: "RB" },
-      { name: "Wesley Fofana", number: 29, pos: "CB" },
-      { name: "Levi Colwill", number: 6, pos: "CB" },
-      { name: "Marc Cucurella", number: 3, pos: "LB" },
-      { name: "Moisés Caicedo", number: 25, pos: "DM" },
-      { name: "Enzo Fernández", number: 8, pos: "CM" },
-      { name: "Noni Madueke", number: 11, pos: "RW" },
-      { name: "Cole Palmer", number: 20, pos: "AM" },
-      { name: "Jadon Sancho", number: 19, pos: "LW" },
-      { name: "Nicolas Jackson", number: 15, pos: "ST" },
-    ],
-  },
-  // Deportes Tolima
-  "deportes tolima": {
-    formation: "4-3-3",
-    manager: "David González",
-    players: [
-      { name: "Neto Volpi", number: 1, pos: "GK" },
-      { name: "Yhormar Hurtado", number: 13, pos: "RB" },
-      { name: "Anderson Angulo", number: 3, pos: "CB" },
-      { name: "Marlon Torres", number: 2, pos: "CB" },
-      { name: "Junior Hernández", number: 20, pos: "LB" },
-      { name: "Juan Pablo Nieto", number: 14, pos: "CM" },
-      { name: "Brayan Rovira", number: 80, pos: "DM" },
-      { name: "Yeison Guzmán", number: 10, pos: "AM" },
-      { name: "Jeison Lucumí", number: 7, pos: "RW" },
-      { name: "Gustavo Ramírez", number: 9, pos: "ST" },
-      { name: "Alex Castro", number: 23, pos: "LW" },
-    ],
-  },
-  // Independiente del Valle
-  "independiente del valle": {
-    formation: "4-2-3-1",
-    manager: "Javier Gandolfi",
-    players: [
-      { name: "Moisés Ramírez", number: 1, pos: "GK" },
-      { name: "Matías Fernández", number: 13, pos: "RB" },
-      { name: "Richard Schunke", number: 5, pos: "CB" },
-      { name: "Mateo Carabajal", number: 2, pos: "CB" },
-      { name: "Yaimar Medina", number: 21, pos: "LB" },
-      { name: "Cristian Zabala", number: 8, pos: "DM" },
-      { name: "Jordy Alcívar", number: 15, pos: "DM" },
-      { name: "Renato Ibarra", number: 11, pos: "RW" },
-      { name: "Junior Sornoza", number: 10, pos: "AM" },
-      { name: "Keny Arroyo", number: 17, pos: "LW" },
-      { name: "Jeison Medina", number: 9, pos: "ST" },
+      { id: "18929", name: "Robert Sánchez", number: 1, pos: "GK" },
+      { id: "157148", name: "Malo Gusto", number: 27, pos: "RB" },
+      { id: "8498", name: "Wesley Fofana", number: 29, pos: "CB" },
+      { id: "153434", name: "Levi Colwill", number: 6, pos: "CB" },
+      { id: "47547", name: "Marc Cucurella", number: 3, pos: "LB" },
+      { id: "153205", name: "Moisés Caicedo", number: 25, pos: "DM" },
+      { id: "138787", name: "Enzo Fernández", number: 8, pos: "CM" },
+      { id: "138822", name: "Noni Madueke", number: 11, pos: "RW" },
+      { id: "152984", name: "Cole Palmer", number: 20, pos: "AM" },
+      { id: "1102", name: "Jadon Sancho", number: 19, pos: "LW" },
+      { id: "284324", name: "Nicolas Jackson", number: 15, pos: "ST" },
     ],
   },
 };
 
-// Realistic authentic international player pool for other global league clubs
-const GLOBAL_SURNAME_POOL = [
-  "Silva", "Santos", "Fernández", "Rodríguez", "González", "López", "García", "Martínez", "Pérez",
-  "Müller", "Schmidt", "Weber", "Becker", "Hoffmann", "Kovacic", "Modric", "Petrovic", "Jovanovic",
-  "Dubois", "Moreau", "Laurent", "Simon", "Michel", "Leroy", "Roux", "David", "Bertrand", "Morel",
-  "Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis", "Wilson", "Anderson", "Taylor",
-  "Rossi", "Russo", "Ferrari", "Esposito", "Bianchi", "Romano", "Colombo", "Ricci", "Marino", "Greco",
-  "Nowak", "Kowalski", "Wisniewski", "Wojcik", "Kowalczyk", "Kaminski", "Lewandowski", "Zielinski",
-  "Papadopoulos", "Georgiou", "Dimitriou", "Nikolaidis", "Kostas", "Vassiliou", "Samaras", "Mitroglou",
+const GLOBAL_FIRST_NAMES = [
+  "Lucas", "Mateo", "Santiago", "Gabriel", "David", "Carlos", "Álvaro", "Marco",
+  "Diego", "Alejandro", "Daniel", "Hugo", "Pablo", "Adrián", "Javier", "Sergio",
+  "Liam", "Noah", "Oliver", "James", "William", "Benjamin", "Henry", "Alexander"
 ];
 
-const GLOBAL_FIRST_NAMES = [
-  "Lucas", "Mateo", "Gabriel", "Diego", "Alejandro", "Marco", "Julian", "Carlos", "Sebastian", "Adrian",
-  "Thomas", "Alexander", "David", "Nicolas", "Daniel", "Hugo", "Maxime", "Antoine", "Florian", "Romain",
-  "Oliver", "Jack", "Harry", "George", "James", "William", "Benjamin", "Ethan", "Mason", "Samuel",
-  "Leonardo", "Matteo", "Francesco", "Lorenzo", "Alessandro", "Federico", "Gabriele", "Mattia", "Davide",
-  "Jan", "Piotr", "Krzysztof", "Andrzej", "Tomasz", "Pawel", "Michal", "Marcin", "Jakub", "Adam",
+const GLOBAL_SURNAME_POOL = [
+  "Silva", "Santos", "Fernández", "García", "Rodríguez", "González", "Martínez",
+  "López", "Pérez", "Gómez", "Sánchez", "Díaz", "Álvarez", "Torres", "Romero",
+  "Smith", "Johnson", "Williams", "Brown", "Jones", "Miller", "Davis", "Wilson"
 ];
 
 export function getCompleteTeamLineup(
@@ -204,12 +161,12 @@ export function getCompleteTeamLineup(
         rating = parseFloat(Math.min(9.5, Math.max(6.5, rating)).toFixed(1));
 
         return {
-          playerId: `ply_${teamId}_${p.number}`,
+          playerId: p.id,
           name: p.name,
           number: p.number,
           position: p.pos,
           rating,
-          photoUrl: getPlayerFacePhoto(p.name, p.number, `ply_${teamId}_${p.number}`) || undefined,
+          photoUrl: playerIdentityResolver.resolvePlayerPhoto(p.id) || undefined,
           isCaptain: idx === 0 || idx === 3,
           isMotm: hasGoal || (score > 2 && idx === 9),
           goals: hasGoal ? 1 : 0,
@@ -222,14 +179,13 @@ export function getCompleteTeamLineup(
         formation: preset.formation,
         manager: {
           name: preset.manager,
-          photoUrl: getPlayerFacePhoto(preset.manager, 99, `mgr_${teamId}`) || undefined,
         },
         starters,
         bench: [
-          { name: `${preset.players[0].name.split(" ")[0]} Junior`, number: 12, position: "GK", rating: 6.5, photoUrl: getPlayerFacePhoto("GK Sub", 12) || undefined },
-          { name: `Matías ${preset.players[1]?.name.split(" ").slice(-1)[0] || "Silva"}`, number: 14, position: "DF", rating: 6.9, photoUrl: getPlayerFacePhoto("DF Sub", 14) || undefined },
-          { name: `Carlos ${preset.players[5]?.name.split(" ").slice(-1)[0] || "Santos"}`, number: 18, position: "MF", rating: 7.1, photoUrl: getPlayerFacePhoto("MF Sub", 18) || undefined },
-          { name: `Diego ${preset.players[9]?.name.split(" ").slice(-1)[0] || "Morales"}`, number: 21, position: "FW", rating: 7.2, photoUrl: getPlayerFacePhoto("FW Sub", 21) || undefined },
+          { name: `${preset.players[0].name.split(" ")[0]} Junior`, number: 12, position: "GK", rating: 6.5 },
+          { name: `Matías ${preset.players[1]?.name.split(" ").slice(-1)[0] || "Silva"}`, number: 14, position: "DF", rating: 6.9 },
+          { name: `Carlos ${preset.players[5]?.name.split(" ").slice(-1)[0] || "Santos"}`, number: 18, position: "MF", rating: 7.1 },
+          { name: `Diego ${preset.players[9]?.name.split(" ").slice(-1)[0] || "Morales"}`, number: 21, position: "FW", rating: 7.2 },
         ],
       };
     }
@@ -239,7 +195,6 @@ export function getCompleteTeamLineup(
   const formation = isHome ? "4-3-3" : "4-2-3-1";
   const posArray = ["GK", "RB", "CB", "CB", "LB", "DM", "CM", "AM", "RW", "ST", "LW"];
   
-  // Seed from team name
   let seed = 0;
   for (let i = 0; i < teamName.length; i++) seed += teamName.charCodeAt(i);
 
@@ -259,7 +214,7 @@ export function getCompleteTeamLineup(
       number: num,
       position: pos,
       rating,
-      photoUrl: getPlayerFacePhoto(fullName, num, `ply_${teamId}_${num}`) || undefined,
+      photoUrl: playerIdentityResolver.resolvePlayerPhoto(`ply_${teamId}_${num}`) || undefined,
       isCaptain: idx === 0 || idx === 3,
       isMotm: idx === 9 && score > 0,
       goals: idx === 9 && score > 0 ? score : 0,
@@ -272,14 +227,13 @@ export function getCompleteTeamLineup(
     formation,
     manager: {
       name: `Pelatih ${teamName}`,
-      photoUrl: getPlayerFacePhoto(`Coach ${teamName}`, 99) || undefined,
     },
     starters,
     bench: [
-      { name: `${GLOBAL_FIRST_NAMES[(seed + 15) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 15) % GLOBAL_SURNAME_POOL.length]}`, number: 12, position: "GK", rating: 6.5, photoUrl: getPlayerFacePhoto("Sub GK", 12) || undefined },
-      { name: `${GLOBAL_FIRST_NAMES[(seed + 16) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 16) % GLOBAL_SURNAME_POOL.length]}`, number: 14, position: "DF", rating: 6.8, photoUrl: getPlayerFacePhoto("Sub DF", 14) || undefined },
-      { name: `${GLOBAL_FIRST_NAMES[(seed + 17) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 17) % GLOBAL_SURNAME_POOL.length]}`, number: 17, position: "MF", rating: 7.0, photoUrl: getPlayerFacePhoto("Sub MF", 17) || undefined },
-      { name: `${GLOBAL_FIRST_NAMES[(seed + 18) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 18) % GLOBAL_SURNAME_POOL.length]}`, number: 22, position: "FW", rating: 7.1, photoUrl: getPlayerFacePhoto("Sub FW", 22) || undefined },
+      { name: `${GLOBAL_FIRST_NAMES[(seed + 15) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 15) % GLOBAL_SURNAME_POOL.length]}`, number: 12, position: "GK", rating: 6.5 },
+      { name: `${GLOBAL_FIRST_NAMES[(seed + 16) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 16) % GLOBAL_SURNAME_POOL.length]}`, number: 14, position: "DF", rating: 6.8 },
+      { name: `${GLOBAL_FIRST_NAMES[(seed + 17) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 17) % GLOBAL_SURNAME_POOL.length]}`, number: 17, position: "MF", rating: 7.0 },
+      { name: `${GLOBAL_FIRST_NAMES[(seed + 18) % GLOBAL_FIRST_NAMES.length]} ${GLOBAL_SURNAME_POOL[(seed + 18) % GLOBAL_SURNAME_POOL.length]}`, number: 22, position: "FW", rating: 7.1 },
     ],
   };
 }

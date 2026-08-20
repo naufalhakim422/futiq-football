@@ -29,6 +29,7 @@ import {
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { playerIdentityResolver } from "@/lib/football/player-identity.resolver";
+import { PlayerAvatar } from "@/components/football/PlayerAvatar";
 
 interface MatchDetailHubProps {
   match: ProviderMatchDetail;
@@ -267,10 +268,11 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
                 </div>
                 {homeGoals.length > 0 ? (
                   homeGoals.map((g, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-slate-200 font-mono">
+                    <div key={idx} className="flex items-center gap-2 text-slate-200 font-mono text-xs">
                       <span>⚽</span>
+                      <PlayerAvatar playerId={g.playerId} playerName={g.playerName} size="xs" team="home" />
                       <span className="font-bold">{g.playerName || "Player"}</span>
-                      <span className="text-slate-400">{g.minute}&apos;</span>
+                      <span className="text-[#c3ff00] font-bold">{g.minute}&apos;</span>
                       {g.assistPlayerName && (
                         <span className="text-slate-500 text-[10px]">(Assist: {g.assistPlayerName})</span>
                       )}
@@ -289,10 +291,11 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
                 </div>
                 {awayGoals.length > 0 ? (
                   awayGoals.map((g, idx) => (
-                    <div key={idx} className="flex items-center gap-2 text-slate-200 font-mono">
+                    <div key={idx} className="flex items-center gap-2 text-slate-200 font-mono text-xs">
                       <span>⚽</span>
+                      <PlayerAvatar playerId={g.playerId} playerName={g.playerName} size="xs" team="away" />
                       <span className="font-bold">{g.playerName || "Player"}</span>
-                      <span className="text-slate-400">{g.minute}&apos;</span>
+                      <span className="text-cyan-400 font-bold">{g.minute}&apos;</span>
                       {g.assistPlayerName && (
                         <span className="text-slate-500 text-[10px]">(Assist: {g.assistPlayerName})</span>
                       )}
@@ -309,14 +312,15 @@ export function MatchDetailHub({ match: initialMatch }: MatchDetailHubProps) {
           {motmPlayer && (
             <div className="bg-gradient-to-r from-pitch-900 via-pitch-850 to-pitch-900 border border-pitch-750 rounded-3xl p-5 sm:p-6 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-pitch-950 border-2 border-[#0091ea] overflow-hidden flex items-center justify-center shrink-0 shadow">
-                  {motmPhoto ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={motmPhoto} alt={motmPlayer.name} className="w-full h-full object-cover" />
-                  ) : (
-                    <Award className="w-7 h-7 text-[#0091ea]" />
-                  )}
-                </div>
+                <PlayerAvatar
+                  photoUrl={motmPlayer.photoUrl}
+                  playerId={motmPlayer.playerId}
+                  playerName={motmPlayer.name}
+                  number={motmPlayer.number}
+                  position={motmPlayer.position}
+                  size="xl"
+                  className="border-2 border-[#0091ea] shadow-[0_0_15px_rgba(0,145,234,0.4)]"
+                />
                 <div>
                   <div className="flex items-center gap-1.5 text-[10px] font-mono font-bold text-[#00b0ff] uppercase">
                     <Star className="w-3 h-3 fill-[#00b0ff]" />
