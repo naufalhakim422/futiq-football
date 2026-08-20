@@ -4,74 +4,7 @@ import React from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { MatchCardData } from "./MatchCard";
-
-// Sample ticker matches for immediate hydration / fallback
-const DEFAULT_TICKER_MATCHES: MatchCardData[] = [
-  {
-    id: "match_fnb_lyo",
-    competition: { name: "Champions League", code: "UCL" },
-    homeTeam: { name: "Fenerbahçe", tla: "FNB" },
-    awayTeam: { name: "Lyon", tla: "OL" },
-    homeScore: 1,
-    awayScore: 1,
-    status: "LIVE_2H",
-    minute: 78,
-    matchDate: "Today",
-  },
-  {
-    id: "match_ina_aus",
-    competition: { name: "World Cup Qualifiers", code: "WCQ" },
-    homeTeam: { name: "Indonesia", tla: "INA" },
-    awayTeam: { name: "Australia", tla: "AUS" },
-    homeScore: 2,
-    awayScore: 1,
-    status: "LIVE_2H",
-    minute: 82,
-    matchDate: "Today",
-  },
-  {
-    id: "match_eng_fra",
-    competition: { name: "UEFA Nations League", code: "UNL" },
-    homeTeam: { name: "England", tla: "ENG" },
-    awayTeam: { name: "France", tla: "FRA" },
-    homeScore: 2,
-    awayScore: 2,
-    status: "LIVE_2H",
-    minute: 71,
-    matchDate: "Today",
-  },
-  {
-    id: "match_arg_bra",
-    competition: { name: "CONMEBOL Qualifiers", code: "WCQ" },
-    homeTeam: { name: "Argentina", tla: "ARG" },
-    awayTeam: { name: "Brazil", tla: "BRA" },
-    homeScore: 2,
-    awayScore: 0,
-    status: "FINISHED",
-    matchDate: "FT",
-  },
-  {
-    id: "match_ars_che",
-    competition: { name: "Premier League", code: "PL" },
-    homeTeam: { name: "Arsenal FC", tla: "ARS" },
-    awayTeam: { name: "Chelsea FC", tla: "CHE" },
-    homeScore: 2,
-    awayScore: 1,
-    status: "LIVE_2H",
-    minute: 76,
-    matchDate: "Today",
-  },
-  {
-    id: "match_rma_bar",
-    competition: { name: "La Liga", code: "LL" },
-    homeTeam: { name: "Real Madrid", tla: "RMA" },
-    awayTeam: { name: "Barcelona", tla: "BAR" },
-    homeScore: 3,
-    awayScore: 2,
-    status: "FINISHED",
-    matchDate: "FT",
-  },
-];
+import { Activity, Clock } from "lucide-react";
 
 interface LiveTickerProps {
   matches?: MatchCardData[];
@@ -79,9 +12,18 @@ interface LiveTickerProps {
 }
 
 export function LiveTicker({
-  matches = DEFAULT_TICKER_MATCHES,
+  matches = [],
   className,
 }: LiveTickerProps) {
+  const isLiveState = (status?: string | number) => {
+    if (!status) return false;
+    const s = String(status);
+    return s.includes("LIVE") || s === "HT" || s === "ET" || s === "PENALTY" || s === "1H" || s === "2H";
+  };
+
+  const activeLiveMatches = matches.filter((m) => isLiveState(m.status));
+  const displayMatches = activeLiveMatches.length > 0 ? activeLiveMatches : matches;
+
   return (
     <div
       className={cn(
@@ -93,85 +35,67 @@ export function LiveTicker({
         {/* Ticker Lead Badge */}
         <div className="flex items-center gap-2 px-3 py-2 bg-pitch-900 border-r border-pitch-800 shrink-0 font-bold uppercase tracking-wider text-[11px] text-slate-300 font-mono">
           <span className="relative flex h-2 w-2">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-green opacity-75" />
-            <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-green" />
+            <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", activeLiveMatches.length > 0 ? "bg-brand-red" : "bg-brand-green")} />
+            <span className={cn("relative inline-flex rounded-full h-2 w-2", activeLiveMatches.length > 0 ? "bg-brand-red" : "bg-brand-green")} />
           </span>
-          <span>MATCHDAY LIVE</span>
+          <span>{activeLiveMatches.length > 0 ? `LIVE (${activeLiveMatches.length})` : "MATCHDAY LIVE"}</span>
         </div>
 
-        {/* Scrolling match items */}
-        <div className="flex items-center overflow-x-auto no-scrollbar divide-x divide-pitch-850 py-1">
-          {matches.map((m) => {
-            const isLive =
-              m.status === "LIVE_1H" ||
-              m.status === "LIVE_2H" ||
-              m.status === "HT";
+        {/* Scrolling or Static Match Strip */}
+        <div className="flex items-center overflow-x-auto no-scrollbar whitespace-nowrap py-1 px-2 divide-x divide-pitch-800">
+          {displayMatches.length === 0 ? (
+            <div className="px-4 py-1 text-slate-400 font-mono text-[11px] flex items-center gap-2">
+              <Clock className="w-3.5 h-3.5 text-slate-500" />
+              <span>No live matches currently in progress • All scores and schedules verified with official provider feed</span>
+            </div>
+          ) : (
+            displayMatches.map((m) => {
+              const isLive = isLiveState(m.status);
+              const statusDisplay =
+                m.status === "HT"
+                  ? "HT"
+                  : m.status === "FINISHED"
+                  ? "FT"
+                  : isLive
+                  ? `${m.minute || 1}'`
+                  : "Scheduled";
 
-            const homeScore = m.homeScore ?? m.score?.home ?? 0;
-            const awayScore = m.awayScore ?? m.score?.away ?? 0;
-
-            const compRaw = m.competition.name || m.competition.code || "";
-            let compBadge = compRaw;
-            const lower = compRaw.toLowerCase();
-            if (lower.includes("world cup")) compBadge = "WCQ 2026";
-            else if (lower.includes("nations league")) compBadge = "UEFA NL";
-            else if (lower.includes("asean")) compBadge = "AFF CUP";
-            else if (lower.includes("champions")) compBadge = "UCL";
-            else if (lower.includes("premier league")) compBadge = "EPL";
-            else if (lower.includes("la liga")) compBadge = "LA LIGA";
-            else if (lower.includes("serie a")) compBadge = "SERIE A";
-            else if (lower.includes("iii liga")) compBadge = "POLAND D3";
-            else if (lower.includes("super league")) compBadge = "SUPER LEAGUE";
-            else if (lower.includes("cup")) compBadge = "CUP";
-
-            return (
-              <Link
-                key={m.id}
-                href={`/matches/${m.id}`}
-                className="flex items-center gap-3 px-3.5 py-1.5 hover:bg-pitch-900 transition-colors shrink-0"
-              >
-                <span className="text-[10px] font-bold text-[#c3ff00] uppercase font-mono max-w-[130px] truncate" title={m.competition.name}>
-                  {compBadge}
-                </span>
-
-                <div className="flex items-center gap-2 font-medium">
-                  <span className="font-semibold text-slate-200">
-                    {m.homeTeam.tla}
+              return (
+                <Link
+                  key={m.id}
+                  href={`/matches/${m.id}`}
+                  className="px-3.5 py-1 flex items-center gap-2.5 hover:bg-pitch-900 transition-colors group cursor-pointer"
+                >
+                  <span className="text-[10px] font-mono font-bold text-slate-400 uppercase">
+                    {m.competition.code || m.competition.name?.substring(0, 4)}
                   </span>
+
+                  <div className="flex items-center gap-1.5 font-bold font-mono">
+                    <span className="group-hover:text-[#c3ff00] transition-colors">
+                      {m.homeTeam.tla || m.homeTeam.name?.substring(0, 3).toUpperCase()}
+                    </span>
+                    <span className={cn("px-1.5 py-0.2 rounded text-[11px]", isLive ? "bg-brand-red/20 text-brand-red font-black" : "bg-pitch-900 text-slate-300")}>
+                      {m.homeScore ?? 0} - {m.awayScore ?? 0}
+                    </span>
+                    <span className="group-hover:text-[#c3ff00] transition-colors">
+                      {m.awayTeam.tla || m.awayTeam.name?.substring(0, 3).toUpperCase()}
+                    </span>
+                  </div>
+
                   <span
                     className={cn(
-                      "font-mono font-bold px-1 py-0.5 rounded text-[11px]",
+                      "text-[10px] font-mono px-1 py-0.2 rounded font-bold",
                       isLive
-                        ? "bg-brand-green/15 text-brand-green"
-                        : "text-slate-300"
+                        ? "text-brand-red animate-pulse"
+                        : "text-slate-500"
                     )}
                   >
-                    {m.status === "SCHEDULED"
-                      ? "v"
-                      : `${homeScore}-${awayScore}`}
+                    {statusDisplay}
                   </span>
-                  <span className="font-semibold text-slate-200">
-                    {m.awayTeam.tla}
-                  </span>
-                </div>
-
-                <span
-                  className={cn(
-                    "text-[10px] font-mono",
-                    isLive
-                      ? "text-brand-green font-bold"
-                      : "text-slate-400"
-                  )}
-                >
-                  {isLive
-                    ? m.status === "HT"
-                      ? "HT"
-                      : `${m.minute}'`
-                    : m.matchDate}
-                </span>
-              </Link>
-            );
-          })}
+                </Link>
+              );
+            })
+          )}
         </div>
       </div>
     </div>

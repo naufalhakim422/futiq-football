@@ -441,26 +441,30 @@ export class LiveMatchEngine {
       try {
         let rawMatches = await this.provider.getLiveMatches();
         if (!rawMatches || rawMatches.length === 0) {
-          rawMatches = await this.fallbackProvider.getLiveMatches();
+          if (this.provider.name === "MockFootballProvider") {
+            rawMatches = await this.fallbackProvider.getLiveMatches();
+          } else {
+            rawMatches = [];
+          }
         }
 
-        const normalizedList = await Promise.all(
-          rawMatches.map(async (m) => {
-            const detail = await this.getLiveMatch(m.id);
-            return detail || this.normalizeToLiveMatch({
-              ...m,
-              events: [],
-              lineups: {},
-            });
-          })
-        );
+        const normalizedList = rawMatches.map((m) => {
+          return this.normalizeToLiveMatch({
+            ...m,
+            events: (m as any).events || [],
+            lineups: (m as any).lineups || {},
+          });
+        });
 
         await setCachedData(cacheKey, normalizedList, 15);
         return normalizedList;
       } catch (error) {
-        console.warn("[LiveMatchEngine.getLiveMatchesList Fallback]:", error);
-        const fallback = await this.fallbackProvider.getLiveMatches();
-        return fallback.map((m) => this.normalizeToLiveMatch({ ...m, events: [], lineups: {} }));
+        console.warn("[LiveMatchEngine.getLiveMatchesList Error]:", error);
+        if (this.provider.name === "MockFootballProvider") {
+          const fallback = await this.fallbackProvider.getLiveMatches();
+          return fallback.map((m) => this.normalizeToLiveMatch({ ...m, events: [], lineups: {} }));
+        }
+        return [];
       } finally {
         if (lock) await this.releaseLock(lockKey, lock);
         this.pendingLiveListRequest = null;

@@ -371,15 +371,22 @@ export class ApiFootballProvider implements IFootballProvider {
   // ==========================================
 
   public async getLiveMatches(): Promise<ProviderMatch[]> {
-    const raw = await this.executeRequest<any[]>("fixtures", { live: "all" });
-    if (raw === null || raw === undefined) {
+    if (!this.isConfigured()) {
       return this.fallbackProvider.getLiveMatches();
+    }
+    const raw = await this.executeRequest<any[]>("fixtures", { live: "all" });
+    if (!raw || !Array.isArray(raw)) {
+      return [];
     }
 
     return raw.map((item) => this.mapMatchRecord(item));
   }
 
   public async getFixtures(params?: FixtureQueryParams): Promise<ProviderMatch[]> {
+    if (!this.isConfigured()) {
+      return this.fallbackProvider.getFixtures(params);
+    }
+
     const apiParams: Record<string, any> = {};
 
     if (params?.competitionCode) {
@@ -403,8 +410,8 @@ export class ApiFootballProvider implements IFootballProvider {
     }
 
     const raw = await this.executeRequest<any[]>("fixtures", apiParams);
-    if (raw === null || raw === undefined) {
-      return this.fallbackProvider.getFixtures(params);
+    if (!raw || !Array.isArray(raw)) {
+      return [];
     }
 
     const mapped = raw.map((item) => this.mapMatchRecord(item));

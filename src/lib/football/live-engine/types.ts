@@ -72,9 +72,9 @@ export const FutiqCacheKeys = {
   lineups: (id: string) => `futiq:fixture:${id}:lineups`,
   statistics: (id: string) => `futiq:fixture:${id}:statistics`,
   players: (id: string) => `futiq:fixture:${id}:players`,
-  liveList: () => "futiq:fixtures:live",
+  liveList: () => "futiq:fixtures:live:v2",
   lockSyncFixture: (id: string) => `futiq:lock:sync:fixture:${id}`,
-  lockSyncLiveList: () => "futiq:lock:sync:live_list",
+  lockSyncLiveList: () => "futiq:lock:fixtures:live",
 };
 
 // ==========================================

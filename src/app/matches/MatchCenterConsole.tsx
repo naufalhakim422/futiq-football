@@ -15,6 +15,7 @@ import {
   Search,
   X,
   Clock,
+  Radio,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -37,12 +38,22 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [dateFilter, setDateFilter] = useState<"ALL" | "YESTERDAY" | "TODAY" | "TOMORROW">("ALL");
 
+  // Helper to check live match status
+  const isLiveState = (status?: string | number) => {
+    if (!status) return false;
+    const s = String(status);
+    return s.includes("LIVE") || s === "HT" || s === "ET" || s === "PENALTY" || s === "1H" || s === "2H";
+  };
+
   // Combine and deduplicate
   const allMatchesMap = new Map<string, MatchCardData>();
   [...liveMatches, ...allFixtures].forEach((m) => {
     allMatchesMap.set(m.id, m);
   });
   const allMatches = Array.from(allMatchesMap.values());
+
+  // Real-time authoritative live count
+  const liveTotalCount = allMatches.filter((m) => isLiveState(m.status)).length;
 
   // Helper to categorize tournament
   const getCategory = (compName: string, code?: string): LeagueGroup["category"] => {
@@ -117,7 +128,7 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
         tom.setDate(today.getDate() + 1);
         const isTomorrow = matchDate.toDateString() === tom.toDateString();
 
-        if (dateFilter === "TODAY" && !isToday && !m.status.toString().includes("LIVE")) return false;
+        if (dateFilter === "TODAY" && !isToday && !isLiveState(m.status)) return false;
         if (dateFilter === "YESTERDAY" && !isYesterday && m.status !== "FINISHED") return false;
         if (dateFilter === "TOMORROW" && !isTomorrow && m.status !== "SCHEDULED") return false;
       }
@@ -156,16 +167,24 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
     return pA - pB;
   });
 
-  // Filtered groups by category tab
-  const filteredGroups = sortedGroups.filter((g) => {
-    if (activeFilter === "ALL") return true;
-    if (activeFilter === "LIVE") return g.matches.some((m) => m.status.toString().includes("LIVE") || m.status === "HT");
-    return g.category === activeFilter;
-  });
-
-  const liveTotalCount = allMatches.filter(
-    (m) => m.status.toString().includes("LIVE") || m.status === "HT"
-  ).length;
+  // Filtered groups by category tab (with strict match-level filtering for LIVE)
+  const filteredGroups = useMemo(() => {
+    return sortedGroups
+      .map((g) => {
+        if (activeFilter === "LIVE") {
+          return {
+            ...g,
+            matches: g.matches.filter((m) => isLiveState(m.status)),
+          };
+        }
+        return g;
+      })
+      .filter((g) => {
+        if (activeFilter === "ALL") return g.matches.length > 0;
+        if (activeFilter === "LIVE") return g.matches.length > 0;
+        return g.category === activeFilter && g.matches.length > 0;
+      });
+  }, [sortedGroups, activeFilter]);
 
   return (
     <div className="space-y-6 font-sans">
@@ -280,13 +299,13 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
           </button>
         </div>
 
-        {/* Date Quick Filter Pills */}
-        <div className="flex items-center gap-1 p-1 bg-pitch-950 border border-pitch-800 rounded-xl font-mono text-[11px] font-bold">
+        {/* Date Filter Tabs */}
+        <div className="flex items-center gap-1 p-1 bg-pitch-950 border border-pitch-800 rounded-xl text-xs font-mono font-semibold self-end md:self-auto">
           <button
             onClick={() => setDateFilter("YESTERDAY")}
             className={cn(
               "px-2.5 py-1 rounded-lg transition-colors",
-              dateFilter === "YESTERDAY" ? "bg-slate-700 text-white shadow" : "text-slate-400 hover:text-white"
+              dateFilter === "YESTERDAY" ? "bg-[#c3ff00] text-slate-950 shadow" : "text-slate-400 hover:text-white"
             )}
           >
             Yesterday
@@ -321,19 +340,50 @@ export function MatchCenterConsole({ liveMatches, allFixtures }: MatchCenterCons
         </div>
       </div>
 
-      {/* MATCH GROUPS LIST */}
+      {/* MATCH GROUPS LIST OR EMPTY STATE */}
       {filteredGroups.length === 0 ? (
-        <div className="bg-pitch-900 border border-pitch-800 rounded-3xl p-12 text-center space-y-3 shadow-xl">
-          <Calendar className="w-10 h-10 text-slate-600 mx-auto" />
-          <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300 font-mono">
-            No Fixtures Found
-          </h3>
-          <p className="text-xs text-slate-500 font-sans max-w-sm mx-auto">
-            {searchQuery
-              ? `No matches matched your search "${searchQuery}". Try searching for another team or league.`
-              : "No fixtures currently active under this filter category."}
-          </p>
-        </div>
+        activeFilter === "LIVE" ? (
+          <div className="bg-pitch-900 border border-pitch-800 rounded-3xl p-12 text-center space-y-4 shadow-xl">
+            <div className="w-12 h-12 rounded-full bg-brand-red/10 border border-brand-red/30 flex items-center justify-center mx-auto">
+              <Radio className="w-6 h-6 text-brand-red animate-pulse" />
+            </div>
+            <h3 className="text-base font-bold uppercase tracking-wider text-slate-200 font-mono">
+              No Live Matches Right Now
+            </h3>
+            <p className="text-xs text-slate-400 font-sans max-w-md mx-auto">
+              There are currently 0 live football matches in progress worldwide from the official API-Football feed. Live scores will appear automatically when kickoffs begin.
+            </p>
+            <div className="flex items-center justify-center gap-3 pt-2">
+              <button
+                onClick={() => setActiveFilter("ALL")}
+                className="px-4 py-2 bg-[#c3ff00] text-slate-950 font-bold font-mono text-xs rounded-xl hover:bg-[#b2eb00] transition-colors"
+              >
+                View All Fixtures ({allMatches.length})
+              </button>
+              <button
+                onClick={() => {
+                  setActiveFilter("ALL");
+                  setDateFilter("TODAY");
+                }}
+                className="px-4 py-2 bg-pitch-950 border border-pitch-800 text-slate-200 font-bold font-mono text-xs rounded-xl hover:bg-pitch-800 transition-colors"
+              >
+                Today&apos;s Schedule
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="bg-pitch-900 border border-pitch-800 rounded-3xl p-12 text-center space-y-3 shadow-xl">
+            <Calendar className="w-10 h-10 text-slate-600 mx-auto" />
+            <h3 className="text-sm font-bold uppercase tracking-wider text-slate-300 font-mono">
+              No Fixtures Found
+            </h3>
+            <p className="text-xs text-slate-500 font-sans max-w-sm mx-auto">
+              {searchQuery
+                ? `No matches matched your search "${searchQuery}". Try searching for another team or league.`
+                : "No fixtures currently active under this filter category."}
+            </p>
+          </div>
+        )
       ) : (
         <div className="space-y-8">
           {filteredGroups.map((group) => (
