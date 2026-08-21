@@ -44,9 +44,9 @@ export function LiveTicker({
         {/* Scrolling or Static Match Strip */}
         <div className="flex items-center overflow-x-auto no-scrollbar whitespace-nowrap py-1 px-2 divide-x divide-pitch-800">
           {displayMatches.length === 0 ? (
-            <div className="px-4 py-1 text-slate-400 font-mono text-[11px] flex items-center gap-2">
+            <div className="px-4 py-1 text-slate-400 font-sans text-xs flex items-center gap-2">
               <Clock className="w-3.5 h-3.5 text-slate-500" />
-              <span>No live matches currently in progress • All scores and schedules verified with official provider feed</span>
+              <span>No live matches in play right now • Fixture schedules and standings up to date</span>
             </div>
           ) : (
             displayMatches.map((m) => {

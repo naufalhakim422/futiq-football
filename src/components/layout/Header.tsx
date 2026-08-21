@@ -42,8 +42,8 @@ export async function Header() {
               <span className="font-black tracking-tight text-xl sm:text-2xl text-slate-100 uppercase font-sans flex items-center leading-none">
                 FUTIQ<span className="text-[#c3ff00] ml-1.5 font-extrabold">FOOTBALL</span>
               </span>
-              <span className="hidden sm:block text-[9px] uppercase tracking-widest text-slate-400 font-mono mt-0.5">
-                Global Sports Intelligence
+              <span className="hidden sm:block text-[10px] tracking-wide text-slate-400 font-sans mt-0.5">
+                Football Media & Match Center
               </span>
             </div>
           </Link>
