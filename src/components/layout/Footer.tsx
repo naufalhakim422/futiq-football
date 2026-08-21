@@ -92,26 +92,26 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contributors & Account */}
+          {/* Portal & Redaksi */}
           <div className="space-y-2.5">
             <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[11px] font-mono">
-              Writers & Portal
+              Portal & Redaksi
             </h4>
             <ul className="space-y-2 text-xs">
               <li>
                 <Link
-                  href="/contributor/apply"
+                  href="/admin/articles/new"
                   className="hover:text-[#c3ff00] transition-colors text-slate-300 font-semibold"
                 >
-                  Become a Contributor
+                  Tulis Berita Baru
                 </Link>
               </li>
               <li>
                 <Link
-                  href="/contributor"
+                  href="/admin"
                   className="hover:text-[#c3ff00] transition-colors"
                 >
-                  Contributor Desk
+                  Admin Console
                 </Link>
               </li>
               <li className="pt-1">

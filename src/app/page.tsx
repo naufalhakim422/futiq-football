@@ -187,66 +187,9 @@ export default async function HomePage() {
         </div>
       </PageContainer>
 
-      {/* 8. Contributor Creator Callout Banner */}
+      {/* 8. Bottom Footer Sponsor Placement */}
       <PageContainer>
-        <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-pitch-950 via-pitch-900 to-pitch-950 border border-pitch-750 hover:border-[#c3ff00]/40 transition-all duration-300 p-7 sm:p-9 shadow-2xl">
-          {/* Subtle Accent Light */}
-          <div className="absolute top-0 right-0 -mr-16 -mt-16 w-72 h-72 bg-[#c3ff00]/10 rounded-full blur-3xl pointer-events-none" />
-          
-          <div className="relative z-10 flex flex-col lg:flex-row items-center justify-between gap-8">
-            <div className="space-y-3.5 max-w-2xl text-center lg:text-left">
-              <div className="inline-flex items-center gap-2 px-3 py-1 bg-pitch-850 text-[#c3ff00] text-[10px] font-mono font-bold uppercase tracking-widest border border-pitch-700 rounded-full">
-                <PenTool className="w-3 h-3 text-[#c3ff00]" />
-                <span>Open Journalism Desk</span>
-              </div>
-
-              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-100 tracking-tight font-sans">
-                Have a Football Story or Tactical Breakdown? Publish Here.
-              </h2>
-
-              <p className="text-xs sm:text-sm text-slate-300 leading-relaxed font-sans font-normal">
-                Share your tactical perspectives, match reports, and transfer insights with thousands of dedicated football fans. Earn transparent revenue sharing with direct bank withdrawals starting at <strong>RM 85.00</strong>.
-              </p>
-
-              <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 pt-1 text-xs font-sans text-slate-300">
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
-                  <span>Modular Block Editor</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
-                  <span>Instant Payouts (Min. RM 85)</span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <CheckCircle2 className="w-4 h-4 text-[#c3ff00]" />
-                  <span>Real-time Readership Telemetry</span>
-                </div>
-              </div>
-            </div>
-
-            <div className="shrink-0 flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-              <Link
-                href="/contributor/apply"
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 text-xs font-bold text-slate-950 bg-[#c3ff00] hover:bg-[#b0e600] rounded-xl transition-all shadow-[0_0_20px_rgba(195,255,0,0.25)] hover:shadow-[0_0_25px_rgba(195,255,0,0.4)] active:scale-[0.98]"
-              >
-                <span>Become a Contributor</span>
-                <ArrowUpRight className="w-4 h-4 text-slate-950" />
-              </Link>
-              
-              <Link
-                href="/contributor"
-                className="w-full sm:w-auto inline-flex items-center justify-center px-5 py-3.5 text-xs font-semibold text-slate-300 hover:text-white bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 rounded-xl transition-colors"
-              >
-                <span>Contributor Desk</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </PageContainer>
-
-      {/* 9. Bottom Footer Sponsor Placement */}
-      <PageContainer>
-        <AdSlotBanner position={AdPlacementPosition.HOME_BOTTOM} className="mt-6" />
+        <AdSlotBanner position={AdPlacementPosition.HOME_BOTTOM} className="mt-4" />
       </PageContainer>
     </div>
   );

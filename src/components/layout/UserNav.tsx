@@ -142,12 +142,30 @@ export function UserNav({ user }: UserNavProps) {
             {isAdmin && (
               <>
                 <Link
+                  href="/admin/articles/new"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-[#c3ff00]/10 hover:bg-[#c3ff00]/20 text-slate-100 border border-[#c3ff00]/30 transition-colors mb-1"
+                >
+                  <PenTool className="w-4 h-4 text-[#c3ff00]" />
+                  <span className="font-bold text-slate-100">✍️ Tulis Berita Baru</span>
+                </Link>
+
+                <Link
                   href="/admin"
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-pitch-800 transition-colors"
                 >
                   <Shield className="w-4 h-4 text-[#c3ff00]" />
-                  <span className="font-semibold">Admin Portal Control</span>
+                  <span className="font-semibold">Admin Console</span>
+                </Link>
+
+                <Link
+                  href="/admin/advertising"
+                  onClick={() => setOpen(false)}
+                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-pitch-800 transition-colors"
+                >
+                  <Sparkles className="w-4 h-4 text-amber-400" />
+                  <span>Manajemen Iklan & Sponsor</span>
                 </Link>
 
                 <Link
@@ -156,16 +174,7 @@ export function UserNav({ user }: UserNavProps) {
                   className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-pitch-800 transition-colors"
                 >
                   <Coins className="w-4 h-4 text-emerald-400" />
-                  <span>Finance & Treasury Operations</span>
-                </Link>
-
-                <Link
-                  href="/admin/contributors"
-                  onClick={() => setOpen(false)}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg text-slate-200 hover:text-white hover:bg-pitch-800 transition-colors"
-                >
-                  <Users className="w-4 h-4 text-red-400" />
-                  <span>Contributor Moderation</span>
+                  <span>Finance & Payouts</span>
                 </Link>
               </>
             )}
