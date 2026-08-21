@@ -79,12 +79,12 @@ export function MobileNav() {
               </Link>
 
               <Link
-                href="/contributor"
+                href="/admin/articles/new"
                 onClick={() => setIsOpen(false)}
-                className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-emerald-300 hover:text-white bg-pitch-900 border border-emerald-800/40 rounded-lg flex items-center justify-between"
+                className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-[#c3ff00] hover:text-white bg-[#c3ff00]/10 border border-[#c3ff00]/30 rounded-lg flex items-center justify-between"
               >
-                <span>Contributor Desk</span>
-                <PenTool className="w-3.5 h-3.5 text-emerald-400" />
+                <span>✍️ Tulis Berita Baru</span>
+                <PenTool className="w-3.5 h-3.5 text-[#c3ff00]" />
               </Link>
 
               <Link
@@ -92,17 +92,8 @@ export function MobileNav() {
                 onClick={() => setIsOpen(false)}
                 className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-300 hover:text-white bg-pitch-900 border border-pitch-750 rounded-lg flex items-center justify-between"
               >
-                <span>Admin Operations</span>
-                <ShieldCheck className="w-3.5 h-3.5 text-brand-red" />
-              </Link>
-
-              <Link
-                href="/contributor/apply"
-                onClick={() => setIsOpen(false)}
-                className="px-3 py-2 text-xs font-semibold uppercase tracking-wider text-slate-400 hover:text-slate-200 bg-pitch-900/60 border border-pitch-800 rounded-lg flex items-center justify-between"
-              >
-                <span>Become a Contributor</span>
-                <Globe className="w-3.5 h-3.5 text-slate-400" />
+                <span>Admin Console</span>
+                <ShieldCheck className="w-3.5 h-3.5 text-[#c3ff00]" />
               </Link>
             </div>
           </nav>

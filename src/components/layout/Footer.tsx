@@ -25,7 +25,7 @@ export function Footer() {
             </div>
 
             <p className="text-slate-400 text-xs leading-relaxed max-w-sm font-normal">
-              Global sports media and football intelligence. Live match tracking, tactical analysis, transfer insights, and open platform for football writers.
+              Global sports media and football intelligence. Real-time live match tracking, in-depth tactical analysis, breaking transfer insights, and league standings.
             </p>
 
             <div className="flex items-center gap-2 text-[10px] font-mono text-slate-500 pt-1">
