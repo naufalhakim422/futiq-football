@@ -1,337 +1,337 @@
 import { ProviderStanding } from "./types";
 
 export const COMPETITION_STANDINGS_MAP: Record<string, ProviderStanding[]> = {
-  // ==========================================
-  // 1. PREMIER LEAGUE (20 TEAMS)
-  // ==========================================
+  // =========================================================================
+  // 1. PREMIER LEAGUE (OFFICIAL 38 MATCHES FINAL STANDINGS)
+  // =========================================================================
   PL: [
     {
       position: 1,
       team: { id: "team_liv", name: "Liverpool FC", shortName: "Liverpool", tla: "LIV", slug: "liverpool" },
-      played: 28, won: 20, drawn: 7, lost: 1, goalsFor: 67, goalsAgainst: 24, goalDifference: 43, points: 67, form: "WWWDW",
+      played: 38, won: 25, drawn: 9, lost: 4, goalsFor: 86, goalsAgainst: 41, goalDifference: 45, points: 84, form: "WWDWW",
     },
     {
       position: 2,
       team: { id: "team_ars", name: "Arsenal FC", shortName: "Arsenal", tla: "ARS", slug: "arsenal" },
-      played: 28, won: 18, drawn: 7, lost: 3, goalsFor: 58, goalsAgainst: 23, goalDifference: 35, points: 61, form: "WDWWW",
+      played: 38, won: 20, drawn: 14, lost: 4, goalsFor: 69, goalsAgainst: 34, goalDifference: 35, points: 74, form: "DWDWW",
     },
     {
       position: 3,
-      team: { id: "team_nfo", name: "Nottingham Forest", shortName: "Nott'm Forest", tla: "NFO", slug: "nottingham-forest" },
-      played: 28, won: 16, drawn: 6, lost: 6, goalsFor: 44, goalsAgainst: 29, goalDifference: 15, points: 54, form: "WWLWW",
+      team: { id: "team_mci", name: "Manchester City FC", shortName: "Man City", tla: "MCI", slug: "manchester-city" },
+      played: 38, won: 21, drawn: 8, lost: 9, goalsFor: 73, goalsAgainst: 45, goalDifference: 28, points: 71, form: "WWLWW",
     },
     {
       position: 4,
       team: { id: "team_che", name: "Chelsea FC", shortName: "Chelsea", tla: "CHE", slug: "chelsea" },
-      played: 28, won: 15, drawn: 7, lost: 6, goalsFor: 54, goalsAgainst: 34, goalDifference: 20, points: 52, form: "LWWWD",
+      played: 38, won: 20, drawn: 9, lost: 9, goalsFor: 66, goalsAgainst: 45, goalDifference: 21, points: 69, form: "WWWDW",
     },
     {
       position: 5,
-      team: { id: "team_mci", name: "Manchester City FC", shortName: "Man City", tla: "MCI", slug: "manchester-city" },
-      played: 28, won: 15, drawn: 6, lost: 7, goalsFor: 55, goalsAgainst: 35, goalDifference: 20, points: 51, form: "WLDWW",
+      team: { id: "team_new", name: "Newcastle United", shortName: "Newcastle", tla: "NEW", slug: "newcastle" },
+      played: 38, won: 20, drawn: 6, lost: 12, goalsFor: 68, goalsAgainst: 47, goalDifference: 21, points: 66, form: "WLWWW",
     },
     {
       position: 6,
-      team: { id: "team_new", name: "Newcastle United", shortName: "Newcastle", tla: "NEW", slug: "newcastle" },
-      played: 28, won: 14, drawn: 6, lost: 8, goalsFor: 46, goalsAgainst: 35, goalDifference: 11, points: 48, form: "WWDLW",
+      team: { id: "team_avl", name: "Aston Villa", shortName: "Aston Villa", tla: "AVL", slug: "aston-villa" },
+      played: 38, won: 19, drawn: 9, lost: 10, goalsFor: 59, goalsAgainst: 52, goalDifference: 7, points: 66, form: "DWLWW",
     },
     {
       position: 7,
-      team: { id: "team_bou", name: "AFC Bournemouth", shortName: "Bournemouth", tla: "BOU", slug: "bournemouth" },
-      played: 28, won: 13, drawn: 7, lost: 8, goalsFor: 45, goalsAgainst: 33, goalDifference: 12, points: 46, form: "WDWWL",
+      team: { id: "team_nfo", name: "Nottingham Forest", shortName: "Nott'm Forest", tla: "NFO", slug: "nottingham-forest" },
+      played: 38, won: 19, drawn: 8, lost: 11, goalsFor: 58, goalsAgainst: 46, goalDifference: 12, points: 65, form: "LWWWD",
     },
     {
       position: 8,
-      team: { id: "team_avl", name: "Aston Villa", shortName: "Aston Villa", tla: "AVL", slug: "aston-villa" },
-      played: 28, won: 12, drawn: 8, lost: 8, goalsFor: 43, goalsAgainst: 40, goalDifference: 3, points: 44, form: "DLDWW",
+      team: { id: "team_bha", name: "Brighton & Hove Albion", shortName: "Brighton", tla: "BHA", slug: "brighton" },
+      played: 38, won: 16, drawn: 13, lost: 9, goalsFor: 63, goalsAgainst: 56, goalDifference: 7, points: 61, form: "DWDDW",
     },
     {
       position: 9,
-      team: { id: "team_ful", name: "Fulham FC", shortName: "Fulham", tla: "FUL", slug: "fulham" },
-      played: 28, won: 12, drawn: 7, lost: 9, goalsFor: 41, goalsAgainst: 37, goalDifference: 4, points: 43, form: "WWLLD",
+      team: { id: "team_bou", name: "AFC Bournemouth", shortName: "Bournemouth", tla: "BOU", slug: "bournemouth" },
+      played: 38, won: 15, drawn: 11, lost: 12, goalsFor: 57, goalsAgainst: 45, goalDifference: 12, points: 56, form: "WDWWL",
     },
     {
       position: 10,
-      team: { id: "team_bha", name: "Brighton & Hove Albion", shortName: "Brighton", tla: "BHA", slug: "brighton" },
-      played: 28, won: 11, drawn: 10, lost: 7, goalsFor: 44, goalsAgainst: 41, goalDifference: 3, points: 43, form: "DWDLD",
+      team: { id: "team_bre", name: "Brentford FC", shortName: "Brentford", tla: "BRE", slug: "brentford" },
+      played: 38, won: 16, drawn: 8, lost: 14, goalsFor: 66, goalsAgainst: 57, goalDifference: 9, points: 56, form: "WWLDW",
     },
     {
       position: 11,
-      team: { id: "team_bre", name: "Brentford FC", shortName: "Brentford", tla: "BRE", slug: "brentford" },
-      played: 28, won: 11, drawn: 5, lost: 12, goalsFor: 48, goalsAgainst: 46, goalDifference: 2, points: 38, form: "LLWDW",
+      team: { id: "team_ful", name: "Fulham FC", shortName: "Fulham", tla: "FUL", slug: "fulham" },
+      played: 38, won: 15, drawn: 9, lost: 14, goalsFor: 54, goalsAgainst: 54, goalDifference: 0, points: 54, form: "LWDWW",
     },
     {
       position: 12,
-      team: { id: "team_tot", name: "Tottenham Hotspur", shortName: "Tottenham", tla: "TOT", slug: "tottenham" },
-      played: 28, won: 10, drawn: 4, lost: 14, goalsFor: 52, goalsAgainst: 43, goalDifference: 9, points: 34, form: "LLWLD",
+      team: { id: "team_cry", name: "Crystal Palace", shortName: "Crystal Palace", tla: "CRY", slug: "crystal-palace" },
+      played: 38, won: 13, drawn: 14, lost: 11, goalsFor: 50, goalsAgainst: 50, goalDifference: 0, points: 53, form: "DLDWW",
     },
     {
       position: 13,
-      team: { id: "team_mun", name: "Manchester United", shortName: "Man United", tla: "MUN", slug: "manchester-united" },
-      played: 28, won: 9, drawn: 7, lost: 12, goalsFor: 34, goalsAgainst: 39, goalDifference: -5, points: 34, form: "LDWLL",
+      team: { id: "team_eve", name: "Everton FC", shortName: "Everton", tla: "EVE", slug: "everton" },
+      played: 38, won: 11, drawn: 15, lost: 12, goalsFor: 44, goalsAgainst: 46, goalDifference: -2, points: 48, form: "DWWDD",
     },
     {
       position: 14,
       team: { id: "team_whu", name: "West Ham United", shortName: "West Ham", tla: "WHU", slug: "west-ham" },
-      played: 28, won: 9, drawn: 6, lost: 13, goalsFor: 33, goalsAgainst: 49, goalDifference: -16, points: 33, form: "WLLWD",
+      played: 38, won: 11, drawn: 10, lost: 17, goalsFor: 46, goalsAgainst: 62, goalDifference: -16, points: 43, form: "WLLWD",
     },
     {
       position: 15,
-      team: { id: "team_eve", name: "Everton FC", shortName: "Everton", tla: "EVE", slug: "everton" },
-      played: 28, won: 8, drawn: 9, lost: 11, goalsFor: 30, goalsAgainst: 35, goalDifference: -5, points: 33, form: "DWWDD",
+      team: { id: "team_mun", name: "Manchester United", shortName: "Man United", tla: "MUN", slug: "manchester-united" },
+      played: 38, won: 11, drawn: 9, lost: 18, goalsFor: 44, goalsAgainst: 54, goalDifference: -10, points: 42, form: "LLWLL",
     },
     {
       position: 16,
-      team: { id: "team_cry", name: "Crystal Palace", shortName: "Crystal Palace", tla: "CRY", slug: "crystal-palace" },
-      played: 28, won: 7, drawn: 10, lost: 11, goalsFor: 31, goalsAgainst: 38, goalDifference: -7, points: 31, form: "DLDWL",
+      team: { id: "team_wol", name: "Wolverhampton Wanderers", shortName: "Wolves", tla: "WOL", slug: "wolves" },
+      played: 38, won: 12, drawn: 6, lost: 20, goalsFor: 54, goalsAgainst: 69, goalDifference: -15, points: 42, form: "LWWLL",
     },
     {
       position: 17,
-      team: { id: "team_wol", name: "Wolverhampton Wanderers", shortName: "Wolves", tla: "WOL", slug: "wolves" },
-      played: 28, won: 6, drawn: 5, lost: 17, goalsFor: 38, goalsAgainst: 58, goalDifference: -20, points: 23, form: "LLWLL",
+      team: { id: "team_tot", name: "Tottenham Hotspur", shortName: "Tottenham", tla: "TOT", slug: "tottenham" },
+      played: 38, won: 11, drawn: 5, lost: 22, goalsFor: 64, goalsAgainst: 65, goalDifference: -1, points: 38, form: "LLLLD",
     },
     {
       position: 18,
-      team: { id: "team_ips", name: "Ipswich Town", shortName: "Ipswich", tla: "IPS", slug: "ipswich" },
-      played: 28, won: 3, drawn: 8, lost: 17, goalsFor: 27, goalsAgainst: 58, goalDifference: -31, points: 17, form: "LDLLL",
+      team: { id: "team_lei", name: "Leicester City", shortName: "Leicester", tla: "LEI", slug: "leicester" },
+      played: 38, won: 6, drawn: 7, lost: 25, goalsFor: 33, goalsAgainst: 80, goalDifference: -47, points: 25, form: "LLLDL",
     },
     {
       position: 19,
-      team: { id: "team_lei", name: "Leicester City", shortName: "Leicester", tla: "LEI", slug: "leicester" },
-      played: 28, won: 4, drawn: 5, lost: 19, goalsFor: 26, goalsAgainst: 63, goalDifference: -37, points: 17, form: "LLLLL",
+      team: { id: "team_ips", name: "Ipswich Town", shortName: "Ipswich", tla: "IPS", slug: "ipswich" },
+      played: 38, won: 4, drawn: 10, lost: 24, goalsFor: 36, goalsAgainst: 82, goalDifference: -46, points: 22, form: "LDLLL",
     },
     {
       position: 20,
       team: { id: "team_sou", name: "Southampton FC", shortName: "Southampton", tla: "SOU", slug: "southampton" },
-      played: 28, won: 2, drawn: 3, lost: 23, goalsFor: 19, goalsAgainst: 68, goalDifference: -49, points: 9, form: "LLLLL",
+      played: 38, won: 2, drawn: 6, lost: 30, goalsFor: 26, goalsAgainst: 86, goalDifference: -60, points: 12, form: "LLLLL",
     },
   ],
 
-  // ==========================================
-  // 2. LA LIGA (20 TEAMS)
-  // ==========================================
+  // =========================================================================
+  // 2. LA LIGA (OFFICIAL 38 MATCHES FINAL STANDINGS)
+  // =========================================================================
   LL: [
     {
       position: 1,
       team: { id: "team_bar", name: "FC Barcelona", shortName: "Barcelona", tla: "BAR", slug: "barcelona" },
-      played: 28, won: 20, drawn: 4, lost: 4, goalsFor: 75, goalsAgainst: 27, goalDifference: 48, points: 64, form: "WWWWD",
+      played: 38, won: 28, drawn: 4, lost: 6, goalsFor: 98, goalsAgainst: 35, goalDifference: 63, points: 88, form: "WWWWW",
     },
     {
       position: 2,
       team: { id: "team_rma", name: "Real Madrid CF", shortName: "Real Madrid", tla: "RMA", slug: "real-madrid" },
-      played: 28, won: 19, drawn: 6, lost: 3, goalsFor: 60, goalsAgainst: 23, goalDifference: 37, points: 63, form: "WWWDW",
+      played: 38, won: 26, drawn: 6, lost: 6, goalsFor: 78, goalsAgainst: 38, goalDifference: 40, points: 84, form: "WWWDW",
     },
     {
       position: 3,
       team: { id: "team_atm", name: "Atlético de Madrid", shortName: "Atlético", tla: "ATM", slug: "atletico-madrid" },
-      played: 28, won: 16, drawn: 9, lost: 3, goalsFor: 47, goalsAgainst: 19, goalDifference: 28, points: 57, form: "WDWWL",
+      played: 38, won: 21, drawn: 11, lost: 6, goalsFor: 68, goalsAgainst: 30, goalDifference: 38, points: 74, form: "WDWWL",
     },
     {
       position: 4,
       team: { id: "team_ath", name: "Athletic Club Bilbao", shortName: "Athletic Club", tla: "ATH", slug: "athletic-club" },
-      played: 28, won: 15, drawn: 7, lost: 6, goalsFor: 45, goalsAgainst: 26, goalDifference: 19, points: 52, form: "WDWWD",
+      played: 38, won: 19, drawn: 11, lost: 8, goalsFor: 58, goalsAgainst: 35, goalDifference: 23, points: 68, form: "WDWWD",
     },
     {
       position: 5,
       team: { id: "team_vil", name: "Villarreal CF", shortName: "Villarreal", tla: "VIL", slug: "villarreal" },
-      played: 28, won: 13, drawn: 8, lost: 7, goalsFor: 51, goalsAgainst: 40, goalDifference: 11, points: 47, form: "WLDWW",
+      played: 38, won: 18, drawn: 10, lost: 10, goalsFor: 67, goalsAgainst: 52, goalDifference: 15, points: 64, form: "WLDWW",
     },
     {
       position: 6,
-      team: { id: "team_bet", name: "Real Betis", shortName: "Real Betis", tla: "BET", slug: "real-betis" },
-      played: 28, won: 12, drawn: 8, lost: 8, goalsFor: 37, goalsAgainst: 32, goalDifference: 5, points: 44, form: "WWLDW",
+      team: { id: "team_rso", name: "Real Sociedad", shortName: "Real Sociedad", tla: "RSO", slug: "real-sociedad" },
+      played: 38, won: 17, drawn: 10, lost: 11, goalsFor: 49, goalsAgainst: 39, goalDifference: 10, points: 61, form: "LWWDL",
     },
     {
       position: 7,
-      team: { id: "team_rso", name: "Real Sociedad", shortName: "Real Sociedad", tla: "RSO", slug: "real-sociedad" },
-      played: 28, won: 12, drawn: 7, lost: 9, goalsFor: 34, goalsAgainst: 28, goalDifference: 6, points: 43, form: "LWWDL",
+      team: { id: "team_bet", name: "Real Betis", shortName: "Real Betis", tla: "BET", slug: "real-betis" },
+      played: 38, won: 16, drawn: 12, lost: 10, goalsFor: 52, goalsAgainst: 45, goalDifference: 7, points: 60, form: "WWLDW",
     },
     {
       position: 8,
-      team: { id: "team_mll", name: "RCD Mallorca", shortName: "Mallorca", tla: "MLL", slug: "mallorca" },
-      played: 28, won: 11, drawn: 6, lost: 11, goalsFor: 29, goalsAgainst: 34, goalDifference: -5, points: 39, form: "WLWLD",
+      team: { id: "team_gir", name: "Girona FC", shortName: "Girona", tla: "GIR", slug: "girona" },
+      played: 38, won: 15, drawn: 9, lost: 14, goalsFor: 53, goalsAgainst: 51, goalDifference: 2, points: 54, form: "LLDWW",
     },
     {
       position: 9,
-      team: { id: "team_osa", name: "CA Osasuna", shortName: "Osasuna", tla: "OSA", slug: "osasuna" },
-      played: 28, won: 9, drawn: 10, lost: 9, goalsFor: 34, goalsAgainst: 39, goalDifference: -5, points: 37, form: "DLDDW",
+      team: { id: "team_clt", name: "Celta de Vigo", shortName: "Celta Vigo", tla: "CLT", slug: "celta-vigo" },
+      played: 38, won: 14, drawn: 10, lost: 14, goalsFor: 56, goalsAgainst: 58, goalDifference: -2, points: 52, form: "LWDLD",
     },
     {
       position: 10,
-      team: { id: "team_gir", name: "Girona FC", shortName: "Girona", tla: "GIR", slug: "girona" },
-      played: 28, won: 10, drawn: 6, lost: 12, goalsFor: 38, goalsAgainst: 40, goalDifference: -2, points: 36, form: "LLDWW",
+      team: { id: "team_mll", name: "RCD Mallorca", shortName: "Mallorca", tla: "MLL", slug: "mallorca" },
+      played: 38, won: 13, drawn: 12, lost: 13, goalsFor: 37, goalsAgainst: 42, goalDifference: -5, points: 51, form: "WLWLD",
     },
     {
       position: 11,
-      team: { id: "team_sev", name: "Sevilla FC", shortName: "Sevilla", tla: "SEV", slug: "sevilla" },
-      played: 28, won: 9, drawn: 8, lost: 11, goalsFor: 34, goalsAgainst: 39, goalDifference: -5, points: 35, form: "WDLLW",
+      team: { id: "team_osa", name: "CA Osasuna", shortName: "Osasuna", tla: "OSA", slug: "osasuna" },
+      played: 38, won: 12, drawn: 13, lost: 13, goalsFor: 46, goalsAgainst: 53, goalDifference: -7, points: 49, form: "DLDDW",
     },
     {
       position: 12,
-      team: { id: "team_clt", name: "Celta de Vigo", shortName: "Celta Vigo", tla: "CLT", slug: "celta-vigo" },
-      played: 28, won: 9, drawn: 7, lost: 12, goalsFor: 40, goalsAgainst: 45, goalDifference: -5, points: 34, form: "LWDLD",
+      team: { id: "team_ray", name: "Rayo Vallecano", shortName: "Rayo Vallecano", tla: "RAY", slug: "rayo-vallecano" },
+      played: 38, won: 12, drawn: 12, lost: 14, goalsFor: 39, goalsAgainst: 45, goalDifference: -6, points: 48, form: "DLDWL",
     },
     {
       position: 13,
-      team: { id: "team_ray", name: "Rayo Vallecano", shortName: "Rayo Vallecano", tla: "RAY", slug: "rayo-vallecano" },
-      played: 28, won: 8, drawn: 9, lost: 11, goalsFor: 28, goalsAgainst: 33, goalDifference: -5, points: 33, form: "DLDWL",
+      team: { id: "team_sev", name: "Sevilla FC", shortName: "Sevilla", tla: "SEV", slug: "sevilla" },
+      played: 38, won: 11, drawn: 11, lost: 16, goalsFor: 42, goalsAgainst: 52, goalDifference: -10, points: 44, form: "WDLLW",
     },
     {
       position: 14,
-      team: { id: "team_lpa", name: "UD Las Palmas", shortName: "Las Palmas", tla: "LPA", slug: "las-palmas" },
-      played: 28, won: 8, drawn: 7, lost: 13, goalsFor: 36, goalsAgainst: 47, goalDifference: -11, points: 31, form: "LWWLL",
+      team: { id: "team_ala", name: "Deportivo Alavés", shortName: "Alavés", tla: "ALA", slug: "alaves" },
+      played: 38, won: 11, drawn: 9, lost: 18, goalsFor: 43, goalsAgainst: 54, goalDifference: -11, points: 42, form: "WLDLL",
     },
     {
       position: 15,
-      team: { id: "team_ala", name: "Deportivo Alavés", shortName: "Alavés", tla: "ALA", slug: "alaves" },
-      played: 28, won: 8, drawn: 6, lost: 14, goalsFor: 33, goalsAgainst: 44, goalDifference: -11, points: 30, form: "WLDLL",
+      team: { id: "team_get", name: "Getafe CF", shortName: "Getafe", tla: "GET", slug: "getafe" },
+      played: 38, won: 9, drawn: 15, lost: 14, goalsFor: 31, goalsAgainst: 38, goalDifference: -7, points: 42, form: "DLDDW",
     },
     {
       position: 16,
-      team: { id: "team_get", name: "Getafe CF", shortName: "Getafe", tla: "GET", slug: "getafe" },
-      played: 28, won: 6, drawn: 11, lost: 11, goalsFor: 22, goalsAgainst: 28, goalDifference: -6, points: 29, form: "DLDDW",
+      team: { id: "team_esp", name: "RCD Espanyol", shortName: "Espanyol", tla: "ESP", slug: "espanyol" },
+      played: 38, won: 10, drawn: 11, lost: 17, goalsFor: 40, goalsAgainst: 58, goalDifference: -18, points: 41, form: "LWLLD",
     },
     {
       position: 17,
-      team: { id: "team_esp", name: "RCD Espanyol", shortName: "Espanyol", tla: "ESP", slug: "espanyol" },
-      played: 28, won: 7, drawn: 6, lost: 15, goalsFor: 27, goalsAgainst: 46, goalDifference: -19, points: 27, form: "LWLLD",
+      team: { id: "team_val", name: "Valencia CF", shortName: "Valencia", tla: "VAL", slug: "valencia" },
+      played: 38, won: 9, drawn: 13, lost: 16, goalsFor: 38, goalsAgainst: 54, goalDifference: -16, points: 40, form: "DLDLL",
     },
     {
       position: 18,
       team: { id: "team_leg", name: "CD Leganés", shortName: "Leganés", tla: "LEG", slug: "leganes" },
-      played: 28, won: 5, drawn: 9, lost: 14, goalsFor: 24, goalsAgainst: 43, goalDifference: -19, points: 24, form: "LLDDL",
+      played: 38, won: 9, drawn: 13, lost: 16, goalsFor: 34, goalsAgainst: 54, goalDifference: -20, points: 40, form: "LLDDL",
     },
     {
       position: 19,
-      team: { id: "team_val", name: "Valencia CF", shortName: "Valencia", tla: "VAL", slug: "valencia" },
-      played: 28, won: 5, drawn: 9, lost: 14, goalsFor: 24, goalsAgainst: 44, goalDifference: -20, points: 24, form: "DLDLL",
+      team: { id: "team_lpa", name: "UD Las Palmas", shortName: "Las Palmas", tla: "LPA", slug: "las-palmas" },
+      played: 38, won: 8, drawn: 8, lost: 22, goalsFor: 42, goalsAgainst: 65, goalDifference: -23, points: 32, form: "LWWLL",
     },
     {
       position: 20,
       team: { id: "team_vld", name: "Real Valladolid", shortName: "Valladolid", tla: "VLD", slug: "valladolid" },
-      played: 28, won: 4, drawn: 4, lost: 20, goalsFor: 18, goalsAgainst: 60, goalDifference: -42, points: 16, form: "LLLLL",
+      played: 38, won: 4, drawn: 4, lost: 30, goalsFor: 24, goalsAgainst: 88, goalDifference: -64, points: 16, form: "LLLLL",
     },
   ],
 
-  // ==========================================
-  // 3. SERIE A (20 TEAMS)
-  // ==========================================
+  // =========================================================================
+  // 3. SERIE A (OFFICIAL 38 MATCHES FINAL STANDINGS)
+  // =========================================================================
   SA: [
     {
       position: 1,
-      team: { id: "team_int", name: "Inter Milan", shortName: "Inter", tla: "INT", slug: "inter-milan" },
-      played: 28, won: 20, drawn: 5, lost: 3, goalsFor: 65, goalsAgainst: 23, goalDifference: 42, points: 65, form: "WWWDW",
+      team: { id: "team_nap", name: "SSC Napoli", shortName: "Napoli", tla: "NAP", slug: "napoli" },
+      played: 38, won: 24, drawn: 10, lost: 4, goalsFor: 59, goalsAgainst: 27, goalDifference: 32, points: 82, form: "WWDWW",
     },
     {
       position: 2,
-      team: { id: "team_nap", name: "SSC Napoli", shortName: "Napoli", tla: "NAP", slug: "napoli" },
-      played: 28, won: 19, drawn: 6, lost: 3, goalsFor: 53, goalsAgainst: 21, goalDifference: 32, points: 63, form: "WWDWW",
+      team: { id: "team_int", name: "Inter Milan", shortName: "Inter", tla: "INT", slug: "inter-milan" },
+      played: 38, won: 24, drawn: 9, lost: 5, goalsFor: 79, goalsAgainst: 35, goalDifference: 44, points: 81, form: "WWWDW",
     },
     {
       position: 3,
       team: { id: "team_ata", name: "Atalanta BC", shortName: "Atalanta", tla: "ATA", slug: "atalanta" },
-      played: 28, won: 18, drawn: 4, lost: 6, goalsFor: 63, goalsAgainst: 30, goalDifference: 33, points: 58, form: "DWWWL",
+      played: 38, won: 22, drawn: 8, lost: 8, goalsFor: 78, goalsAgainst: 37, goalDifference: 41, points: 74, form: "DWWWL",
     },
     {
       position: 4,
       team: { id: "team_juv", name: "Juventus FC", shortName: "Juventus", tla: "JUV", slug: "juventus" },
-      played: 28, won: 14, drawn: 13, lost: 1, goalsFor: 46, goalsAgainst: 19, goalDifference: 27, points: 55, form: "DDWDW",
+      played: 38, won: 18, drawn: 16, lost: 4, goalsFor: 58, goalsAgainst: 35, goalDifference: 23, points: 70, form: "DDWDW",
     },
     {
       position: 5,
-      team: { id: "team_laz", name: "SS Lazio", shortName: "Lazio", tla: "LAZ", slug: "lazio" },
-      played: 28, won: 16, drawn: 4, lost: 8, goalsFor: 49, goalsAgainst: 34, goalDifference: 15, points: 52, form: "WLDWW",
+      team: { id: "team_rom", name: "AS Roma", shortName: "Roma", tla: "ROM", slug: "roma" },
+      played: 38, won: 20, drawn: 9, lost: 9, goalsFor: 56, goalsAgainst: 35, goalDifference: 21, points: 69, form: "WLDDW",
     },
     {
       position: 6,
       team: { id: "team_fio", name: "ACF Fiorentina", shortName: "Fiorentina", tla: "FIO", slug: "fiorentina" },
-      played: 28, won: 14, drawn: 6, lost: 8, goalsFor: 47, goalsAgainst: 31, goalDifference: 16, points: 48, form: "LWWDL",
+      played: 38, won: 19, drawn: 8, lost: 11, goalsFor: 60, goalsAgainst: 41, goalDifference: 19, points: 65, form: "LWWDL",
     },
     {
       position: 7,
-      team: { id: "team_mil", name: "AC Milan", shortName: "AC Milan", tla: "MIL", slug: "ac-milan" },
-      played: 28, won: 13, drawn: 8, lost: 7, goalsFor: 46, goalsAgainst: 33, goalDifference: 13, points: 47, form: "WDLDW",
+      team: { id: "team_laz", name: "SS Lazio", shortName: "Lazio", tla: "LAZ", slug: "lazio" },
+      played: 38, won: 18, drawn: 11, lost: 9, goalsFor: 61, goalsAgainst: 49, goalDifference: 12, points: 65, form: "WLDWW",
     },
     {
       position: 8,
-      team: { id: "team_bol", name: "Bologna FC", shortName: "Bologna", tla: "BOL", slug: "bologna" },
-      played: 28, won: 11, drawn: 11, lost: 6, goalsFor: 39, goalsAgainst: 33, goalDifference: 6, points: 44, form: "DWDWL",
+      team: { id: "team_mil", name: "AC Milan", shortName: "AC Milan", tla: "MIL", slug: "ac-milan" },
+      played: 38, won: 18, drawn: 9, lost: 11, goalsFor: 61, goalsAgainst: 43, goalDifference: 18, points: 63, form: "WDLDW",
     },
     {
       position: 9,
-      team: { id: "team_rom", name: "AS Roma", shortName: "Roma", tla: "ROM", slug: "roma" },
-      played: 28, won: 11, drawn: 7, lost: 10, goalsFor: 38, goalsAgainst: 37, goalDifference: 1, points: 40, form: "WLDDW",
+      team: { id: "team_bol", name: "Bologna FC", shortName: "Bologna", tla: "BOL", slug: "bologna" },
+      played: 38, won: 16, drawn: 14, lost: 8, goalsFor: 57, goalsAgainst: 47, goalDifference: 10, points: 62, form: "DWDWL",
     },
     {
       position: 10,
-      team: { id: "team_tor", name: "Torino FC", shortName: "Torino", tla: "TOR", slug: "torino" },
-      played: 28, won: 9, drawn: 8, lost: 11, goalsFor: 32, goalsAgainst: 37, goalDifference: -5, points: 35, form: "DLLWW",
+      team: { id: "team_com", name: "Como 1907", shortName: "Como", tla: "COM", slug: "como" },
+      played: 38, won: 13, drawn: 10, lost: 15, goalsFor: 49, goalsAgainst: 52, goalDifference: -3, points: 49, form: "LLDWW",
     },
     {
       position: 11,
-      team: { id: "team_udi", name: "Udinese Calcio", shortName: "Udinese", tla: "UDI", slug: "udinese" },
-      played: 28, won: 10, drawn: 4, lost: 14, goalsFor: 33, goalsAgainst: 45, goalDifference: -12, points: 34, form: "LWLLD",
+      team: { id: "team_tor", name: "Torino FC", shortName: "Torino", tla: "TOR", slug: "torino" },
+      played: 38, won: 10, drawn: 14, lost: 14, goalsFor: 39, goalsAgainst: 45, goalDifference: -6, points: 44, form: "DLLWW",
     },
     {
       position: 12,
-      team: { id: "team_emp", name: "Empoli FC", shortName: "Empoli", tla: "EMP", slug: "empoli" },
-      played: 28, won: 7, drawn: 10, lost: 11, goalsFor: 25, goalsAgainst: 35, goalDifference: -10, points: 31, form: "DLDWL",
+      team: { id: "team_udi", name: "Udinese Calcio", shortName: "Udinese", tla: "UDI", slug: "udinese" },
+      played: 38, won: 12, drawn: 8, lost: 18, goalsFor: 41, goalsAgainst: 56, goalDifference: -15, points: 44, form: "LWLLD",
     },
     {
       position: 13,
       team: { id: "team_gen", name: "Genoa CFC", shortName: "Genoa", tla: "GEN", slug: "genoa" },
-      played: 28, won: 7, drawn: 10, lost: 11, goalsFor: 28, goalsAgainst: 39, goalDifference: -11, points: 31, form: "WLDLD",
+      played: 38, won: 10, drawn: 13, lost: 15, goalsFor: 37, goalsAgainst: 49, goalDifference: -12, points: 43, form: "WLDLD",
     },
     {
       position: 14,
-      team: { id: "team_par", name: "Parma Calcio", shortName: "Parma", tla: "PAR", slug: "parma" },
-      played: 28, won: 6, drawn: 11, lost: 11, goalsFor: 35, goalsAgainst: 46, goalDifference: -11, points: 29, form: "DWDLL",
+      team: { id: "team_ver", name: "Hellas Verona", shortName: "Verona", tla: "VER", slug: "verona" },
+      played: 38, won: 10, drawn: 7, lost: 21, goalsFor: 34, goalsAgainst: 66, goalDifference: -32, points: 37, form: "LLLWL",
     },
     {
       position: 15,
-      team: { id: "team_com", name: "Como 1907", shortName: "Como", tla: "COM", slug: "como" },
-      played: 28, won: 6, drawn: 10, lost: 12, goalsFor: 31, goalsAgainst: 44, goalDifference: -13, points: 28, form: "LLDWW",
+      team: { id: "team_cag", name: "Cagliari Calcio", shortName: "Cagliari", tla: "CAG", slug: "cagliari" },
+      played: 38, won: 9, drawn: 9, lost: 20, goalsFor: 40, goalsAgainst: 56, goalDifference: -16, points: 36, form: "WLLDD",
     },
     {
       position: 16,
-      team: { id: "team_cag", name: "Cagliari Calcio", shortName: "Cagliari", tla: "CAG", slug: "cagliari" },
-      played: 28, won: 6, drawn: 8, lost: 14, goalsFor: 29, goalsAgainst: 47, goalDifference: -18, points: 26, form: "WLLDD",
+      team: { id: "team_par", name: "Parma Calcio", shortName: "Parma", tla: "PAR", slug: "parma" },
+      played: 38, won: 7, drawn: 15, lost: 16, goalsFor: 44, goalsAgainst: 58, goalDifference: -14, points: 36, form: "DWDLL",
     },
     {
       position: 17,
       team: { id: "team_lec", name: "US Lecce", shortName: "Lecce", tla: "LEC", slug: "lecce" },
-      played: 28, won: 6, drawn: 7, lost: 15, goalsFor: 21, goalsAgainst: 45, goalDifference: -24, points: 25, form: "DLDLL",
+      played: 38, won: 8, drawn: 10, lost: 20, goalsFor: 27, goalsAgainst: 58, goalDifference: -31, points: 34, form: "DLDLL",
     },
     {
       position: 18,
-      team: { id: "team_ver", name: "Hellas Verona", shortName: "Verona", tla: "VER", slug: "verona" },
-      played: 28, won: 7, drawn: 2, lost: 19, goalsFor: 30, goalsAgainst: 57, goalDifference: -27, points: 23, form: "LLLWL",
+      team: { id: "team_emp", name: "Empoli FC", shortName: "Empoli", tla: "EMP", slug: "empoli" },
+      played: 38, won: 6, drawn: 13, lost: 19, goalsFor: 33, goalsAgainst: 59, goalDifference: -26, points: 31, form: "DLDWL",
     },
     {
       position: 19,
       team: { id: "team_ven", name: "Venezia FC", shortName: "Venezia", tla: "VEN", slug: "venezia" },
-      played: 28, won: 4, drawn: 7, lost: 17, goalsFor: 25, goalsAgainst: 49, goalDifference: -24, points: 19, form: "DLLLL",
+      played: 38, won: 5, drawn: 14, lost: 19, goalsFor: 32, goalsAgainst: 56, goalDifference: -24, points: 29, form: "DLLLL",
     },
     {
       position: 20,
       team: { id: "team_mon", name: "AC Monza", shortName: "Monza", tla: "MON", slug: "monza" },
-      played: 28, won: 2, drawn: 9, lost: 17, goalsFor: 20, goalsAgainst: 47, goalDifference: -27, points: 15, form: "LLDLL",
+      played: 38, won: 3, drawn: 9, lost: 26, goalsFor: 28, goalsAgainst: 69, goalDifference: -41, points: 18, form: "LLDLL",
     },
   ],
 
-  // ==========================================
-  // 4. UEFA CHAMPIONS LEAGUE (SWISS PHASE)
-  // ==========================================
+  // =========================================================================
+  // 4. UEFA CHAMPIONS LEAGUE (OFFICIAL 36-TEAM SWISS PHASE TOP 16)
+  // =========================================================================
   UCL: [
     {
       position: 1,
       team: { id: "team_liv", name: "Liverpool FC", shortName: "Liverpool", tla: "LIV", slug: "liverpool" },
-      played: 8, won: 7, drawn: 1, lost: 0, goalsFor: 17, goalsAgainst: 3, goalDifference: 14, points: 22, form: "WWWDW",
+      played: 8, won: 7, drawn: 0, lost: 1, goalsFor: 17, goalsAgainst: 3, goalDifference: 14, points: 21, form: "WWWWL",
     },
     {
       position: 2,
       team: { id: "team_bar", name: "FC Barcelona", shortName: "Barcelona", tla: "BAR", slug: "barcelona" },
-      played: 8, won: 6, drawn: 1, lost: 1, goalsFor: 24, goalsAgainst: 9, goalDifference: 15, points: 19, form: "WWLWW",
+      played: 8, won: 6, drawn: 1, lost: 1, goalsFor: 28, goalsAgainst: 13, goalDifference: 15, points: 19, form: "WWLWW",
     },
     {
       position: 3,
@@ -346,7 +346,7 @@ export const COMPETITION_STANDINGS_MAP: Record<string, ProviderStanding[]> = {
     {
       position: 5,
       team: { id: "team_atm", name: "Atlético de Madrid", shortName: "Atlético", tla: "ATM", slug: "atletico-madrid" },
-      played: 8, won: 6, drawn: 0, lost: 2, goalsFor: 18, goalsAgainst: 12, goalDifference: 6, points: 18, form: "WWWLW",
+      played: 8, won: 6, drawn: 0, lost: 2, goalsFor: 20, goalsAgainst: 13, goalDifference: 7, points: 18, form: "WWWLW",
     },
     {
       position: 6,
@@ -355,59 +355,59 @@ export const COMPETITION_STANDINGS_MAP: Record<string, ProviderStanding[]> = {
     },
     {
       position: 7,
-      team: { id: "team_bvb", name: "Borussia Dortmund", shortName: "Dortmund", tla: "BVB", slug: "borussia-dortmund" },
-      played: 8, won: 5, drawn: 1, lost: 2, goalsFor: 21, goalsAgainst: 11, goalDifference: 10, points: 16, form: "WLWDW",
+      team: { id: "team_lil", name: "Lille OSC", shortName: "Lille", tla: "LIL", slug: "lille" },
+      played: 8, won: 5, drawn: 2, lost: 1, goalsFor: 17, goalsAgainst: 10, goalDifference: 7, points: 17, form: "WWWDW",
     },
     {
       position: 8,
+      team: { id: "team_avl", name: "Aston Villa", shortName: "Aston Villa", tla: "AVL", slug: "aston-villa" },
+      played: 8, won: 5, drawn: 1, lost: 2, goalsFor: 13, goalsAgainst: 6, goalDifference: 7, points: 16, form: "DWWLD",
+    },
+    {
+      position: 9,
+      team: { id: "team_ata", name: "Atalanta BC", shortName: "Atalanta", tla: "ATA", slug: "atalanta" },
+      played: 8, won: 4, drawn: 3, lost: 1, goalsFor: 18, goalsAgainst: 6, goalDifference: 12, points: 15, form: "WDWDW",
+    },
+    {
+      position: 10,
+      team: { id: "team_bvb", name: "Borussia Dortmund", shortName: "Dortmund", tla: "BVB", slug: "borussia-dortmund" },
+      played: 8, won: 5, drawn: 0, lost: 3, goalsFor: 21, goalsAgainst: 11, goalDifference: 10, points: 15, form: "WLWDW",
+    },
+    {
+      position: 11,
       team: { id: "team_rma", name: "Real Madrid CF", shortName: "Real Madrid", tla: "RMA", slug: "real-madrid" },
       played: 8, won: 5, drawn: 0, lost: 3, goalsFor: 17, goalsAgainst: 11, goalDifference: 6, points: 15, form: "WWLLW",
     },
     {
-      position: 9,
+      position: 12,
       team: { id: "team_bay", name: "FC Bayern München", shortName: "Bayern", tla: "BAY", slug: "bayern-munchen" },
       played: 8, won: 5, drawn: 0, lost: 3, goalsFor: 18, goalsAgainst: 8, goalDifference: 10, points: 15, form: "WLWLW",
     },
     {
-      position: 10,
-      team: { id: "team_mci", name: "Manchester City FC", shortName: "Man City", tla: "MCI", slug: "manchester-city" },
-      played: 8, won: 4, drawn: 2, lost: 2, goalsFor: 16, goalsAgainst: 8, goalDifference: 8, points: 14, form: "LDWWD",
-    },
-    {
-      position: 11,
-      team: { id: "team_juv", name: "Juventus FC", shortName: "Juventus", tla: "JUV", slug: "juventus" },
-      played: 8, won: 4, drawn: 2, lost: 2, goalsFor: 11, goalsAgainst: 7, goalDifference: 4, points: 14, form: "DWDWL",
-    },
-    {
-      position: 12,
-      team: { id: "team_avl", name: "Aston Villa", shortName: "Aston Villa", tla: "AVL", slug: "aston-villa" },
-      played: 8, won: 4, drawn: 2, lost: 2, goalsFor: 10, goalsAgainst: 6, goalDifference: 4, points: 14, form: "DWWLD",
-    },
-    {
       position: 13,
       team: { id: "team_mil", name: "AC Milan", shortName: "AC Milan", tla: "MIL", slug: "ac-milan" },
-      played: 8, won: 4, drawn: 1, lost: 3, goalsFor: 14, goalsAgainst: 12, goalDifference: 2, points: 13, form: "WWLWD",
+      played: 8, won: 5, drawn: 0, lost: 3, goalsFor: 15, goalsAgainst: 11, goalDifference: 4, points: 15, form: "WWLWD",
     },
     {
       position: 14,
-      team: { id: "team_psg", name: "Paris Saint-Germain", shortName: "PSG", tla: "PSG", slug: "paris-sg" },
-      played: 8, won: 3, drawn: 2, lost: 3, goalsFor: 8, goalsAgainst: 8, goalDifference: 0, points: 11, form: "WLDLW",
+      team: { id: "team_psv", name: "PSV Eindhoven", shortName: "PSV", tla: "PSV", slug: "psv-eindhoven" },
+      played: 8, won: 4, drawn: 2, lost: 2, goalsFor: 16, goalsAgainst: 12, goalDifference: 4, points: 14, form: "WWDLD",
     },
     {
       position: 15,
-      team: { id: "team_ben", name: "SL Benfica", shortName: "Benfica", tla: "BEN", slug: "benfica" },
-      played: 8, won: 3, drawn: 1, lost: 4, goalsFor: 13, goalsAgainst: 13, goalDifference: 0, points: 10, form: "LWLLD",
+      team: { id: "team_psg", name: "Paris Saint-Germain", shortName: "PSG", tla: "PSG", slug: "paris-sg" },
+      played: 8, won: 4, drawn: 1, lost: 3, goalsFor: 12, goalsAgainst: 9, goalDifference: 3, points: 13, form: "WLDLW",
     },
     {
       position: 16,
-      team: { id: "team_spo", name: "Sporting CP", shortName: "Sporting", tla: "SPO", slug: "sporting-cp" },
-      played: 8, won: 3, drawn: 1, lost: 4, goalsFor: 12, goalsAgainst: 14, goalDifference: -2, points: 10, form: "LLDWW",
+      team: { id: "team_ben", name: "SL Benfica", shortName: "Benfica", tla: "BEN", slug: "benfica" },
+      played: 8, won: 4, drawn: 1, lost: 3, goalsFor: 16, goalsAgainst: 12, goalDifference: 4, points: 13, form: "LWLLD",
     },
   ],
 
-  // ==========================================
-  // 5. FIFA WORLD CUP QUALIFIERS (AFC & CONMEBOL)
-  // ==========================================
+  // =========================================================================
+  // 5. FIFA WORLD CUP QUALIFIERS (AFC ROUND 3 GROUP C & CONMEBOL)
+  // =========================================================================
   WCQ: [
     {
       position: 1,
@@ -466,9 +466,9 @@ export const COMPETITION_STANDINGS_MAP: Record<string, ProviderStanding[]> = {
     },
   ],
 
-  // ==========================================
-  // 6. UEFA NATIONS LEAGUE
-  // ==========================================
+  // =========================================================================
+  // 6. UEFA NATIONS LEAGUE (OFFICIAL LEAGUE A TABLES)
+  // =========================================================================
   UNL: [
     {
       position: 1,

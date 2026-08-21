@@ -48,5 +48,15 @@
     "status": "ACTIVE",
     "createdAt": "2026-08-21T12:16:59.561Z",
     "updatedAt": "2026-08-21T12:16:59.561Z"
+  },
+  {
+    "id": "spon_1787314813444",
+    "companyName": "Puma Football Hub",
+    "contactName": "Hans Richter",
+    "email": "hans@puma.com",
+    "website": "https://puma.com/football",
+    "status": "ACTIVE",
+    "createdAt": "2026-08-21T12:20:13.444Z",
+    "updatedAt": "2026-08-21T12:20:13.444Z"
   }
 ]
