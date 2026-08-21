@@ -652,7 +652,9 @@ export class ApiFootballProvider implements IFootballProvider {
           if (hasScored) ratingNum += 1.3;
           if (hasCard) ratingNum -= 0.5;
 
-          const photoUrl = x.player?.id ? `/api/football/player-image?id=${x.player.id}` : undefined;
+          const photoUrl = x.player?.id
+            ? `https://media.api-sports.io/football/players/${x.player.id}.png`
+            : x.player?.photo || undefined;
 
           return {
             playerId: `ply_${x.player?.id}`,
@@ -671,7 +673,9 @@ export class ApiFootballProvider implements IFootballProvider {
           name: x.player?.name || `Cadangan ${idx + 1}`,
           position: x.player?.pos || "SUB",
           number: x.player?.number || idx + 12,
-          photoUrl: x.player?.id ? `/api/football/player-image?id=${x.player.id}` : undefined,
+          photoUrl: x.player?.id
+            ? `https://media.api-sports.io/football/players/${x.player.id}.png`
+            : x.player?.photo || undefined,
           rating: 6.8,
         })),
       };
