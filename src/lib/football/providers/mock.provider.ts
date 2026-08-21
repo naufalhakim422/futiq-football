@@ -12,6 +12,7 @@ import {
   FixtureQueryParams,
   TransferQueryParams,
 } from "../types";
+import { playerIdentityResolver } from "../player-identity.resolver";
 
 export class MockFootballProvider implements IFootballProvider {
   public readonly name = "MockFootballProvider";
@@ -1766,7 +1767,35 @@ export class MockFootballProvider implements IFootballProvider {
 
   public async getMatch(id: string): Promise<ProviderMatchDetail | null> {
     const match = this.matches.find((m) => m.id === id || m.externalId === id);
-    return match || null;
+    if (!match) return null;
+
+    const mapPlayer = (p: any) => {
+      const resolvedPhoto = playerIdentityResolver.resolvePlayerPhoto(p.playerId, p.photoUrl, null, p.name);
+      return {
+        ...p,
+        photoUrl: resolvedPhoto || undefined,
+      };
+    };
+
+    return {
+      ...match,
+      lineups: {
+        home: match.lineups?.home
+          ? {
+              ...match.lineups.home,
+              starters: match.lineups.home.starters?.map(mapPlayer) || [],
+              bench: match.lineups.home.bench?.map(mapPlayer) || [],
+            }
+          : undefined,
+        away: match.lineups?.away
+          ? {
+              ...match.lineups.away,
+              starters: match.lineups.away.starters?.map(mapPlayer) || [],
+              bench: match.lineups.away.bench?.map(mapPlayer) || [],
+            }
+          : undefined,
+      },
+    };
   }
 
   public async getLiveMatches(): Promise<ProviderMatch[]> {

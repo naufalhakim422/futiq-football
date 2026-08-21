@@ -192,7 +192,279 @@ const CANONICAL_PROVIDER_PLAYERS: Record<string, CanonicalPlayerRecord> = {
     position: "Midfielder",
     nationality: "France",
   },
+  "282": {
+    providerPlayerId: "282",
+    name: "Alisson Becker",
+    photoUrl: "https://media.api-sports.io/football/players/282.png",
+    position: "Goalkeeper",
+    nationality: "Brazil",
+  },
+  "283": {
+    providerPlayerId: "283",
+    name: "Emiliano Martínez",
+    photoUrl: "https://media.api-sports.io/football/players/283.png",
+    position: "Goalkeeper",
+    nationality: "Argentina",
+  },
+  "280": {
+    providerPlayerId: "280",
+    name: "Virgil van Dijk",
+    photoUrl: "https://media.api-sports.io/football/players/280.png",
+    position: "Defender",
+    nationality: "Netherlands",
+  },
+  "521": {
+    providerPlayerId: "521",
+    name: "Robert Lewandowski",
+    photoUrl: "https://media.api-sports.io/football/players/521.png",
+    position: "Attacker",
+    nationality: "Poland",
+  },
+  "629": {
+    providerPlayerId: "629",
+    name: "Kevin De Bruyne",
+    photoUrl: "https://media.api-sports.io/football/players/629.png",
+    position: "Midfielder",
+    nationality: "Belgium",
+  },
+  "882": {
+    providerPlayerId: "882",
+    name: "Bruno Fernandes",
+    photoUrl: "https://media.api-sports.io/football/players/882.png",
+    position: "Midfielder",
+    nationality: "Portugal",
+  },
+  "1883": {
+    providerPlayerId: "1883",
+    name: "Lautaro Martínez",
+    photoUrl: "https://media.api-sports.io/football/players/1883.png",
+    position: "Attacker",
+    nationality: "Argentina",
+  },
+  "742": {
+    providerPlayerId: "742",
+    name: "Ferland Mendy",
+    photoUrl: "https://media.api-sports.io/football/players/742.png",
+    position: "Defender",
+    nationality: "France",
+  },
+  "244": {
+    providerPlayerId: "244",
+    name: "Antoine Griezmann",
+    photoUrl: "https://media.api-sports.io/football/players/244.png",
+    position: "Attacker",
+    nationality: "France",
+  },
+  "275": {
+    providerPlayerId: "275",
+    name: "Mike Maignan",
+    photoUrl: "https://media.api-sports.io/football/players/275.png",
+    position: "Goalkeeper",
+    nationality: "France",
+  },
+  "18784": {
+    providerPlayerId: "18784",
+    name: "Jordan Pickford",
+    photoUrl: "https://media.api-sports.io/football/players/18784.png",
+    position: "Goalkeeper",
+    nationality: "England",
+  },
+  "620": {
+    providerPlayerId: "620",
+    name: "Kyle Walker",
+    photoUrl: "https://media.api-sports.io/football/players/620.png",
+    position: "Defender",
+    nationality: "England",
+  },
+  "622": {
+    providerPlayerId: "622",
+    name: "John Stones",
+    photoUrl: "https://media.api-sports.io/football/players/622.png",
+    position: "Defender",
+    nationality: "England",
+  },
+  "293": {
+    providerPlayerId: "293",
+    name: "Declan Rice",
+    photoUrl: "https://media.api-sports.io/football/players/293.png",
+    position: "Midfielder",
+    nationality: "England",
+  },
+  "633": {
+    providerPlayerId: "633",
+    name: "Phil Foden",
+    photoUrl: "https://media.api-sports.io/football/players/633.png",
+    position: "Midfielder",
+    nationality: "England",
+  },
+  "6712": {
+    providerPlayerId: "6712",
+    name: "Nahuel Molina",
+    photoUrl: "https://media.api-sports.io/football/players/6712.png",
+    position: "Defender",
+    nationality: "Argentina",
+  },
+  "284323": {
+    providerPlayerId: "284323",
+    name: "Cristian Romero",
+    photoUrl: "https://media.api-sports.io/football/players/284323.png",
+    position: "Defender",
+    nationality: "Argentina",
+  },
+  "567": {
+    providerPlayerId: "567",
+    name: "Nicolás Otamendi",
+    photoUrl: "https://media.api-sports.io/football/players/567.png",
+    position: "Defender",
+    nationality: "Argentina",
+  },
+  "47547": {
+    providerPlayerId: "47547",
+    name: "Nicolás Tagliafico",
+    photoUrl: "https://media.api-sports.io/football/players/47547.png",
+    position: "Defender",
+    nationality: "Argentina",
+  },
+  "147": {
+    providerPlayerId: "147",
+    name: "Rodrigo De Paul",
+    photoUrl: "https://media.api-sports.io/football/players/147.png",
+    position: "Midfielder",
+    nationality: "Argentina",
+  },
+  "6716": {
+    providerPlayerId: "6716",
+    name: "Julián Álvarez",
+    photoUrl: "https://media.api-sports.io/football/players/6716.png",
+    position: "Attacker",
+    nationality: "Argentina",
+  },
+  "259": {
+    providerPlayerId: "259",
+    name: "Marquinhos",
+    photoUrl: "https://media.api-sports.io/football/players/259.png",
+    position: "Defender",
+    nationality: "Brazil",
+  },
+  "2274": {
+    providerPlayerId: "2274",
+    name: "Gabriel Magalhães",
+    photoUrl: "https://media.api-sports.io/football/players/2274.png",
+    position: "Defender",
+    nationality: "Brazil",
+  },
+  "227": {
+    providerPlayerId: "227",
+    name: "Raphinha",
+    photoUrl: "https://media.api-sports.io/football/players/227.png",
+    position: "Attacker",
+    nationality: "Brazil",
+  },
+  "248": {
+    providerPlayerId: "248",
+    name: "Lucas Paquetá",
+    photoUrl: "https://media.api-sports.io/football/players/248.png",
+    position: "Midfielder",
+    nationality: "Brazil",
+  },
+  "617": {
+    providerPlayerId: "617",
+    name: "Ederson",
+    photoUrl: "https://media.api-sports.io/football/players/617.png",
+    position: "Goalkeeper",
+    nationality: "Brazil",
+  },
+  "735": {
+    providerPlayerId: "735",
+    name: "Nélson Semedo",
+    photoUrl: "https://media.api-sports.io/football/players/735.png",
+    position: "Defender",
+    nationality: "Portugal",
+  },
+  "2": {
+    providerPlayerId: "2",
+    name: "Nathan Aké",
+    photoUrl: "https://media.api-sports.io/football/players/2.png",
+    position: "Defender",
+    nationality: "Netherlands",
+  },
+  "18854": {
+    providerPlayerId: "18854",
+    name: "Ainsley Maitland-Niles",
+    photoUrl: "https://media.api-sports.io/football/players/18854.png",
+    position: "Defender",
+    nationality: "England",
+  },
+  "851": {
+    providerPlayerId: "851",
+    name: "Moussa Niakhaté",
+    photoUrl: "https://media.api-sports.io/football/players/851.png",
+    position: "Defender",
+    nationality: "Senegal",
+  },
+  "1145": {
+    providerPlayerId: "1145",
+    name: "Justin Kluivert",
+    photoUrl: "https://media.api-sports.io/football/players/1145.png",
+    position: "Defender",
+    nationality: "Netherlands",
+  },
+  "272": {
+    providerPlayerId: "272",
+    name: "Ernest Nuamah",
+    photoUrl: "https://media.api-sports.io/football/players/272.png",
+    position: "Attacker",
+    nationality: "Ghana",
+  },
+  "738": {
+    providerPlayerId: "738",
+    name: "Loïs Openda",
+    photoUrl: "https://media.api-sports.io/football/players/738.png",
+    position: "Attacker",
+    nationality: "Belgium",
+  },
+  "1160": {
+    providerPlayerId: "1160",
+    name: "Malick Fofana",
+    photoUrl: "https://media.api-sports.io/football/players/1160.png",
+    position: "Attacker",
+    nationality: "Belgium",
+  },
+  "264": {
+    providerPlayerId: "264",
+    name: "Théo Hernández",
+    photoUrl: "https://media.api-sports.io/football/players/264.png",
+    position: "Defender",
+    nationality: "France",
+  },
+  "136": {
+    providerPlayerId: "136",
+    name: "Jules Koundé",
+    photoUrl: "https://media.api-sports.io/football/players/136.png",
+    position: "Defender",
+    nationality: "France",
+  },
+  "116117": {
+    providerPlayerId: "116117",
+    name: "Aurélien Tchouaméni",
+    photoUrl: "https://media.api-sports.io/football/players/116117.png",
+    position: "Midfielder",
+    nationality: "France",
+  },
+  "138774": {
+    providerPlayerId: "138774",
+    name: "Eduardo Camavinga",
+    photoUrl: "https://media.api-sports.io/football/players/138774.png",
+    position: "Midfielder",
+    nationality: "France",
+  },
 };
+
+// Exact canonical name lookup map
+const CANONICAL_NAME_MAP: Record<string, CanonicalPlayerRecord> = {};
+Object.values(CANONICAL_PROVIDER_PLAYERS).forEach((rec) => {
+  CANONICAL_NAME_MAP[rec.name.toLowerCase().trim()] = rec;
+});
 
 export class PlayerIdentityResolver {
   private static instance: PlayerIdentityResolver;
@@ -264,7 +536,7 @@ export class PlayerIdentityResolver {
       // If providerPlayerId is supplied, verify that the photo filename matches the player ID
       if (providerPlayerId) {
         const cleanId = this.cleanPlayerId(providerPlayerId);
-        if (cleanId && !parsed.pathname.includes(cleanId)) {
+        if (cleanId && /^\d+$/.test(cleanId) && !parsed.pathname.includes(cleanId)) {
           return false;
         }
       }
@@ -276,13 +548,14 @@ export class PlayerIdentityResolver {
   }
 
   /**
-   * Resolves verified official player photo URL based on canonical providerPlayerId.
+   * Resolves verified official player photo URL based on canonical providerPlayerId or verified canonical player name.
    * Returns NULL if no verified photo is available (triggering neutral SVG jersey fallback).
    */
   public resolvePlayerPhoto(
     rawPlayerId?: string | number | null,
     rawPhotoUrl?: string | null,
-    teamId?: string | null
+    teamId?: string | null,
+    playerName?: string | null
   ): string | null {
     const cleanId = this.cleanPlayerId(rawPlayerId);
 
@@ -305,7 +578,16 @@ export class PlayerIdentityResolver {
       return generatedUrl;
     }
 
-    // 4. Return null: Clean neutral FUTIQ SVG jersey icon will be displayed instead
+    // 4. Exact canonical name match fallback (for canonical stars where ID was omitted in legacy records)
+    if (playerName) {
+      const normalizedName = playerName.toLowerCase().trim();
+      const matched = CANONICAL_NAME_MAP[normalizedName];
+      if (matched && matched.photoUrl && this.validatePhotoUrl(matched.photoUrl, matched.providerPlayerId)) {
+        return matched.photoUrl;
+      }
+    }
+
+    // 5. Return null: Clean neutral FUTIQ SVG jersey icon will be displayed instead
     return null;
   }
 

@@ -36,7 +36,7 @@ export function PlayerAvatar({
   const [imgError, setImgError] = useState(false);
 
   // Canonical player photo resolution
-  const targetPhoto = playerIdentityResolver.resolvePlayerPhoto(playerId, photoUrl);
+  const targetPhoto = playerIdentityResolver.resolvePlayerPhoto(playerId, photoUrl, null, playerName);
 
   const initials = playerName
     ? playerName
