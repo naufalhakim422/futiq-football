@@ -16,6 +16,15 @@ import {
   Pause,
   Play,
   AlertTriangle,
+  Layout,
+  Image,
+  CheckCircle2,
+  ArrowRight,
+  Smartphone,
+  FileText,
+  Home,
+  Trophy,
+  Zap,
 } from "lucide-react";
 import { AdPlacementPosition } from "@prisma/client";
 import { AdProviderConfig } from "@/lib/ads/ad-provider.interface";
@@ -1058,278 +1067,373 @@ export function AdConsole({
         </div>
       )}
 
-      {/* QUICK CREATE AD WIZARD MODAL */}
+      {/* QUICK CREATE AD WIZARD MODAL (2-STEP SUPER SIMPLE BUILDER) */}
       {isWizardOpen && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-pitch-900 border border-pitch-800 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-2xl">
+            {/* Header & Step Indicator */}
             <div className="flex items-center justify-between border-b border-pitch-800 pb-4">
-              <div>
+              <div className="space-y-0.5">
                 <h3 className="text-base font-bold text-slate-100 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-[#c3ff00]" />
-                  Panduan Pembuatan Iklan Baru (Wizard)
+                  <span>Pasang Iklan & Sponsor Baru</span>
                 </h3>
-                <span className="text-xs text-slate-400">Langkah {wizardStep} dari 4</span>
+                <p className="text-xs text-slate-400">
+                  {wizardStep === 1
+                    ? "Langkah 1 dari 2: Tentukan format iklan dan lokasi penempatan"
+                    : "Langkah 2 dari 2: Isi materi iklan dan langsung tayangkan"}
+                </p>
               </div>
               <button
+                type="button"
                 onClick={() => setIsWizardOpen(false)}
-                className="text-slate-400 hover:text-white text-lg"
+                className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-pitch-800 transition-colors text-sm"
               >
                 ✕
               </button>
             </div>
 
-            {/* STEP 1: Sumber & Format */}
+            {/* STEP 1: Format & Lokasi Penempatan (Where to place) */}
             {wizardStep === 1 && (
-              <div className="space-y-4">
+              <div className="space-y-5 text-xs">
+                {/* 1. Tipe Iklan */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-300 uppercase">1. Pilih Sumber Iklan</label>
-                  <div className="grid grid-cols-3 gap-2">
+                  <label className="text-xs font-bold text-slate-200 uppercase tracking-wider flex items-center gap-1.5">
+                    <span>1. Pilih Tipe Iklan</span>
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5">
                     {[
-                      { id: "DIRECT_SPONSOR", label: "Sponsor Langsung", desc: "Nike, Betting, Brand Olahraga" },
-                      { id: "NETWORK", label: "Jaringan Iklan", desc: "Adsterra / Programmatic" },
-                      { id: "HOUSE_AD", label: "Iklan Internal", desc: "Promosi Internal FUTIQ" },
-                    ].map((s) => (
-                      <button
-                        key={s.id}
-                        type="button"
-                        onClick={() => setWizardData((prev) => ({ ...prev, source: s.id as any }))}
-                        className={cn(
-                          "p-3 rounded-lg border text-left transition-all",
-                          wizardData.source === s.id
-                            ? "bg-[#c3ff00]/15 border-[#c3ff00] text-slate-100"
-                            : "bg-pitch-950 border-pitch-800 text-slate-400 hover:border-pitch-700"
-                        )}
-                      >
-                        <span className="font-bold text-xs block">{s.label}</span>
-                        <span className="text-[10px] text-slate-500">{s.desc}</span>
-                      </button>
-                    ))}
+                      {
+                        id: "DIRECT_SPONSOR",
+                        label: "Sponsor Banner (Gambar)",
+                        desc: "Upload gambar banner & link tujuan sponsor",
+                        icon: Image,
+                      },
+                      {
+                        id: "NETWORK",
+                        label: "Jaringan Iklan / Script",
+                        desc: "Adsterra / Google AdSense / Script Popunder",
+                        icon: Zap,
+                      },
+                      {
+                        id: "HOUSE_AD",
+                        label: "Promo Internal FUTIQ",
+                        desc: "Promosi artikel, fitur, atau event platform",
+                        icon: Megaphone,
+                      },
+                    ].map((t) => {
+                      const Icon = t.icon;
+                      const isSelected = wizardData.source === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          type="button"
+                          onClick={() => setWizardData((prev) => ({ ...prev, source: t.id as any }))}
+                          className={cn(
+                            "p-3 rounded-xl border text-left transition-all duration-200 flex flex-col gap-1.5",
+                            isSelected
+                              ? "bg-[#c3ff00]/10 border-[#c3ff00] text-slate-100 shadow-sm ring-1 ring-[#c3ff00]/30"
+                              : "bg-pitch-950 border-pitch-800 text-slate-400 hover:border-pitch-700 hover:text-slate-300"
+                          )}
+                        >
+                          <div className="flex items-center justify-between">
+                            <Icon className={cn("w-4 h-4", isSelected ? "text-[#c3ff00]" : "text-slate-400")} />
+                            {isSelected && <CheckCircle2 className="w-3.5 h-3.5 text-[#c3ff00]" />}
+                          </div>
+                          <span className="font-bold text-xs text-slate-200">{t.label}</span>
+                          <span className="text-[10px] text-slate-400 leading-tight">{t.desc}</span>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
+                {/* 2. Lokasi Penempatan (Bisa Taruh di Mana Aja) */}
                 <div className="space-y-2">
-                  <label className="text-xs font-bold text-slate-300 uppercase">2. Pilih Format Iklan</label>
-                  <div className="grid grid-cols-3 sm:grid-cols-4 gap-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-200 uppercase tracking-wider">
+                      2. Pilih Lokasi Penempatan (Taruh di Mana Saja)
+                    </label>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      Aktif di: <strong className="text-[#c3ff00]">{wizardData.placementPosition}</strong>
+                    </span>
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                     {[
-                      "BANNER",
-                      "NATIVE",
-                      "SOCIAL_BAR",
-                      "POPUNDER",
-                      "SMARTLINK",
-                      "SPONSORED_CARD",
-                      "IMAGE_LINK",
-                      "TEXT_LINK",
-                    ].map((fmt) => (
-                      <button
-                        key={fmt}
-                        type="button"
-                        onClick={() => setWizardData((prev) => ({ ...prev, format: fmt as any }))}
-                        className={cn(
-                          "p-2 rounded border font-semibold text-center text-xs transition-colors",
-                          wizardData.format === fmt
-                            ? "bg-[#c3ff00] text-slate-950 font-bold border-[#c3ff00]"
-                            : "bg-pitch-950 border-pitch-800 text-slate-300 hover:border-pitch-700"
-                        )}
-                      >
-                        {fmt.replace("_", " ")}
-                      </button>
-                    ))}
+                      {
+                        id: "HOME_TOP",
+                        title: "Beranda — Atas (Leaderboard)",
+                        desc: "Muncul di header paling atas halaman beranda",
+                        icon: Home,
+                        badge: "Traffic Tertinggi",
+                      },
+                      {
+                        id: "HOME_MIDDLE",
+                        title: "Beranda — Tengah Grid Berita",
+                        desc: "Muncul di antara deretan artikel utama beranda",
+                        icon: Layout,
+                        badge: "CTR Tinggi",
+                      },
+                      {
+                        id: "HOME_BOTTOM",
+                        title: "Beranda — Bawah (Footer)",
+                        desc: "Muncul di bagian bawah sebelum penutup beranda",
+                        icon: Home,
+                        badge: "Standar",
+                      },
+                      {
+                        id: "ARTICLE_TOP",
+                        title: "Artikel — Atas Konten",
+                        desc: "Muncul tepat di bawah judul bacaan artikel",
+                        icon: FileText,
+                        badge: "Visibilitas Maksimal",
+                      },
+                      {
+                        id: "ARTICLE_MIDDLE",
+                        title: "Artikel — Tengah Isi Bacaan",
+                        desc: "Muncul di tengah paragraf teks berita artikel",
+                        icon: FileText,
+                        badge: "Engagement Tinggi",
+                      },
+                      {
+                        id: "ARTICLE_BOTTOM",
+                        title: "Artikel — Bawah Konten",
+                        desc: "Muncul setelah isi artikel dan kolom komentar",
+                        icon: FileText,
+                        badge: "Standar",
+                      },
+                      {
+                        id: "HOME_HERO",
+                        title: "Match Center & Skor Live",
+                        desc: "Muncul di halaman jadwal dan hasil skor pertandingan",
+                        icon: Trophy,
+                        badge: "Fans Sepak Bola",
+                      },
+                      {
+                        id: "MOBILE_STICKY",
+                        title: "Mobile Sticky (Melayang di HP)",
+                        desc: "Banner floating melayang di layar bawah smartphone",
+                        icon: Smartphone,
+                        badge: "Khusus HP",
+                      },
+                    ].map((pos) => {
+                      const Icon = pos.icon;
+                      const isSelected = wizardData.placementPosition === pos.id;
+                      return (
+                        <button
+                          key={pos.id}
+                          type="button"
+                          onClick={() =>
+                            setWizardData((prev) => ({
+                              ...prev,
+                              placementPosition: pos.id as any,
+                            }))
+                          }
+                          className={cn(
+                            "p-3 rounded-xl border text-left transition-all duration-200 flex items-start gap-3",
+                            isSelected
+                              ? "bg-[#c3ff00]/10 border-[#c3ff00] shadow-sm ring-1 ring-[#c3ff00]/30"
+                              : "bg-pitch-950 border-pitch-800 hover:border-pitch-700"
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "w-8 h-8 rounded-lg flex items-center justify-center shrink-0 border",
+                              isSelected
+                                ? "bg-[#c3ff00]/20 text-[#c3ff00] border-[#c3ff00]/40"
+                                : "bg-pitch-900 text-slate-400 border-pitch-800"
+                            )}
+                          >
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="space-y-0.5 flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-1">
+                              <span
+                                className={cn(
+                                  "font-bold text-xs truncate",
+                                  isSelected ? "text-slate-100" : "text-slate-300"
+                                )}
+                              >
+                                {pos.title}
+                              </span>
+                              <span className="text-[9px] font-mono px-1 py-0.2 rounded bg-pitch-900 text-slate-400 shrink-0">
+                                {pos.badge}
+                              </span>
+                            </div>
+                            <p className="text-[10px] text-slate-400 leading-tight line-clamp-1">{pos.desc}</p>
+                          </div>
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
 
+                {/* Next Button */}
                 <button
                   type="button"
                   onClick={() => setWizardStep(2)}
-                  className="w-full py-2.5 bg-[#c3ff00] hover:bg-[#a6ff00] text-slate-950 font-bold text-xs rounded transition-colors"
+                  className="w-full py-3 bg-[#c3ff00] hover:bg-[#b0e600] text-slate-950 font-bold text-xs uppercase tracking-wider rounded-xl transition-all shadow-md flex items-center justify-center gap-2 mt-2 active:scale-[0.99]"
                 >
-                  Lanjut ke Pengaturan Materi Iklan →
+                  <span>Lanjut ke Pengaturan Materi Iklan</span>
+                  <ArrowRight className="w-4 h-4" />
                 </button>
               </div>
             )}
 
-            {/* STEP 2: Materi & Teks */}
+            {/* STEP 2: Materi Iklan & Terbitkan */}
             {wizardStep === 2 && (
               <div className="space-y-4 text-xs">
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-300">Nama Kampanye</label>
-                  <input
-                    type="text"
-                    value={wizardData.campaignName}
-                    onChange={(e) => setWizardData((prev) => ({ ...prev, campaignName: e.target.value }))}
-                    placeholder="contoh: Peluncuran Sepatu Nike Football"
-                    className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-300">Judul / Headline Iklan</label>
-                  <input
-                    type="text"
-                    value={wizardData.title}
-                    onChange={(e) => setWizardData((prev) => ({ ...prev, title: e.target.value }))}
-                    placeholder="contoh: Koleksi Performa Resmi Musim 2026"
-                    className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-300">URL Gambar Banner</label>
-                  <input
-                    type="text"
-                    value={wizardData.imageUrl}
-                    onChange={(e) => setWizardData((prev) => ({ ...prev, imageUrl: e.target.value }))}
-                    placeholder="https://..."
-                    className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100 font-mono text-xs"
-                  />
-                </div>
-
-                <div className="space-y-1">
-                  <label className="font-bold text-slate-300">URL Tujuan / Link Saat Diklik</label>
-                  <input
-                    type="text"
-                    value={wizardData.targetUrl}
-                    onChange={(e) => setWizardData((prev) => ({ ...prev, targetUrl: e.target.value }))}
-                    placeholder="https://sponsor.com/landing"
-                    className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100 font-mono text-xs"
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-300">Teks Tombol CTA</label>
+                    <label className="font-bold text-slate-200">Nama Kampanye / Sponsor *</label>
+                    <input
+                      type="text"
+                      value={wizardData.campaignName}
+                      onChange={(e) =>
+                        setWizardData((prev) => ({
+                          ...prev,
+                          campaignName: e.target.value,
+                          title: prev.title || e.target.value,
+                        }))
+                      }
+                      placeholder="contoh: Sponsor Nike Football 2026"
+                      className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded-xl text-slate-100 focus:border-[#c3ff00] focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="font-bold text-slate-200">Teks Tombol CTA</label>
                     <input
                       type="text"
                       value={wizardData.ctaText}
                       onChange={(e) => setWizardData((prev) => ({ ...prev, ctaText: e.target.value }))}
-                      placeholder="Beli Sekarang"
-                      className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100"
+                      placeholder="contoh: Beli Sekarang / Lihat Promo"
+                      className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded-xl text-slate-100 focus:border-[#c3ff00] focus:outline-none"
                     />
                   </div>
+                </div>
 
-                  <div className="space-y-1">
-                    <label className="font-bold text-slate-300">Slot Penempatan</label>
-                    <select
-                      value={wizardData.placementPosition}
-                      onChange={(e) => setWizardData((prev) => ({ ...prev, placementPosition: e.target.value as any }))}
-                      className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100"
-                    >
-                      <option value="HOME_TOP">HOME_TOP (Atas Beranda)</option>
-                      <option value="HOME_MIDDLE">HOME_MIDDLE (Tengah Beranda)</option>
-                      <option value="ARTICLE_TOP">ARTICLE_TOP (Atas Artikel)</option>
-                      <option value="ARTICLE_BOTTOM">ARTICLE_BOTTOM (Bawah Artikel)</option>
-                      <option value="MOBILE_STICKY">MOBILE_STICKY (Melayang Mobile)</option>
-                    </select>
+                <div className="space-y-1">
+                  <div className="flex items-center justify-between">
+                    <label className="font-bold text-slate-200">URL Gambar Banner *</label>
+                    <div className="flex items-center gap-1 text-[10px]">
+                      <span className="text-slate-400">Contoh Cepat:</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setWizardData((prev) => ({
+                            ...prev,
+                            imageUrl:
+                              "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80",
+                          }))
+                        }
+                        className="px-1.5 py-0.5 bg-pitch-950 hover:bg-pitch-800 text-[#c3ff00] rounded border border-pitch-800"
+                      >
+                        Sepatu
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setWizardData((prev) => ({
+                            ...prev,
+                            imageUrl:
+                              "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80",
+                          }))
+                        }
+                        className="px-1.5 py-0.5 bg-pitch-950 hover:bg-pitch-800 text-[#c3ff00] rounded border border-pitch-800"
+                      >
+                        Stadion
+                      </button>
+                    </div>
                   </div>
+                  <input
+                    type="text"
+                    value={wizardData.imageUrl}
+                    onChange={(e) => setWizardData((prev) => ({ ...prev, imageUrl: e.target.value }))}
+                    placeholder="https://domain.com/banner.jpg"
+                    className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded-xl text-slate-100 font-mono text-xs focus:border-[#c3ff00] focus:outline-none"
+                  />
                 </div>
 
-                <div className="flex gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setWizardStep(1)}
-                    className="w-1/3 py-2 bg-pitch-800 hover:bg-pitch-750 text-slate-300 rounded font-semibold"
-                  >
-                    ← Kembali
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setWizardStep(3)}
-                    className="w-2/3 py-2 bg-[#c3ff00] hover:bg-[#a6ff00] text-slate-950 font-bold rounded"
-                  >
-                    Lanjut ke Nilai Kontrak & Biaya →
-                  </button>
+                <div className="space-y-1">
+                  <label className="font-bold text-slate-200">URL Tujuan Saat Diklik *</label>
+                  <input
+                    type="text"
+                    value={wizardData.targetUrl}
+                    onChange={(e) => setWizardData((prev) => ({ ...prev, targetUrl: e.target.value }))}
+                    placeholder="https://sponsor.com/promo-khusus"
+                    className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded-xl text-slate-100 font-mono text-xs focus:border-[#c3ff00] focus:outline-none"
+                  />
                 </div>
-              </div>
-            )}
 
-            {/* STEP 3: Biaya & Jadwal */}
-            {wizardStep === 3 && (
-              <div className="space-y-4 text-xs">
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-300">Model Pembayaran</label>
+                    <label className="font-bold text-slate-200">Model Biaya Kontrak</label>
                     <select
                       value={wizardData.pricingModel}
                       onChange={(e) => setWizardData((prev) => ({ ...prev, pricingModel: e.target.value as any }))}
-                      className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100"
+                      className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded-xl text-slate-100 focus:border-[#c3ff00] focus:outline-none"
                     >
-                      <option value="FLAT_RATE">FLAT_RATE (Biaya Tetap Hasil Negosiasi)</option>
+                      <option value="FLAT_RATE">FLAT RATE (Biaya Tetap Bulanan)</option>
                       <option value="CPM">CPM (Biaya per 1.000 Tayang)</option>
                       <option value="CPC">CPC (Biaya per Klik)</option>
-                      <option value="FREE">FREE / Iklan Internal</option>
+                      <option value="FREE">FREE (Iklan Internal / Bebas Biaya)</option>
                     </select>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="font-bold text-slate-300">Nominal Kesepakatan (MYR)</label>
+                    <label className="font-bold text-slate-200">Nilai Kontrak Sponsor (Rp / MYR)</label>
                     <input
                       type="number"
                       value={wizardData.agreedPrice}
-                      onChange={(e) => setWizardData((prev) => ({ ...prev, agreedPrice: Number(e.target.value) }))}
-                      className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100 font-mono"
+                      onChange={(e) =>
+                        setWizardData((prev) => ({ ...prev, agreedPrice: Number(e.target.value) }))
+                      }
+                      placeholder="5000"
+                      className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded-xl text-slate-100 font-mono focus:border-[#c3ff00] focus:outline-none"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-1">
-                    <label className="font-bold text-slate-300">Tanggal Mulai Tayang</label>
-                    <input
-                      type="date"
-                      value={wizardData.startAt}
-                      onChange={(e) => setWizardData((prev) => ({ ...prev, startAt: e.target.value }))}
-                      className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100 font-mono"
-                    />
+                {/* Mini Live Preview */}
+                <div className="p-3.5 bg-pitch-950 border border-pitch-800 rounded-xl space-y-2">
+                  <div className="flex items-center justify-between text-[11px] text-slate-400">
+                    <span className="font-bold uppercase tracking-wider text-slate-300">Live Preview Iklan:</span>
+                    <span className="text-[#c3ff00] font-mono">Posisi: {wizardData.placementPosition}</span>
                   </div>
-
-                  <div className="space-y-1">
-                    <label className="font-bold text-slate-300">Tanggal Berakhir</label>
-                    <input
-                      type="date"
-                      value={wizardData.endAt}
-                      onChange={(e) => setWizardData((prev) => ({ ...prev, endAt: e.target.value }))}
-                      className="w-full px-3 py-2 bg-pitch-950 border border-pitch-800 rounded text-slate-100 font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div className="flex gap-2 pt-2">
-                  <button
-                    type="button"
-                    onClick={() => setWizardStep(2)}
-                    className="w-1/3 py-2 bg-pitch-800 hover:bg-pitch-750 text-slate-300 rounded font-semibold"
-                  >
-                    ← Kembali
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setWizardStep(4)}
-                    className="w-2/3 py-2 bg-[#c3ff00] hover:bg-[#a6ff00] text-slate-950 font-bold rounded"
-                  >
-                    Tinjau & Aktifkan Kampanye →
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* STEP 4: Tinjau & Terbitkan */}
-            {wizardStep === 4 && (
-              <div className="space-y-4 text-xs">
-                <div className="p-4 bg-pitch-950 border border-pitch-800 rounded-xl space-y-2">
-                  <span className="text-[10px] text-slate-500 uppercase font-mono block">Ringkasan Kampanye</span>
-                  <p className="text-sm font-bold text-slate-100">{wizardData.campaignName || "Kampanye Tanpa Judul"}</p>
-                  <div className="grid grid-cols-2 gap-2 text-slate-300 pt-2 border-t border-pitch-800 text-[11px]">
-                    <div>Sumber: <strong>{wizardData.source}</strong></div>
-                    <div>Format: <strong>{wizardData.format}</strong></div>
-                    <div>Slot: <strong>{wizardData.placementPosition}</strong></div>
-                    <div>Biaya: <strong>{wizardData.pricingModel} (MYR {wizardData.agreedPrice.toLocaleString()})</strong></div>
+                  <div className="relative rounded-lg overflow-hidden border border-[#c3ff00]/30 bg-pitch-900 p-3 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      {wizardData.imageUrl ? (
+                        <img
+                          src={wizardData.imageUrl}
+                          alt="Preview"
+                          className="w-16 h-10 object-cover rounded shrink-0 border border-pitch-800"
+                        />
+                      ) : (
+                        <div className="w-16 h-10 bg-pitch-850 rounded flex items-center justify-center shrink-0">
+                          <Image className="w-4 h-4 text-slate-500" />
+                        </div>
+                      )}
+                      <div className="truncate">
+                        <div className="text-xs font-bold text-slate-100 truncate">
+                          {wizardData.campaignName || "Nama Sponsor"}
+                        </div>
+                        <div className="text-[10px] text-slate-400 truncate">{wizardData.targetUrl}</div>
+                      </div>
+                    </div>
+                    <span className="px-3 py-1 bg-[#c3ff00] text-slate-950 font-bold text-[10px] rounded shrink-0">
+                      {wizardData.ctaText || "Selengkapnya"}
+                    </span>
                   </div>
                 </div>
 
-                <div className="flex gap-2 pt-2">
+                {/* Action Buttons */}
+                <div className="flex gap-2.5 pt-2">
                   <button
                     type="button"
-                    onClick={() => setWizardStep(3)}
-                    className="w-1/3 py-2.5 bg-pitch-800 hover:bg-pitch-750 text-slate-300 rounded font-semibold"
+                    onClick={() => setWizardStep(1)}
+                    className="w-1/3 py-2.5 bg-pitch-800 hover:bg-pitch-750 text-slate-300 rounded-xl font-semibold transition-colors"
                   >
                     ← Kembali
                   </button>
@@ -1337,9 +1441,9 @@ export function AdConsole({
                     type="button"
                     disabled={saving}
                     onClick={handleLaunchWizardAd}
-                    className="w-2/3 py-2.5 bg-[#c3ff00] hover:bg-[#a6ff00] text-slate-950 font-bold rounded transition-colors flex items-center justify-center gap-2"
+                    className="w-2/3 py-2.5 bg-[#c3ff00] hover:bg-[#b0e600] text-slate-950 font-bold rounded-xl transition-all shadow-md flex items-center justify-center gap-2 active:scale-[0.99]"
                   >
-                    {saving ? "Mengaktifkan Kampanye..." : "🚀 Terbitkan & Tayangkan Iklan"}
+                    {saving ? "Mengaktifkan Iklan..." : "🚀 Tayangkan Iklan Sekarang"}
                   </button>
                 </div>
               </div>

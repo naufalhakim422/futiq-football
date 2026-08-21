@@ -243,6 +243,11 @@ export default async function HomePage() {
           </div>
         </div>
       </PageContainer>
+
+      {/* 9. Bottom Footer Sponsor Placement */}
+      <PageContainer>
+        <AdSlotBanner position={AdPlacementPosition.HOME_BOTTOM} className="mt-6" />
+      </PageContainer>
     </div>
   );
 }

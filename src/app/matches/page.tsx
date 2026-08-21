@@ -3,6 +3,8 @@ import { PageContainer } from "@/components/layout/PageContainer";
 import { footballService } from "@/lib/football/football.service";
 import { MatchCenterConsole } from "./MatchCenterConsole";
 import { Trophy, Activity } from "lucide-react";
+import { AdSlotBanner } from "@/components/ads/AdSlotBanner";
+import { AdPlacementPosition } from "@prisma/client";
 
 export const revalidate = 30; // 30 seconds ISR
 
@@ -30,6 +32,9 @@ export default async function MatchesPage() {
             </p>
           </div>
         </div>
+
+        {/* Ad Placement: Match Center Sponsor */}
+        <AdSlotBanner position={AdPlacementPosition.HOME_HERO} className="mb-6" />
 
         {/* Interactive Match Center Console with Groupings and Filters */}
         <MatchCenterConsole
