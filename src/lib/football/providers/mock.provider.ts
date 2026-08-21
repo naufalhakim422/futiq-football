@@ -13,6 +13,7 @@ import {
   TransferQueryParams,
 } from "../types";
 import { playerIdentityResolver } from "../player-identity.resolver";
+import { COMPETITION_STANDINGS_MAP } from "../standings-data";
 
 export class MockFootballProvider implements IFootballProvider {
   public readonly name = "MockFootballProvider";
@@ -1813,7 +1814,17 @@ export class MockFootballProvider implements IFootballProvider {
     competitionCode: string,
     season?: string
   ): Promise<ProviderStanding[]> {
-    return this.standings;
+    const key = (competitionCode || "PL").toUpperCase();
+    const slugMap: Record<string, string> = {
+      "PREMIER-LEAGUE": "PL",
+      "CHAMPIONS-LEAGUE": "UCL",
+      "LA-LIGA": "LL",
+      "SERIE-A": "SA",
+      "WORLD-CUP-QUALIFIERS": "WCQ",
+      "NATIONS-LEAGUE": "UNL",
+    };
+    const code = slugMap[key] || slugMap[(competitionCode || "").toLowerCase()] || key;
+    return COMPETITION_STANDINGS_MAP[code] || COMPETITION_STANDINGS_MAP["PL"];
   }
 
   public async getTransfers(params?: TransferQueryParams): Promise<ProviderTransfer[]> {

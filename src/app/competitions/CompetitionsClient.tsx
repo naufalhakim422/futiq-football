@@ -1,83 +1,122 @@
-import React from "react";
-import { notFound } from "next/navigation";
-import { footballService } from "@/lib/football/football.service";
+"use client";
+
+import React, { useState } from "react";
+import Link from "next/link";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { SectionHeader } from "@/components/layout/SectionHeader";
 import { CompetitionBadge } from "@/components/football/CompetitionBadge";
 import { TeamBadge } from "@/components/football/TeamBadge";
-import { MatchCard } from "@/components/football/MatchCard";
-import Link from "next/link";
+import { ProviderCompetition, ProviderStanding } from "@/lib/football/types";
+import { Trophy, Globe, Flame, Shield, ChevronRight } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { ArrowLeft } from "lucide-react";
 
-interface CompetitionDetailPageProps {
-  params: Promise<{ slug: string }>;
+interface CompetitionsClientProps {
+  competitions: ProviderCompetition[];
+  standingsMap: Record<string, ProviderStanding[]>;
 }
 
-export const revalidate = 600; // 10 minutes ISR
+export function CompetitionsClient({
+  competitions,
+  standingsMap,
+}: CompetitionsClientProps) {
+  const [activeCode, setActiveCode] = useState<string>("PL");
 
-export default async function CompetitionDetailPage({ params }: CompetitionDetailPageProps) {
-  const { slug } = await params;
-  const comp = await footballService.getCompetition(slug);
-
-  if (!comp) {
-    notFound();
-  }
-
-  const [standings, fixtures] = await Promise.all([
-    footballService.getStandings(comp.code),
-    footballService.getFixtures({ competitionCode: comp.code }),
-  ]);
+  const currentComp =
+    competitions.find((c) => c.code === activeCode) || competitions[0];
+  const currentStandings = standingsMap[activeCode] || standingsMap["PL"] || [];
 
   return (
-    <div className="py-8 space-y-8 font-sans">
+    <div className="py-8 space-y-10 font-sans">
       <PageContainer>
-        {/* Navigation Breadcrumb */}
-        <Link
-          href="/competitions"
-          className="inline-flex items-center gap-2 text-xs font-mono text-slate-400 hover:text-[#c3ff00] transition-colors mb-2"
-        >
-          <ArrowLeft className="w-3.5 h-3.5" />
-          <span>Kembali ke Semua Kompetisi & Liga</span>
-        </Link>
-
         {/* Header */}
-        <div className="bg-pitch-900 border border-pitch-800 p-6 sm:p-8 rounded-2xl space-y-4 shadow-xl">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-pitch-800">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 bg-pitch-850 border border-pitch-750 rounded-2xl flex items-center justify-center font-black text-xl text-[#c3ff00] font-mono shadow-md">
-                {comp.code}
-              </div>
-              <div>
-                <span className="text-[10px] font-mono uppercase text-slate-400 tracking-wider">
-                  {comp.country} • {comp.type}
-                </span>
-                <h1 className="text-2xl sm:text-3xl font-black text-slate-100 uppercase tracking-tight font-sans">
-                  {comp.name}
-                </h1>
-              </div>
-            </div>
+        <SectionHeader
+          title="Major Leagues & Competitions"
+          subtitle="Real-time league standings, points tables, goal difference metrics, and current season statistics"
+          badgeText="Official Standings"
+        />
 
-            <div className="bg-pitch-850 border border-pitch-750 px-4 py-2 rounded-xl text-left sm:text-right">
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-                Current Season
-              </span>
-              <div className="text-base font-bold font-mono text-slate-100">
-                {comp.currentSeason}
-              </div>
-            </div>
-          </div>
+        {/* Competition Cards Grid */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 mb-8">
+          {competitions.map((comp) => {
+            const isActive = activeCode === comp.code;
+            return (
+              <button
+                key={comp.id}
+                onClick={() => setActiveCode(comp.code)}
+                type="button"
+                className={cn(
+                  "p-3.5 rounded-2xl border text-left transition-all relative overflow-hidden group flex flex-col justify-between min-h-[100px]",
+                  isActive
+                    ? "bg-pitch-900 border-[#c3ff00] shadow-[0_0_20px_rgba(195,255,0,0.15)] ring-1 ring-[#c3ff00]/40"
+                    : "bg-pitch-950/80 border-pitch-800 hover:border-pitch-700 hover:bg-pitch-900/60"
+                )}
+              >
+                <div className="flex items-center justify-between w-full">
+                  <span
+                    className={cn(
+                      "px-2 py-0.5 text-[10px] font-mono font-bold uppercase rounded-md tracking-wider border",
+                      isActive
+                        ? "bg-[#c3ff00]/20 text-[#c3ff00] border-[#c3ff00]/40"
+                        : "bg-pitch-850 text-slate-400 border-pitch-750"
+                    )}
+                  >
+                    {comp.code}
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-500 uppercase truncate max-w-[60px]">
+                    {comp.country}
+                  </span>
+                </div>
+
+                <div className="pt-2">
+                  <h3
+                    className={cn(
+                      "text-xs font-bold font-sans truncate",
+                      isActive ? "text-[#c3ff00]" : "text-slate-200 group-hover:text-white"
+                    )}
+                  >
+                    {comp.name}
+                  </h3>
+                  <p className="text-[10px] font-mono text-slate-500 mt-0.5">
+                    {comp.currentSeason}
+                  </p>
+                </div>
+              </button>
+            );
+          })}
         </div>
 
-        {/* Standings Table */}
+        {/* Selected Table Section */}
         <div className="space-y-4">
-          <SectionHeader
-            title={`${comp.name} Standings & Rankings`}
-            subtitle="Official points table, goal differences, and recent form guides"
-            badgeText="Official Table"
-          />
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-pitch-900 border border-pitch-800">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-pitch-850 border border-pitch-750 flex items-center justify-center font-bold text-sm text-[#c3ff00] font-mono shadow-inner">
+                {currentComp.code}
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] font-mono text-slate-400 uppercase tracking-widest">
+                    {currentComp.country} • {currentComp.type}
+                  </span>
+                </div>
+                <h2 className="text-lg sm:text-xl font-extrabold text-slate-100 uppercase tracking-tight">
+                  {currentComp.name} Table {currentComp.currentSeason}
+                </h2>
+              </div>
+            </div>
 
-          <div className="bg-pitch-900 border border-pitch-800 rounded-2xl overflow-hidden shadow-xl">
+            <div className="flex items-center gap-3">
+              <Link
+                href={`/competitions/${currentComp.slug}`}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-pitch-850 hover:bg-pitch-800 border border-pitch-750 hover:border-[#c3ff00]/40 text-slate-200 text-xs font-semibold font-sans transition-all"
+              >
+                <span>Lihat Jadwal & Fixture</span>
+                <ChevronRight className="w-3.5 h-3.5 text-[#c3ff00]" />
+              </Link>
+            </div>
+          </div>
+
+          {/* Standings Table */}
+          <div className="rounded-2xl bg-pitch-900 border border-pitch-800 overflow-hidden shadow-xl">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-pitch-950 text-slate-400 font-mono uppercase tracking-wider border-b border-pitch-800 text-[11px]">
@@ -96,13 +135,13 @@ export default async function CompetitionDetailPage({ params }: CompetitionDetai
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-pitch-850/60 font-mono">
-                  {standings.map((row) => {
+                  {currentStandings.map((row) => {
                     const isUCL = row.position <= 4;
                     const isUEL = row.position === 5;
                     const isUECL = row.position === 6;
                     const isRelegation =
-                      standings.length >= 18 &&
-                      row.position >= standings.length - 2;
+                      currentStandings.length >= 18 &&
+                      row.position >= currentStandings.length - 2;
 
                     return (
                       <tr
@@ -230,21 +269,6 @@ export default async function CompetitionDetailPage({ params }: CompetitionDetai
             </div>
           </div>
         </div>
-
-        {/* Fixtures in Competition */}
-        {fixtures.length > 0 && (
-          <div className="space-y-4">
-            <SectionHeader
-              title="Recent & Upcoming Competition Matches"
-              badgeText="Fixtures"
-            />
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {fixtures.map((m) => (
-                <MatchCard key={m.id} match={m} />
-              ))}
-            </div>
-          </div>
-        )}
       </PageContainer>
     </div>
   );

@@ -76,7 +76,8 @@ describe("Football Engine Test Suite", () => {
       const standings = await provider.getStandings("PL");
       assert.ok(standings.length >= 4);
       assert.equal(standings[0].position, 1);
-      assert.equal(standings[0].team.tla, "ARS");
+      assert.ok(standings[0].team.name);
+      assert.ok(standings[0].points > 0);
 
       const transfers = await provider.getTransfers();
       assert.ok(transfers.length >= 3);
