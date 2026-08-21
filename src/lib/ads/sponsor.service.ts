@@ -1,43 +1,44 @@
+import fs from "fs";
+import path from "path";
 import { prisma } from "@/lib/db";
 import { AdSponsorRecord, SponsorStatus } from "./types";
 import { adAuditService } from "./ad-audit.service";
 
+const SPONSORS_FILE_PATH = path.join(process.cwd(), "src", "data", "ads-sponsors.json");
+
+function loadSponsorsFromDisk(): Map<string, AdSponsorRecord> {
+  try {
+    if (fs.existsSync(SPONSORS_FILE_PATH)) {
+      const data = fs.readFileSync(SPONSORS_FILE_PATH, "utf-8");
+      const list = JSON.parse(data);
+      if (Array.isArray(list)) {
+        const map = new Map<string, AdSponsorRecord>();
+        list.forEach((s: AdSponsorRecord) => map.set(s.id, s));
+        return map;
+      }
+    }
+  } catch (err) {
+    console.warn("[SponsorService] Error reading ads-sponsors.json:", err);
+  }
+  return new Map<string, AdSponsorRecord>();
+}
+
+function saveSponsorsToDisk(map: Map<string, AdSponsorRecord>) {
+  try {
+    const list = Array.from(map.values());
+    const dir = path.dirname(SPONSORS_FILE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(SPONSORS_FILE_PATH, JSON.stringify(list, null, 2), "utf-8");
+  } catch (err) {
+    console.warn("[SponsorService] Error saving ads-sponsors.json:", err);
+  }
+}
+
 export class SponsorService {
   private static instance: SponsorService;
-
-  // In-memory persistent fallback cache for development & offline environments
-  private static mockSponsors: Map<string, AdSponsorRecord> = new Map([
-    [
-      "spon_nike_01",
-      {
-        id: "spon_nike_01",
-        companyName: "Nike Football Global",
-        contactName: "Marcus Vance",
-        email: "marcus.vance@nike.com",
-        phone: "+44 20 7946 0912",
-        website: "https://nike.com/football",
-        logoUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&h=100&fit=crop",
-        billingEmail: "finance-emea@nike.com",
-        notes: "Direct seasonal sponsorship package for 2026/27 European Football coverage.",
-        status: "ACTIVE",
-        createdAt: "2026-08-01T00:00:00Z",
-        updatedAt: "2026-08-17T00:00:00Z",
-      },
-    ],
-    [
-      "spon_adidas_02",
-      {
-        id: "spon_adidas_02",
-        companyName: "Adidas Football",
-        contactName: "Klara Hoffman",
-        email: "klara.hoffman@adidas.com",
-        website: "https://adidas.com/football",
-        status: "ACTIVE",
-        createdAt: "2026-08-05T00:00:00Z",
-        updatedAt: "2026-08-17T00:00:00Z",
-      },
-    ],
-  ]);
+  private static mockSponsors: Map<string, AdSponsorRecord> = loadSponsorsFromDisk();
 
   private constructor() {}
 
@@ -49,10 +50,12 @@ export class SponsorService {
   }
 
   public async listSponsors(): Promise<AdSponsorRecord[]> {
+    SponsorService.mockSponsors = loadSponsorsFromDisk();
     return Array.from(SponsorService.mockSponsors.values());
   }
 
   public async getSponsorById(id: string): Promise<AdSponsorRecord | null> {
+    SponsorService.mockSponsors = loadSponsorsFromDisk();
     return SponsorService.mockSponsors.get(id) || null;
   }
 
@@ -89,6 +92,7 @@ export class SponsorService {
     };
 
     SponsorService.mockSponsors.set(id, record);
+    saveSponsorsToDisk(SponsorService.mockSponsors);
 
     await adAuditService.logAction({
       actorId,
@@ -116,6 +120,7 @@ export class SponsorService {
     };
 
     SponsorService.mockSponsors.set(id, updated);
+    saveSponsorsToDisk(SponsorService.mockSponsors);
 
     await adAuditService.logAction({
       actorId,
@@ -133,6 +138,7 @@ export class SponsorService {
     if (!exists) return false;
 
     SponsorService.mockSponsors.delete(id);
+    saveSponsorsToDisk(SponsorService.mockSponsors);
 
     await adAuditService.logAction({
       actorId,

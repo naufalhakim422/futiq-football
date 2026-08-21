@@ -1,145 +1,44 @@
+import fs from "fs";
+import path from "path";
 import { AdCampaignRecord, AdCreativeRecord, AdTargetingContext, AdCreativeOutput, AdFormat, PricingModel, CampaignType, CampaignStatus } from "./types";
 import { adAuditService } from "./ad-audit.service";
 import { sponsorService } from "./sponsor.service";
 
+const CAMPAIGNS_FILE_PATH = path.join(process.cwd(), "src", "data", "ads-campaigns.json");
+
+function loadCampaignsFromDisk(): Map<string, AdCampaignRecord> {
+  try {
+    if (fs.existsSync(CAMPAIGNS_FILE_PATH)) {
+      const data = fs.readFileSync(CAMPAIGNS_FILE_PATH, "utf-8");
+      const list = JSON.parse(data);
+      if (Array.isArray(list)) {
+        const map = new Map<string, AdCampaignRecord>();
+        list.forEach((c: AdCampaignRecord) => map.set(c.id, c));
+        return map;
+      }
+    }
+  } catch (err) {
+    console.warn("[CampaignService] Error reading ads-campaigns.json:", err);
+  }
+  return new Map<string, AdCampaignRecord>();
+}
+
+function saveCampaignsToDisk(map: Map<string, AdCampaignRecord>) {
+  try {
+    const list = Array.from(map.values());
+    const dir = path.dirname(CAMPAIGNS_FILE_PATH);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(CAMPAIGNS_FILE_PATH, JSON.stringify(list, null, 2), "utf-8");
+  } catch (err) {
+    console.warn("[CampaignService] Error saving ads-campaigns.json:", err);
+  }
+}
+
 export class CampaignService {
   private static instance: CampaignService;
-
-  private static mockCampaigns: Map<string, AdCampaignRecord> = new Map([
-    [
-      "camp_nike_01",
-      {
-        id: "camp_nike_01",
-        campaignName: "Nike Football Boots — August Campaign",
-        sponsorId: "spon_nike_01",
-        sponsorName: "Nike Football Global",
-        providerId: "sponsor-direct",
-        providerName: "Direct Sponsor Platform",
-        type: "DIRECT_SPONSOR",
-        objective: "Promote new 2026/27 boot collection across European football and Premier League articles.",
-        pricingModel: "FLAT_RATE",
-        agreedPriceMinor: 500000, // RM 5,000.00
-        currency: "MYR",
-        startAt: "2026-08-01T00:00:00Z",
-        endAt: "2026-09-30T23:59:59Z",
-        status: "ACTIVE",
-        priority: 100,
-        frequencyCap: 5,
-        impressionCap: 250000,
-        clickCap: 10000,
-        impressionsDelivered: 42150,
-        clicksDelivered: 1320,
-        targetDevice: "ALL",
-        targetCategory: "Tactical Analysis",
-        targetCompetition: "Premier League",
-        notes: "Primary sponsor banner on Article Header and Matchday Center.",
-        creatives: [
-          {
-            id: "crt_nike_banner_01",
-            campaignId: "camp_nike_01",
-            name: "Nike Elite Boots Leaderboard (1200x250)",
-            format: "BANNER",
-            title: "Nike Football Performance Collection 2026",
-            description: "Engineered for lethal accuracy and explosive transition speed.",
-            imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=1200&q=80",
-            mobileImageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=600&q=80",
-            targetUrl: "https://www.nike.com/football",
-            ctaText: "Shop New Collection",
-            dimensions: "1200x250",
-            aspectRatio: "16:9",
-            status: "ACTIVE",
-            approvalState: "APPROVED",
-            createdAt: "2026-08-01T00:00:00Z",
-            updatedAt: "2026-08-17T00:00:00Z",
-          },
-        ],
-        createdAt: "2026-08-01T00:00:00Z",
-        updatedAt: "2026-08-17T00:00:00Z",
-      },
-    ],
-    [
-      "camp_adsterra_global",
-      {
-        id: "camp_adsterra_global",
-        campaignName: "Adsterra Network In-Stream Delivery",
-        providerId: "adsterra",
-        providerName: "Adsterra Network",
-        type: "NETWORK",
-        objective: "Global remnant and programmatic banner monetization.",
-        pricingModel: "CPM",
-        agreedPriceMinor: 0,
-        currency: "USD",
-        startAt: "2026-01-01T00:00:00Z",
-        status: "ACTIVE",
-        priority: 50,
-        impressionsDelivered: 184500,
-        clicksDelivered: 3620,
-        targetDevice: "ALL",
-        creatives: [
-          {
-            id: "crt_adsterra_banner_01",
-            campaignId: "camp_adsterra_global",
-            name: "Adsterra In-Stream Banner Delivery",
-            format: "BANNER",
-            title: "Global Sports Entertainment & Live Matchday Insights",
-            description: "Instant access to real-time football analytics and tactical coverage.",
-            imageUrl: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?auto=format&fit=crop&w=1200&q=80",
-            targetUrl: "https://adsterra.com",
-            ctaText: "Explore Now",
-            dimensions: "1200x250",
-            aspectRatio: "16:9",
-            status: "ACTIVE",
-            approvalState: "APPROVED",
-            createdAt: "2026-01-01T00:00:00Z",
-            updatedAt: "2026-08-17T00:00:00Z",
-          },
-        ],
-        createdAt: "2026-01-01T00:00:00Z",
-        updatedAt: "2026-08-17T00:00:00Z",
-      },
-    ],
-    [
-      "camp_house_writers",
-      {
-        id: "camp_house_writers",
-        campaignName: "FUTIQ Contributor Acquisition (House)",
-        providerId: "house-ad",
-        providerName: "FUTIQ House Engine",
-        type: "HOUSE_AD",
-        objective: "Recruit independent football analysts and tactical journalists.",
-        pricingModel: "FREE",
-        agreedPriceMinor: 0,
-        currency: "MYR",
-        startAt: "2026-01-01T00:00:00Z",
-        status: "ACTIVE",
-        priority: 10,
-        impressionsDelivered: 58000,
-        clicksDelivered: 2410,
-        targetDevice: "ALL",
-        creatives: [
-          {
-            id: "crt_house_writer_01",
-            campaignId: "camp_house_writers",
-            name: "Write for FUTIQ — Contributor Banner",
-            format: "BANNER",
-            title: "Write for FUTIQ FOOTBALL — Earn Revenue for Sports Journalism",
-            description: "Submit tactical analysis and earn verified engagement rewards.",
-            imageUrl: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=1200&q=80",
-            targetUrl: "/contributor/apply",
-            ctaText: "Apply as Writer",
-            dimensions: "1200x250",
-            aspectRatio: "16:9",
-            status: "ACTIVE",
-            approvalState: "APPROVED",
-            createdAt: "2026-01-01T00:00:00Z",
-            updatedAt: "2026-08-17T00:00:00Z",
-          },
-        ],
-        createdAt: "2026-01-01T00:00:00Z",
-        updatedAt: "2026-08-17T00:00:00Z",
-      },
-    ],
-  ]);
+  private static mockCampaigns: Map<string, AdCampaignRecord> = loadCampaignsFromDisk();
 
   private constructor() {}
 
@@ -151,10 +50,12 @@ export class CampaignService {
   }
 
   public async listCampaigns(): Promise<AdCampaignRecord[]> {
+    CampaignService.mockCampaigns = loadCampaignsFromDisk();
     return Array.from(CampaignService.mockCampaigns.values());
   }
 
   public async getCampaignById(id: string): Promise<AdCampaignRecord | null> {
+    CampaignService.mockCampaigns = loadCampaignsFromDisk();
     return CampaignService.mockCampaigns.get(id) || null;
   }
 
@@ -226,6 +127,7 @@ export class CampaignService {
     };
 
     CampaignService.mockCampaigns.set(id, campaign);
+    saveCampaignsToDisk(CampaignService.mockCampaigns);
 
     await adAuditService.logAction({
       actorId,
@@ -253,6 +155,7 @@ export class CampaignService {
     };
 
     CampaignService.mockCampaigns.set(id, updated);
+    saveCampaignsToDisk(CampaignService.mockCampaigns);
 
     await adAuditService.logAction({
       actorId,
@@ -270,6 +173,7 @@ export class CampaignService {
     if (!exists) return false;
 
     CampaignService.mockCampaigns.delete(id);
+    saveCampaignsToDisk(CampaignService.mockCampaigns);
 
     await adAuditService.logAction({
       actorId,
@@ -289,6 +193,7 @@ export class CampaignService {
         camp.impressionsDelivered = (camp.impressionsDelivered || 0) + 1;
       }
     });
+    saveCampaignsToDisk(CampaignService.mockCampaigns);
   }
 
   public async recordClick(creativeIdOrSlotKey: string): Promise<void> {
@@ -298,6 +203,7 @@ export class CampaignService {
         camp.clicksDelivered = (camp.clicksDelivered || 0) + 1;
       }
     });
+    saveCampaignsToDisk(CampaignService.mockCampaigns);
   }
 
   /**

@@ -1,4 +1,4 @@
-import { describe, it } from "node:test";
+import { describe, it, before, after } from "node:test";
 import assert from "node:assert/strict";
 import { AdProviderRegistry } from "../src/lib/ads/ad-provider-registry";
 import { AdsterraProvider } from "../src/lib/ads/adsterra.provider";
@@ -13,6 +13,62 @@ import { AdAuditService } from "../src/lib/ads/ad-audit.service";
 import { AdPlacementPosition } from "@prisma/client";
 
 describe("Sprint 6 — Upgraded Advertising Engine & Sponsor Platform Suite", () => {
+  const campaignService = CampaignService.getInstance();
+  const sponsorService = SponsorService.getInstance();
+  let testCampaignId = "";
+  let testSponsorId = "";
+
+  before(async () => {
+    const spon = await sponsorService.createSponsor({
+      companyName: "Nike Football Global",
+      contactName: "Marcus Vance",
+      email: "marcus.vance@nike.com",
+    });
+    testSponsorId = spon.id;
+
+    const camp = await campaignService.createCampaign({
+      campaignName: "Nike Football Boots — August Campaign",
+      sponsorId: spon.id,
+      providerId: "sponsor-direct",
+      type: "DIRECT_SPONSOR",
+      pricingModel: "FLAT_RATE",
+      agreedPriceMinor: 500000,
+      currency: "MYR",
+      startAt: "2026-01-01T00:00:00Z",
+      endAt: "2026-12-31T23:59:59Z",
+      priority: 100,
+      targetCategory: "Tactical Analysis",
+      targetCompetition: "Premier League",
+      creatives: [
+        {
+          id: "crt_nike_test_01",
+          campaignId: "",
+          name: "Nike Elite Boots Leaderboard",
+          format: "BANNER",
+          title: "Nike Football Performance Collection 2026",
+          description: "Engineered for lethal accuracy",
+          imageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
+          mobileImageUrl: "https://images.unsplash.com/photo-1542291026-7eec264c27ff",
+          targetUrl: "https://www.nike.com/football",
+          status: "ACTIVE",
+          approvalState: "APPROVED",
+          createdAt: "2026-01-01T00:00:00Z",
+          updatedAt: "2026-01-01T00:00:00Z",
+        },
+      ],
+    });
+    testCampaignId = camp.id;
+  });
+
+  after(async () => {
+    if (testCampaignId) {
+      await campaignService.deleteCampaign(testCampaignId);
+    }
+    if (testSponsorId) {
+      await sponsorService.deleteSponsor(testSponsorId);
+    }
+  });
+
   /* =========================================================
      1. PROVIDER ABSTRACTION & CAPABILITIES
      ========================================================= */
@@ -61,8 +117,6 @@ describe("Sprint 6 — Upgraded Advertising Engine & Sponsor Platform Suite", ()
      2. TARGETING, PRIORITY SCORING & CONTEXT BONUS
      ========================================================= */
   describe("2. Targeting, Priority Scoring & Context Matching", () => {
-    const campaignService = CampaignService.getInstance();
-
     it("prioritizes Direct Sponsor (P100) over Adsterra (P50) and House Ad (P10)", async () => {
       const creative = await campaignService.resolveMatchingCreative(
         { position: AdPlacementPosition.ARTICLE_TOP, device: "DESKTOP" },
@@ -108,7 +162,7 @@ describe("Sprint 6 — Upgraded Advertising Engine & Sponsor Platform Suite", ()
 
     it("resolves graceful fallback creative without throwing errors", async () => {
       const creative = await adPlacementService.getAdForPlacement({
-        position: AdPlacementPosition.HOME_BOTTOM,
+        position: AdPlacementPosition.HOME_TOP,
         device: "DESKTOP",
       });
 
