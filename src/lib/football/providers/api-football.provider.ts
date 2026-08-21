@@ -77,7 +77,7 @@ export class ApiFootballProvider implements IFootballProvider {
   private async executeRequest<T>(
     endpoint: string,
     params?: Record<string, string | number | undefined>,
-    options?: { isBackgroundSync?: boolean }
+    options?: { isBackgroundSync?: boolean; purpose?: string }
   ): Promise<T | null> {
     if (!this.isConfigured()) {
       return null;
@@ -103,6 +103,7 @@ export class ApiFootballProvider implements IFootballProvider {
     // 3. Dispatch with timeout (8000ms)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 8000);
+    const startTime = Date.now();
 
     try {
       const res = await fetch(url.toString(), {
@@ -115,8 +116,13 @@ export class ApiFootballProvider implements IFootballProvider {
       });
 
       clearTimeout(timeoutId);
+      const durationMs = Date.now() - startTime;
 
-      footballQuotaGuard.recordRequest(res.status, res.headers);
+      footballQuotaGuard.recordRequest(res.status, res.headers, undefined, {
+        endpoint,
+        purpose: options?.purpose || "DATA_SYNC",
+        durationMs,
+      });
 
       if (res.status === 401 || res.status === 403) {
         console.error(`[API-Football Unauthorized]: Status ${res.status} returned. Check API credentials.`);
@@ -140,7 +146,11 @@ export class ApiFootballProvider implements IFootballProvider {
         const errorKey = Object.keys(json.errors)[0];
         console.warn(`[API-Football API Error Body]: ${errorKey}: ${json.errors[errorKey]}`);
         if (errorKey === "rateLimit" || errorKey === "requests") {
-          footballQuotaGuard.recordRequest(429, res.headers, String(json.errors[errorKey]));
+          footballQuotaGuard.recordRequest(429, res.headers, String(json.errors[errorKey]), {
+            endpoint,
+            purpose: options?.purpose || "DATA_SYNC",
+            durationMs,
+          });
         }
         return null;
       }
@@ -148,8 +158,18 @@ export class ApiFootballProvider implements IFootballProvider {
       return json.response as T;
     } catch (err: any) {
       clearTimeout(timeoutId);
+      const durationMs = Date.now() - startTime;
       const isTimeout = err.name === "AbortError";
-      footballQuotaGuard.recordRequest(isTimeout ? 408 : 500, undefined, isTimeout ? "Timeout (8000ms)" : err.message);
+      footballQuotaGuard.recordRequest(
+        isTimeout ? 408 : 500,
+        undefined,
+        isTimeout ? "Timeout (8000ms)" : err.message,
+        {
+          endpoint,
+          purpose: options?.purpose || "DATA_SYNC",
+          durationMs,
+        }
+      );
       console.warn(`[API-Football Network Failure]: ${endpoint} -> ${err.message}`);
       return null;
     }
@@ -160,7 +180,7 @@ export class ApiFootballProvider implements IFootballProvider {
   // ==========================================
 
   public async getCompetitions(): Promise<ProviderCompetition[]> {
-    const raw = await this.executeRequest<any[]>("leagues", { current: "true" });
+    const raw = await this.executeRequest<any[]>("leagues", { current: "true" }, { purpose: "COMPETITIONS_SYNC" });
     if (!raw || raw.length === 0) {
       return this.fallbackProvider.getCompetitions();
     }
@@ -191,19 +211,19 @@ export class ApiFootballProvider implements IFootballProvider {
     const config = LEAGUE_ID_MAP[uppercaseCode];
 
     if (config) {
-      const raw = await this.executeRequest<any[]>("leagues", { id: config.id });
+      const raw = await this.executeRequest<any[]>("leagues", { id: config.id }, { purpose: "COMPETITION_DETAIL" });
       if (raw && raw.length > 0) {
         const item = raw[0];
         return {
           id: `comp_${item.league?.id}`,
           externalId: String(item.league?.id),
           name: item.league?.name,
-          code: config.code,
+          code: uppercaseCode,
           slug: config.slug,
           type: config.type,
-          country: item.country?.name || config.country,
+          country: item.country?.name || "Global",
           logoUrl: item.league?.logo,
-          currentSeason: "2025/2026",
+          currentSeason: item.seasons?.[0]?.year ? String(item.seasons[0].year) : "2025/2026",
         };
       }
     }
@@ -212,19 +232,20 @@ export class ApiFootballProvider implements IFootballProvider {
   }
 
   // ==========================================
-  // 2. TEAMS
+  // 2. TEAMS & PLAYERS
   // ==========================================
 
   public async getTeams(competitionCode?: string): Promise<ProviderTeam[]> {
-    const code = competitionCode?.toUpperCase() || "PL";
-    const config = LEAGUE_ID_MAP[code];
-    const leagueId = config ? config.id : 39;
+    const apiParams: Record<string, any> = {};
+    if (competitionCode) {
+      const config = LEAGUE_ID_MAP[competitionCode.toUpperCase()];
+      if (config) {
+        apiParams.league = config.id;
+        apiParams.season = 2024;
+      }
+    }
 
-    const raw = await this.executeRequest<any[]>("teams", {
-      league: leagueId,
-      season: 2025,
-    });
-
+    const raw = await this.executeRequest<any[]>("teams", apiParams, { purpose: "TEAMS_QUERY" });
     if (!raw || raw.length === 0) {
       return this.fallbackProvider.getTeams(competitionCode);
     }
@@ -239,7 +260,7 @@ export class ApiFootballProvider implements IFootballProvider {
       country: item.team?.country || "England",
       foundedYear: item.team?.founded,
       logoUrl: item.team?.logo,
-      competitionCode: code,
+      competitionCode: competitionCode || "PL",
       stadium: item.venue
         ? {
             name: item.venue.name,
@@ -374,11 +395,26 @@ export class ApiFootballProvider implements IFootballProvider {
     if (!this.isConfigured()) {
       return this.fallbackProvider.getLiveMatches();
     }
-    const raw = await this.executeRequest<any[]>("fixtures", { live: "all" });
-    if (!raw || !Array.isArray(raw)) {
-      return [];
+    const raw = await this.executeRequest<any[]>("fixtures", { live: "all" }, { purpose: "LIVE_MATCH_SYNC" });
+    if (raw && Array.isArray(raw)) {
+      return raw.map((item) => this.mapMatchRecord(item));
     }
 
+    return [];
+  }
+
+  public async getBatchMatches(fixtureIds: string[]): Promise<ProviderMatch[]> {
+    if (!this.isConfigured()) {
+      return [];
+    }
+    const numericIds = fixtureIds
+      .map((id) => parseInt(id.replace("match_", ""), 10))
+      .filter((n) => !isNaN(n))
+      .slice(0, 20);
+
+    if (numericIds.length === 0) return [];
+    const raw = await this.executeRequest<any[]>("fixtures", { ids: numericIds.join("-") }, { purpose: "BATCH_FIXTURES_SYNC" });
+    if (!raw || !Array.isArray(raw)) return [];
     return raw.map((item) => this.mapMatchRecord(item));
   }
 
@@ -404,21 +440,16 @@ export class ApiFootballProvider implements IFootballProvider {
       else if (params.status === MatchStatus.SCHEDULED) apiParams.status = "NS";
     }
 
-    // If no specific league or date is given, default to today's real fixtures
-    if (!apiParams.league && !apiParams.date && !apiParams.live) {
-      apiParams.date = new Date().toISOString().split("T")[0];
+    const raw = await this.executeRequest<any[]>("fixtures", apiParams, { purpose: "FIXTURES_QUERY" });
+    if (raw && Array.isArray(raw) && raw.length > 0) {
+      const mapped = raw.map((item) => this.mapMatchRecord(item));
+      if (params?.limit && mapped.length > params.limit) {
+        return mapped.slice(0, params.limit);
+      }
+      return mapped;
     }
 
-    const raw = await this.executeRequest<any[]>("fixtures", apiParams);
-    if (!raw || !Array.isArray(raw)) {
-      return [];
-    }
-
-    const mapped = raw.map((item) => this.mapMatchRecord(item));
-    if (params?.limit && mapped.length > params.limit) {
-      return mapped.slice(0, params.limit);
-    }
-    return mapped;
+    return [];
   }
 
   public async getMatch(id: string): Promise<ProviderMatchDetail | null> {

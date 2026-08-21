@@ -67,7 +67,7 @@ describe("Sprint 2 — Football API Free Plan Production-Safe Suite", () => {
       footballQuotaGuard.setUsageForTesting(96, 2); // 4 remaining
       const backgroundCheck = footballQuotaGuard.canMakeRequest({ isBackgroundSync: true });
       assert.equal(backgroundCheck.allowed, false);
-      assert.match(backgroundCheck.reason || "", /low quota protection/i);
+      assert.match(backgroundCheck.reason || "", /quota conservation|low quota/i);
 
       // But real-time user query is still allowed
       const userCheck = footballQuotaGuard.canMakeRequest({ isBackgroundSync: false });

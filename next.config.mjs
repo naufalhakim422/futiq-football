@@ -17,7 +17,27 @@ const nextConfig = {
       },
       {
         protocol: "https",
-        hostname: "football.example.com",
+        hostname: "media.api-sports.io",
+      },
+      {
+        protocol: "https",
+        hostname: "media-1.api-sports.io",
+      },
+      {
+        protocol: "https",
+        hostname: "media-2.api-sports.io",
+      },
+      {
+        protocol: "https",
+        hostname: "media-3.api-sports.io",
+      },
+      {
+        protocol: "https",
+        hostname: "media-4.api-sports.io",
+      },
+      {
+        protocol: "https",
+        hostname: "*.api-sports.io",
       },
     ],
   },
@@ -57,7 +77,7 @@ const nextConfig = {
               "default-src 'self'",
               "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
               "style-src 'self' 'unsafe-inline'",
-              "img-src 'self' data: blob: https://images.unsplash.com https://*.cloudflarestorage.com https://*.example.com",
+              "img-src 'self' data: blob: https://images.unsplash.com https://*.cloudflarestorage.com https://*.api-sports.io https://media.api-sports.io https://media-1.api-sports.io https://media-2.api-sports.io https://media-3.api-sports.io https://media-4.api-sports.io https://*.example.com",
               "font-src 'self' data:",
               "connect-src 'self' https:",
               "frame-ancestors 'self'",

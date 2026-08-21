@@ -1,18 +1,41 @@
+export type QuotaLevel = "NORMAL" | "WARNING" | "CRITICAL" | "EMERGENCY" | "BLOCKED";
+
+export interface QuotaRequestLog {
+  requestId: string;
+  endpoint: string;
+  purpose: string;
+  fixtureId?: string;
+  quotaBefore: number;
+  quotaAfter: number;
+  durationMs: number;
+  statusCode: number;
+  timestamp: string;
+}
+
 export interface QuotaTelemetry {
   provider: string;
   plan: "FREE";
   dailyLimit: number;
   perMinuteLimit: number;
   requestsToday: number;
+  requestsRemainingToday: number;
   requestsRemaining: number;
   requestsThisMinute: number;
+  requestsRemainingThisMinute: number;
+  quotaLevel: QuotaLevel;
+  rateLimitReached: boolean;
+  dailyQuotaReached: boolean;
   isRateLimited: boolean;
   rateLimitResetAt: string | null;
   rateLimit429Count: number;
+  lastProviderRequest: string | null;
+  providerStatus: "OPERATIONAL" | "RATE_LIMITED" | "QUOTA_EXHAUSTED" | "DEGRADED";
+  lastProviderResponse: string | null;
   lastSuccessfulRequestAt: string | null;
   lastFailureAt: string | null;
   lastErrorStatus: number | null;
   lastErrorMessage: string | null;
+  recentLogs: QuotaRequestLog[];
 }
 
 export class FootballQuotaGuard {
@@ -21,7 +44,9 @@ export class FootballQuotaGuard {
   // Free tier constraints
   public static readonly DAILY_LIMIT = 100;
   public static readonly PER_MINUTE_LIMIT = 10;
-  public static readonly LOW_QUOTA_THRESHOLD = 5;
+  public static readonly WARNING_THRESHOLD = 20; // 80% used (20 left)
+  public static readonly CRITICAL_THRESHOLD = 10; // 90% used (10 left)
+  public static readonly EMERGENCY_THRESHOLD = 5; // 95% used (5 left)
 
   private requestsToday = 0;
   private currentDayString: string;
@@ -29,10 +54,13 @@ export class FootballQuotaGuard {
   private isRateLimited = false;
   private rateLimitResetAt: number | null = null;
   private rateLimit429Count = 0;
+  private lastProviderRequest: string | null = null;
+  private lastProviderResponse: string | null = null;
   private lastSuccessfulRequestAt: string | null = null;
   private lastFailureAt: string | null = null;
   private lastErrorStatus: number | null = null;
   private lastErrorMessage: string | null = null;
+  private requestLogs: QuotaRequestLog[] = [];
 
   private constructor() {
     this.currentDayString = this.getTodayDateString();
@@ -57,6 +85,7 @@ export class FootballQuotaGuard {
       this.rateLimit429Count = 0;
       this.isRateLimited = false;
       this.rateLimitResetAt = null;
+      this.requestLogs = [];
     }
   }
 
@@ -71,19 +100,32 @@ export class FootballQuotaGuard {
     }
   }
 
+  public getQuotaLevel(): QuotaLevel {
+    const remaining = Math.max(0, FootballQuotaGuard.DAILY_LIMIT - this.requestsToday);
+    if (remaining === 0) return "BLOCKED";
+    if (remaining <= FootballQuotaGuard.EMERGENCY_THRESHOLD) return "EMERGENCY";
+    if (remaining <= FootballQuotaGuard.CRITICAL_THRESHOLD) return "CRITICAL";
+    if (remaining <= FootballQuotaGuard.WARNING_THRESHOLD) return "WARNING";
+    return "NORMAL";
+  }
+
   /**
    * Evaluates whether an outgoing HTTP request to API-Football is permitted under Free Plan constraints
    */
-  public canMakeRequest(options?: { isBackgroundSync?: boolean }): {
+  public canMakeRequest(options?: { isBackgroundSync?: boolean; purpose?: string }): {
     allowed: boolean;
     reason?: string;
     remainingDaily: number;
     remainingMinute: number;
+    quotaLevel: QuotaLevel;
   } {
     this.refreshDayWindow();
     this.cleanMinuteWindow();
 
     const now = Date.now();
+    const quotaLevel = this.getQuotaLevel();
+    const remainingDaily = Math.max(0, FootballQuotaGuard.DAILY_LIMIT - this.requestsToday);
+    const remainingMinute = Math.max(0, FootballQuotaGuard.PER_MINUTE_LIMIT - this.minuteTimestamps.length);
 
     // 1. Check if currently in 429 rate-limit backoff
     if (this.isRateLimited && this.rateLimitResetAt && now < this.rateLimitResetAt) {
@@ -91,18 +133,20 @@ export class FootballQuotaGuard {
       return {
         allowed: false,
         reason: `Rate limit 429 backoff active. Try again in ${waitSeconds}s.`,
-        remainingDaily: Math.max(0, FootballQuotaGuard.DAILY_LIMIT - this.requestsToday),
-        remainingMinute: Math.max(0, FootballQuotaGuard.PER_MINUTE_LIMIT - this.minuteTimestamps.length),
+        remainingDaily,
+        remainingMinute,
+        quotaLevel,
       };
     }
 
-    // 2. Check Daily Limit (100 req/day)
+    // 2. Check Daily Limit (100 req/day - Hard Safety Block)
     if (this.requestsToday >= FootballQuotaGuard.DAILY_LIMIT) {
       return {
         allowed: false,
-        reason: `Daily quota exhausted (${this.requestsToday}/${FootballQuotaGuard.DAILY_LIMIT} requests used today).`,
+        reason: `Daily quota exhausted (${this.requestsToday}/${FootballQuotaGuard.DAILY_LIMIT} requests used today). Provider calls blocked.`,
         remainingDaily: 0,
-        remainingMinute: Math.max(0, FootballQuotaGuard.PER_MINUTE_LIMIT - this.minuteTimestamps.length),
+        remainingMinute,
+        quotaLevel: "BLOCKED",
       };
     }
 
@@ -111,26 +155,28 @@ export class FootballQuotaGuard {
       return {
         allowed: false,
         reason: `Per-minute rate limit reached (${this.minuteTimestamps.length}/${FootballQuotaGuard.PER_MINUTE_LIMIT} req/min). Throttle active.`,
-        remainingDaily: Math.max(0, FootballQuotaGuard.DAILY_LIMIT - this.requestsToday),
+        remainingDaily,
         remainingMinute: 0,
+        quotaLevel,
       };
     }
 
-    // 4. Low-quota protection for background / batch synchronizations
-    const remaining = FootballQuotaGuard.DAILY_LIMIT - this.requestsToday;
-    if (options?.isBackgroundSync && remaining <= FootballQuotaGuard.LOW_QUOTA_THRESHOLD) {
+    // 4. Quota Conservation & Emergency Modes (Non-essential/Background requests)
+    if (options?.isBackgroundSync && remainingDaily <= FootballQuotaGuard.WARNING_THRESHOLD) {
       return {
         allowed: false,
-        reason: `Low quota protection: Only ${remaining} daily requests remaining. Background sync delayed to preserve real-time match queries.`,
-        remainingDaily: remaining,
-        remainingMinute: FootballQuotaGuard.PER_MINUTE_LIMIT - this.minuteTimestamps.length,
+        reason: `Quota Conservation Active: Only ${remainingDaily} daily requests remaining. Background sync paused to preserve quota for live match requests.`,
+        remainingDaily,
+        remainingMinute,
+        quotaLevel,
       };
     }
 
     return {
       allowed: true,
-      remainingDaily: remaining,
-      remainingMinute: FootballQuotaGuard.PER_MINUTE_LIMIT - this.minuteTimestamps.length,
+      remainingDaily,
+      remainingMinute,
+      quotaLevel,
     };
   }
 
@@ -140,14 +186,21 @@ export class FootballQuotaGuard {
   public recordRequest(
     statusCode: number,
     headers?: Headers | Record<string, string>,
-    errorMessage?: string
+    errorMessage?: string,
+    meta?: { endpoint?: string; purpose?: string; fixtureId?: string; durationMs?: number }
   ): void {
     this.refreshDayWindow();
     this.cleanMinuteWindow();
 
     const now = Date.now();
+    const quotaBefore = Math.max(0, FootballQuotaGuard.DAILY_LIMIT - this.requestsToday);
     this.requestsToday += 1;
     this.minuteTimestamps.push(now);
+    const quotaAfter = Math.max(0, FootballQuotaGuard.DAILY_LIMIT - this.requestsToday);
+
+    if (meta?.endpoint) {
+      this.lastProviderRequest = `${meta.endpoint} (${new Date(now).toISOString()})`;
+    }
 
     // Parse official API-Sports rate-limit headers if provided
     if (headers) {
@@ -158,7 +211,8 @@ export class FootballQuotaGuard {
         return headers[name] || headers[name.toLowerCase()] || null;
       };
 
-      const remainingHeader = getHeader("x-ratelimit-requests-remaining");
+      const remainingHeader =
+        getHeader("x-ratelimit-requests-remaining") || getHeader("x-ratelimit-remaining");
       if (remainingHeader !== null && !isNaN(Number(remainingHeader))) {
         const remaining = parseInt(remainingHeader, 10);
         if (remaining >= 0 && remaining <= FootballQuotaGuard.DAILY_LIMIT) {
@@ -169,19 +223,38 @@ export class FootballQuotaGuard {
 
     if (statusCode >= 200 && statusCode < 300) {
       this.lastSuccessfulRequestAt = new Date(now).toISOString();
+      this.lastProviderResponse = `200 OK (${new Date(now).toISOString()})`;
       this.lastErrorStatus = null;
       this.lastErrorMessage = null;
     } else {
       this.lastFailureAt = new Date(now).toISOString();
       this.lastErrorStatus = statusCode;
       this.lastErrorMessage = errorMessage || `HTTP Error ${statusCode}`;
+      this.lastProviderResponse = `${statusCode} ${errorMessage || "Error"} (${new Date(now).toISOString()})`;
 
       if (statusCode === 429) {
         this.rateLimit429Count += 1;
         this.isRateLimited = true;
-        // Default 60-second backoff on 429
         this.rateLimitResetAt = now + 60000;
       }
+    }
+
+    // Push structured log (kept in memory, capped at 50 entries)
+    const logItem: QuotaRequestLog = {
+      requestId: `REQ-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      endpoint: meta?.endpoint || "unknown",
+      purpose: meta?.purpose || "DATA_SYNC",
+      fixtureId: meta?.fixtureId,
+      quotaBefore,
+      quotaAfter,
+      durationMs: meta?.durationMs || 0,
+      statusCode,
+      timestamp: new Date(now).toISOString(),
+    };
+
+    this.requestLogs.unshift(logItem);
+    if (this.requestLogs.length > 50) {
+      this.requestLogs.pop();
     }
   }
 
@@ -193,6 +266,17 @@ export class FootballQuotaGuard {
     this.cleanMinuteWindow();
 
     const remainingDaily = Math.max(0, FootballQuotaGuard.DAILY_LIMIT - this.requestsToday);
+    const remainingMinute = Math.max(0, FootballQuotaGuard.PER_MINUTE_LIMIT - this.minuteTimestamps.length);
+    const quotaLevel = this.getQuotaLevel();
+
+    let providerStatus: QuotaTelemetry["providerStatus"] = "OPERATIONAL";
+    if (remainingDaily === 0) {
+      providerStatus = "QUOTA_EXHAUSTED";
+    } else if (this.isRateLimited) {
+      providerStatus = "RATE_LIMITED";
+    } else if (quotaLevel === "CRITICAL" || quotaLevel === "EMERGENCY") {
+      providerStatus = "DEGRADED";
+    }
 
     return {
       provider: "API-Football (v3)",
@@ -200,15 +284,24 @@ export class FootballQuotaGuard {
       dailyLimit: FootballQuotaGuard.DAILY_LIMIT,
       perMinuteLimit: FootballQuotaGuard.PER_MINUTE_LIMIT,
       requestsToday: this.requestsToday,
+      requestsRemainingToday: remainingDaily,
       requestsRemaining: remainingDaily,
       requestsThisMinute: this.minuteTimestamps.length,
+      requestsRemainingThisMinute: remainingMinute,
+      quotaLevel,
+      rateLimitReached: this.minuteTimestamps.length >= FootballQuotaGuard.PER_MINUTE_LIMIT || this.isRateLimited,
+      dailyQuotaReached: this.requestsToday >= FootballQuotaGuard.DAILY_LIMIT,
       isRateLimited: this.isRateLimited,
       rateLimitResetAt: this.rateLimitResetAt ? new Date(this.rateLimitResetAt).toISOString() : null,
       rateLimit429Count: this.rateLimit429Count,
+      lastProviderRequest: this.lastProviderRequest,
+      providerStatus,
+      lastProviderResponse: this.lastProviderResponse,
       lastSuccessfulRequestAt: this.lastSuccessfulRequestAt,
       lastFailureAt: this.lastFailureAt,
       lastErrorStatus: this.lastErrorStatus,
       lastErrorMessage: this.lastErrorMessage,
+      recentLogs: this.requestLogs.slice(0, 10),
     };
   }
 
@@ -221,10 +314,13 @@ export class FootballQuotaGuard {
     this.isRateLimited = false;
     this.rateLimitResetAt = null;
     this.rateLimit429Count = 0;
+    this.lastProviderRequest = null;
+    this.lastProviderResponse = null;
     this.lastSuccessfulRequestAt = null;
     this.lastFailureAt = null;
     this.lastErrorStatus = null;
     this.lastErrorMessage = null;
+    this.requestLogs = [];
     this.currentDayString = this.getTodayDateString();
   }
 
